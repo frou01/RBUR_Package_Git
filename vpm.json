@@ -1,0 +1,24 @@
+{
+    "name": "frou01",
+    "id": "io.github.frou01.vpm",
+    "author": "frou01",
+    "url": "https://frou01.github.io/vpm-repos/vpm.json",
+    "packages": {
+        "com.frou01.rbur": {
+            "versions": {
+                "3.5.0": {
+                    "name": "com.frou01.rbur",
+                    "displayName": "RigidBody Udon Railway",
+                    "version": "3.5.0",
+                    "unity": "2019.4",
+                    "description": "RigidBody Based Railway scripts and prefab for VRChat",
+                    "author": {
+                        "name": "frou01"
+                    },
+                    "url": "https://github.com/frou01/RBUR_Package_Git/releases/download/b3.5.0/RBUR_Package_Git-b3.5.0.zip?",
+                    "repo": "https://frou01.github.io/vpm-repos/vpm.json"
+                }
+            }
+        }
+    }
+}
