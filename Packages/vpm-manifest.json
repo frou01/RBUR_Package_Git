@@ -1,1 +1,9 @@
-{"dependencies": {}, "locked": {}}
+{
+    "dependencies": {
+        "com.frou01.rbur": {
+            "version": "3.5.0",
+            "dependencies": {}
+        }
+    },
+    "locked": {}
+}
