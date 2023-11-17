@@ -1,0 +1,18 @@
+{
+    "name": "RBUR_Def-udon",
+    "references": [
+        "VRC.Udon",
+        "UdonSharp.Runtime",
+        "Cinemachine",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
