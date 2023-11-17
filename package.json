@@ -4,6 +4,7 @@
     "version": "3.5.0",
     "unity": "2019.4",
     "description": "RigidBody Based Railway scripts and prefab for VRChat",
+    "repo" : "https://frou01.github.io/vpm-repos/vpm.json",
     "dependencies": {
     }
 }
