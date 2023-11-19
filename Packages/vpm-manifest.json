@@ -1,7 +1,15 @@
 {
     "dependencies": {
         "com.frou01.rbur": {
-            "version": "3.5.0",
+            "version": "3.5.2",
+            "dependencies": {}
+        },
+        "com.frou01.gac": {
+            "version": "3.5.2",
+            "dependencies": {}
+        },
+        "com.frou01.wvf": {
+            "version": "3.5.2",
             "dependencies": {}
         }
     },
