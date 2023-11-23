@@ -42,6 +42,8 @@ namespace frou01.RigidBodyTrain
 
         [SerializeField] public Transform brakePressure;
 
+        [SerializeField] private Vector3 CenterOfMass;
+
         private Vector3 brakePressure_proxy;
 
         [UdonSynced] public bool BrakeOpenF;//1byte
@@ -98,7 +100,7 @@ namespace frou01.RigidBodyTrain
             {
 
                 rigidbody_.isKinematic = false;
-                rigidbody_.centerOfMass = Vector3.zero;
+                rigidbody_.centerOfMass = CenterOfMass;
                 rigidbody_.ResetInertiaTensor();
             }
             isOwnerState = Networking.IsOwner(mineGameObject);
@@ -259,7 +261,8 @@ namespace frou01.RigidBodyTrain
             //    Debug.Log(" localPosition " + chacedTransform.localPosition);
             //    Debug.Log("syncedPosition " + syncedPosition);
             //}
-
+            calculatedVelocity.x = 0;
+            calculatedVelocity.y = 0;
             rigidbody_.AddRelativeForce(calculatedVelocity, ForceMode.VelocityChange);
             orProxy = false;
             if (RailID_F != SyncedRailID_F)orProxy = true;
@@ -473,7 +476,7 @@ namespace frou01.RigidBodyTrain
                     Networking.SetOwner(player, connectedTrain_B.gameObject);
 
                 rigidbody_.isKinematic = false;
-                rigidbody_.centerOfMass = Vector3.zero;
+                rigidbody_.centerOfMass = CenterOfMass;
                 rigidbody_.ResetInertiaTensor();
             }
             else if (!isOwnerState)
