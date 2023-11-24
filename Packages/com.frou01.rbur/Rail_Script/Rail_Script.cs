@@ -10,7 +10,6 @@ namespace frou01.RigidBodyTrain
 {
     public class Rail_Script : UdonSharpBehaviour
     {
-        public bool started;
 
         public CinemachinePathBase cinemachinePath;
 
@@ -36,8 +35,8 @@ namespace frou01.RigidBodyTrain
 
         [System.NonSerialized] public int RailID;
 
-        public void Start()
-        {
+        //public void Start()
+        //{
             //if (TCurve_FStraight)
             //{
             //    Vector3 startVectorS;
@@ -91,7 +90,7 @@ namespace frou01.RigidBodyTrain
             //    //length = (startS.position - endE.position).magnitude;
             //}
 
-        }
+        //}
 
         public Vector3 GetStartPoint()
         {

@@ -9,6 +9,7 @@ namespace frou01.RigidBodyTrain
     public class RailroadCrossing : UdonSharpBehaviour
     {
         public Animator[] animators;
+        public string paramName = "trainCrossing";
         int inNum;
         void Start()
         {
@@ -23,7 +24,7 @@ namespace frou01.RigidBodyTrain
                 for (int id = 0; id < animators.Length; id++)
                 {
                     animators[id].enabled = true;
-                    animators[id].SetBool("trainCrossing", true);
+                    animators[id].SetBool(paramName, true);
                 }
             }
         }
@@ -37,7 +38,7 @@ namespace frou01.RigidBodyTrain
                     inNum = 0;
                     for (int id = 0; id < animators.Length; id++)
                     {
-                        animators[id].SetBool("trainCrossing", false);
+                        animators[id].SetBool(paramName, false);
                     }
                 }
             }
@@ -47,7 +48,7 @@ namespace frou01.RigidBodyTrain
         {
             for (int id = 0; id < animators.Length; id++)
             {
-                animators[id].SetBool("trainCrossing", true);
+                animators[id].SetBool(paramName, true);
             }
         }
         public void Interruption_False()
@@ -57,7 +58,7 @@ namespace frou01.RigidBodyTrain
                 inNum = 0;
                 for (int id = 0; id < animators.Length; id++)
                 {
-                    animators[id].SetBool("trainCrossing", false);
+                    animators[id].SetBool(paramName, false);
                 }
             }
         }

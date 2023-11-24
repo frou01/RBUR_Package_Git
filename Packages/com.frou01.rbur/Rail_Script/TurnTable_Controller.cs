@@ -29,7 +29,6 @@ namespace frou01.RigidBodyTrain
         {
             initialRotation = targetTable.transform.localRotation;
             tableTransform = targetTable.transform;
-            if (!mine.started) mine.Start();
             tableTransform.localRotation = initialRotation;
             tableTransform.Rotate(0, syncedTableRotation, 0);
             mortorTorqueParam = Animator.StringToHash("mortorTorque");
@@ -38,7 +37,6 @@ namespace frou01.RigidBodyTrain
         public override void Interact()
         {
             //Debug.Log("mine " + mine);
-            if (!mine.started) mine.Start();
             //if (mine.next != null) Debug.Log("mine.next " + mine.next);
             //if (mine.prev != null) Debug.Log("mine.prev " + mine.prev);
             if (Networking.LocalPlayer != null) Networking.LocalPlayer.UseAttachedStation();
@@ -120,7 +118,6 @@ namespace frou01.RigidBodyTrain
             float Edistance = ((currentStart - currentEnd) / 2).sqrMagnitude;
             foreach (Rail_Script target in targets)
             {
-                if (!target.started) target.Start();
                 if (Sdistance > (target.GetStartPoint() - currentStart).sqrMagnitude)
                 {
                     Sdistance = (target.GetStartPoint() - currentStart).sqrMagnitude;

@@ -595,14 +595,12 @@ namespace frou01.RigidBodyTrain
 
         public void BogieStart()
         {
-            BogieRail_F.Start();
             onRailPoint_F = BogieRail_F.GetF(Bogie_F.position);
 
             copyRailProperties_F();
             onRailPosition_F = BogieCinemachinePath_F.EvaluatePosition(onRailPoint_F);
 
 
-            BogieRail_B.Start();
             onRailPoint_B = BogieRail_B.GetF(Bogie_B.position);
 
             copyRailProperties_B();
@@ -805,7 +803,6 @@ namespace frou01.RigidBodyTrain
         {
             if (BogieRail_F != null)
             {
-                if (!BogieRail_F.started) BogieRail_F.Start();
                 BogieCinemachinePath_F = BogieRail_F.cinemachinePath;
                 moveableRail_F = BogieRail_F.moveableRail;
                 RailStartPoint_F = BogieRail_F.GetStartPoint();
@@ -859,7 +856,6 @@ namespace frou01.RigidBodyTrain
         {
             if (BogieRail_B != null)
             {
-                if (!BogieRail_B.started) BogieRail_B.Start();
                 BogieCinemachinePath_B = BogieRail_B.cinemachinePath;
                 moveableRail_B = BogieRail_B.moveableRail;
                 RailStartPoint_B = BogieRail_B.GetStartPoint();
