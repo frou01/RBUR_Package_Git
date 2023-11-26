@@ -53,7 +53,6 @@ namespace frou01.RigidBodyTrain
 
         bool started = false;
 
-        public GameObject displayObject;
         //Rigidbody rigidbody_;
         //Vector3 InertiaTensor;
         [SerializeField] GameObject knuckleModel;
@@ -68,8 +67,9 @@ namespace frou01.RigidBodyTrain
                 connectedCoupler.Initialize();
                 knuckleClose();
                 connectedCoupler.knuckleClose();
+                this.setConnectedCoupler(connectedCoupler);
+                connectedCoupler.setConnectedCoupler(this);
             }
-            setConnectedCoupler(connectedCoupler);
 
             //couplerRigidBody.isKinematic = false;
             if (connectedCoupler != null) TrainScript.setConnectedTrain(connectedCoupler.TrainScript, FrontOrBack);
@@ -327,8 +327,6 @@ namespace frou01.RigidBodyTrain
         }
         bool prevKnuckle_Closed = true;//falseでナックルが開
         byte prevstate = 0;//0:固定 1:閉じたら開かない 2:錠控え
-        public int prevConnectedTrainID = -1;
-        public bool prevConnectedCouplerFB;
 
         public override void OnDeserialization()
         {

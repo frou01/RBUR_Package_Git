@@ -8,10 +8,6 @@ namespace frou01.RigidBodyTrain
 {
     public class SoundDetector : UdonSharpBehaviour
     {
-        void Start()
-        {
-
-        }
         //void OnTriggerEnter(Collider other)
         //{
         //    if (other.gameObject.GetComponent(typeof(UdonBehaviour)) != null)
