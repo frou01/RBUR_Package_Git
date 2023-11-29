@@ -53,6 +53,7 @@ public class TrainManager_onEditor : IProcessSceneWithReport
                     trainManager.Trains[trainManager.id] = obj.GetComponent<Train>();
                     trainManager.Trains[trainManager.id].trainManager = trainManager;
                     trainManager.Trains[trainManager.id].railsManager = trainManager.railsManager;
+                    trainManager.Trains[trainManager.id].InitsyncRecieveMode = true;
                     //trainManager.Trains[trainManager.id].Start();
                     obj.GetComponent<Train>().TrainID = trainManager.id;
                     trainManager.id++;

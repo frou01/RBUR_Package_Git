@@ -14,7 +14,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
 ## コンポーネント及びプレハブ
 ## レール関係
 
-        レールモデルを敷くために用意された編集用スクリプトと、VRC内で車両にレールデータを受け渡す物
+- レールモデルを敷くために用意された編集用スクリプトと、VRC内で車両にレールデータを受け渡す物
 
 ### - Editor
 - railModelTiler
@@ -172,7 +172,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     
     Animator連携式転車台スクリプト
     
-    Animatorの"mortorTorque"[float]パラメーターを参照し、レール(正確にはGameObject)を旋回、前後レールの参照を自動設定します。
+    Animatorの"mortorTorque"[float]パラメーターを参照し、mortorTorqueの速度と正負でレール(正確にはGameObject)を旋回、前後レールの参照を自動設定します。
 
     同じオブジェクトにVRCStationをアタッチする必要があります。
 
@@ -208,11 +208,11 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     Started|初期化フラグ(False必須)
     HandBrakeState|手ブレーキ状態。trueになるとHandBrakeForce[N]のブレーキ力が掛かります。
     HandBrakeForce|手ブレーキ力[N]
-    BrakeMultiplier|ブレーキ力係数
+    BrakeMultiplier|ブレーキ力係数 max=BrakeMultiplier[N]
     BrakeFactor|実効ブレーキ力。実行時debug用
     brakeUpdateBypass|ブレーキ更新バイパス設定。trueの場合他車からのブレーキ圧の影響を受けなくなります（別スクリプトでブレーキ圧制御を行う場合に用います）
-    friction|摩擦力。動静通して掛かる。
-    static_friction|静止時摩擦力。
+    friction|摩擦力。動静通して掛かる。[N]
+    static_friction|静止時摩擦力。[N]
     brakePressure|ブレーキ力指示伝達Transform。このオブジェクトのLocal座標を用いて他車や操作スクリプトからの影響を受けています。
     CenterOfMass|重心位置設定
     BrakeOpenF|+Z側のブレーキ開放状態。連結時ブレーキ圧の伝達を受けるかどうか
@@ -251,53 +251,64 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     </details>
 - CouplerObj
     
-    列車基本スクリプト
+    連結スクリプト
     <details>
     <summary>設定値及び仕様</summary>
 
     |設定値|概要|
     |---:|:---|
     TrainScript|自身を装備している車両本体のスクリプト
-    Knuckle_Closed|
-    state|
-    CouplerAudioSource|
-    FrontOrBack|
-    disconnectForce|
-    connectedCoupler|
-    knuckleModel|
-    knuckleKey|
+    Knuckle_Closed|ナックル開閉状態
+    state|連結器状態 0=lock, 1=unlock, 2=open
+    CouplerAudioSource|音源再生に用いるAudioSource。
+    カプラ音源|対応イベント時にCouplerAudioSourceで再生されるAudioClip。
+    FrontOrBack|連結器方向。 +Z=Front
+    disconnectForce|連結器開放に必要な力
+    connectedCoupler|連結している連結器
+    knuckleModel|ナックルのモデルオブジェクト。閉y=0,開y=90に回転されます。
+    knuckleKey|予約済みフィールド（未使用）
 
     |機能|概要|
     |---:|:---|
-    ----------|---------
-    ----------|---------
-    ----------|---------
-    ----------|---------
+    Editor上での連結|Editor上でconnectedCouplerを指定しておくことで連結状態を設定しておくことが出来ます。
+    突放貨車向けの調整|disconnectForceを大きめにすることで、動き出し衝動で外れるのをある程度防止できます
     
     </details>
-- CouplerObj
+- FlangeSoundPlayer
     
-    列車基本スクリプト
+    フランジ音を再生するスクリプト
     <details>
     <summary>設定値及び仕様</summary>
 
     |設定値|概要|
     |---:|:---|
-    TrainScript|自身を装備している車両本体のスクリプト
-    Knuckle_Closed|
-    state|
-    CouplerAudioSource|
-    FrontOrBack|
-    disconnectForce|
-    connectedCoupler|
-    knuckleModel|
-    knuckleKey|
+    trainBody|列車のRigidBody
+    wheelBody_transform|Trainで指定しているWheelオブジェクト
+    FlangeSound|フランジの音源
+    DotThreshould|フランジ音の再生を開始する押圧閾値
+    MagnitudeThreshould|フランジ音の再生を開始する速度閾値
 
     |機能|概要|
     |---:|:---|
-    ----------|---------
-    ----------|---------
-    ----------|---------
-    ----------|---------
+    仕様|Wheelの方向=レール方向と車両の移動方向の差から、内積を計算し、横方向の速度を計算します。単位はm/s
+    ----------|DotThreshouldは横方向の閾値、MagnitudeThreshouldは前後方向の閾値。両方を超えているとフランジ音が再生されます。
+    ----------|音量は横方向の速度に比例しますが、音量はDot-DotThreshouldになっています。
+    
+    </details>
+- JointSoundPlayer
+    
+    ジョイント音を再生するスクリプト
+    SoundDetectorの付いたトリガーコライダーと接触することで、ジョイント音を再生します。
+    <details>
+    <summary>設定値及び仕様</summary>
+
+    |設定値|概要|
+    |---:|:---|
+    sound|再生する音声
+
+    |機能|概要|
+    |---:|:---|
+    仕様|このスクリプトを付けるオブジェクトにもコライダーが必要です。またコライダーはRigidBodyの影響下である必要があります。
+    ONSP系Spatializationのバグ|RigidBody影響下の音源をSpatializationありで再生するとノイズが発生します。SpatialAudioSourceをつけろとSDKはうるさく言ってきますが無視して構いません。
     
     </details>
