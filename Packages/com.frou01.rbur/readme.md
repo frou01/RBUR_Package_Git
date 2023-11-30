@@ -5,10 +5,10 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
 ## 目次
 - [レール関係](#レール関係)
     - [Editor](#--editor)
-    - [Runtime(VRC)](#--Runtime(VRC))
+    - [Runtime(VRC)](#--runtimevrc)
 - [車両関係](#車両関係)
-    - [Editor](#Editor-1)
-    - [Runtime(VRC)](#Runtime(VRC)-1)
+    - [Editor](#--editor-1)
+    - [Runtime(VRC)](#--runtimevrc-1)
 
 
 ## コンポーネント及びプレハブ
@@ -115,20 +115,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     レール管理スクリプト。
     
     ビルド時自動設定が行われるため、設置のみ必要です。シーンルート直下に配置してください。
-- RailroadCrossing
-    
-    踏切スクリプト
-    
-    JointSoundPlayerを検出し、範囲内に列車が進入/退出するとAnimatorのパラメーターを書き換えます。
-    
-    <details>
-    <summary>設定値/仕様</summary>
-    
-    |設定値|概要|
-    |---:|:---|
-    animators|設定先Animator。複数指定可能です。
-    paramName|書き換えるパラメーター(bool,in=true,out=false)
-    </details>
+
 - RailroadCrossing
     
     踏切スクリプト
@@ -161,6 +148,12 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     to1|切り替え先レール(state=false)
     to2|切り替え先レール(state=true)
     state|分岐状態保存変数。この値は同期されます
+
+    |仕様|概要|
+    |---:|:---|
+    Animatorイベント|AnimatorとUdonが同じオブジェクトに付いている場合、AnimatorからSendCustomEventを呼ぶことが出来ます。<br>引数としてStringを指定し、これでUdonのメソッドを呼べます。
+    ポイント転換|上記方法でSetRoute1,SetRoute2を呼ぶことで、全プレイヤーのインスタンスで転換されます。（同期はスクリプト側で取っています）
+
     </details>
 - SoundDetector
     
@@ -250,6 +243,22 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     同期について|同期は連結された前後1両の車両のみが行います。
 
     </details>
+- TrainManager
+    
+    車両集中管理用スクリプト
+    
+    ビルド時自動設定が行われるため、設置のみ必要です。シーンルート直下に配置してください。
+    
+    <details>
+    <summary>設定値及び仕様</summary>
+
+    |設定値|概要|
+    |---:|:---|
+    Trains|シーン上に存在する全ての車両 SetByBuildScript
+    pathRes|CinemachinePathからの計算精度　下げると向上しますがその分若干重くなります。<br>なお現在は接線から計算する処理を混ぜている為、0設定でもそこまで問題になりません。
+    railsManager|レール管理スクリプト SetByBuildScript 同期処理で参照します
+    
+    </details>
 - CouplerObj
     
     連結スクリプト
@@ -296,20 +305,19 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     ----------|音量は横方向の速度に比例しますが、音量はDot-DotThreshouldになっています。
     
     </details>
-- JointSoundPlayer
+- ResyncSwitch
     
-    ジョイント音を再生するスクリプト
-    SoundDetectorの付いたトリガーコライダーと接触することで、ジョイント音を再生します。
+    強制再同期用スクリプト
+    
     <details>
     <summary>設定値及び仕様</summary>
 
     |設定値|概要|
     |---:|:---|
-    sound|再生する音声
+    TrainManager|実際の同期処理を行う管理スクリプト
 
     |機能|概要|
     |---:|:---|
-    仕様|このスクリプトを付けるオブジェクトにもコライダーが必要です。またコライダーはRigidBodyの影響下である必要があります。
-    ONSP系Spatializationのバグ|RigidBody影響下の音源をSpatializationありで再生するとノイズが発生します。SpatialAudioSourceをつけろとSDKはうるさく言ってきますが無視して構いません。
+    同期の流れ|Interact->TrainManager同期イベント発火<br>->ローカル車両を強制同期待機モードへ,全車両オーナーへ同期データ送信リクエスト<br>->同期データ受信後補完無しで適用
     
     </details>

@@ -20,9 +20,9 @@ namespace frou01.RigidBodyTrain
         [System.NonSerialized] public int id;
 
 
-        [UdonSynced(UdonSyncMode.None)] public int[] BogieRailID;//偶数：前 奇数：後
+        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public int[] BogieRailID;//偶数：前 奇数：後
 
-        [UdonSynced(UdonSyncMode.None)] public float[] BogieOnRailPosition;//偶数：前 奇数：後
+        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public float[] BogieOnRailPosition;//偶数：前 奇数：後
 
 
         //private bool Started = false;

@@ -70,14 +70,12 @@ namespace frou01.RigidBodyTrain
                 this.setConnectedCoupler(connectedCoupler);
                 connectedCoupler.setConnectedCoupler(this);
             }
+            else
+            {
+                this.setConnectedCoupler(null);
+            }
 
             //couplerRigidBody.isKinematic = false;
-            if (connectedCoupler != null)
-            {
-                TrainScript.setConnectedTrain(connectedCoupler.TrainScript, FrontOrBack);
-                connectedCoupler.TrainScript.setConnectedTrain(TrainScript, connectedCoupler.FrontOrBack);
-            }
-            else TrainScript.setConnectedTrain(null, FrontOrBack);
             TrainScript.setCoupler(this, FrontOrBack);
             started = true;
             localPlayer = Networking.LocalPlayer;

@@ -41,14 +41,14 @@ namespace frou01.RigidBodyTrain
             if (Networking.IsOwner(gameObject)) owner_SetRoute2();
         }
 
-        public void owner_SetRoute1()
+        private void owner_SetRoute1()
         {
             //Debug.Log("debug1 " + to1.name);
             applyChange(to1);
             state = false;
             RequestSerialization();
         }
-        public void owner_SetRoute2()
+        private void owner_SetRoute2()
         {
             //Debug.Log("debug2 " + to2.name);
             applyChange(to2);
@@ -72,7 +72,7 @@ namespace frou01.RigidBodyTrain
             }
         }
 
-        public void applyChange(Rail_Script target)
+        private void applyChange(Rail_Script target)
         {
             if(from1 != null)
             {
