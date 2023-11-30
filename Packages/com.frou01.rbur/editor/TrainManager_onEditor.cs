@@ -19,15 +19,6 @@ public class TrainManager_onEditor : IProcessSceneWithReport
             trainManager = obj.GetComponent<TrainManager>();
             if(trainManager != null) break;
         }
-        foreach (GameObject obj in scene.GetRootGameObjects())
-        {
-            RailsManager railsManager = obj.GetComponent<RailsManager>();
-            if (railsManager != null)
-            {
-                trainManager.railsManager = railsManager;
-                break;
-            }
-        }
         if (trainManager == null) return;
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
@@ -53,7 +44,6 @@ public class TrainManager_onEditor : IProcessSceneWithReport
                     trainManager.Trains[trainManager.id] = obj.GetComponent<Train>();
                     trainManager.Trains[trainManager.id].trainManager = trainManager;
                     trainManager.Trains[trainManager.id].railsManager = trainManager.railsManager;
-                    trainManager.Trains[trainManager.id].InitsyncRecieveMode = true;
                     //trainManager.Trains[trainManager.id].Start();
                     obj.GetComponent<Train>().TrainID = trainManager.id;
                     trainManager.id++;
