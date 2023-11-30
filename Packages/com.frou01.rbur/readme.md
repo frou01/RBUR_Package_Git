@@ -192,6 +192,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     </details>
 
 ## 車両関係
+- 走行・連結用スクリプトと、独立した音源他アクセサリスクリプト
 ### - Editor
 ### - Runtime(VRC)
 - Train
