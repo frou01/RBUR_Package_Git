@@ -364,5 +364,36 @@ namespace frou01.RigidBodyTrain
             UpdateKnuckleModel();
         }
 
+        public Vector3 getAnchorforGizmo()
+        {
+            return TrainScript.GetComponents<ConfigurableJoint>()[FrontOrBack ? 0 : 1].anchor;
+        }
+        void OnDrawGizmos()
+        {
+            if(FrontOrBack)Gizmos.color = new Color(1f, 0, 0f, 0.5f);
+            else Gizmos.color = new Color(0f, 0, 1f, 0.7f);
+            if (connectedCoupler != null)
+            {
+                if (TrainScript != null && connectedCoupler.TrainScript != null)
+                {
+                    Vector3 myPos = this.               TrainScript.transform.TransformPoint(this.              TrainScript.transform.InverseTransformPoint(this.               transform.position) / 2 + new Vector3(0, 1, 0));
+                    Vector3 hisPos = connectedCoupler.  TrainScript.transform.TransformPoint(connectedCoupler.  TrainScript.transform.InverseTransformPoint(connectedCoupler.   transform.position) / 2 + new Vector3(0, 1, 0));
+                    Gizmos.DrawLine(myPos, hisPos);
+                    Gizmos.DrawLine(hisPos, hisPos + (myPos - hisPos).normalized + new Vector3(0, 1, 0));
+                    Gizmos.DrawLine(hisPos, hisPos + (myPos - hisPos).normalized + new Vector3(0, -1, 0));
+                }
+                Gizmos.DrawLine(transform.TransformPoint(getAnchorforGizmo()), connectedCoupler.transform.TransformPoint(connectedCoupler.getAnchorforGizmo()));
+            }
+        }
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = new Color(0f, 1, 0f, 1f);
+            if (connectedCoupler != null)
+            {
+                Gizmos.DrawLine(transform.TransformPoint(getAnchorforGizmo()), connectedCoupler.transform.TransformPoint(connectedCoupler.getAnchorforGizmo()));
+            }
+        }
+
     }
+
 }
