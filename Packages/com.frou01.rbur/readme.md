@@ -2,7 +2,7 @@
 ## 概要
 RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可能な鉄道を敷くことを目的に開発さた、エディタスクリプト、U#スクリプト及びPrefabが含まれています。
 
-## 目次
+# 目次
 - [レール関係](#レール関係)
     - [Editor](#--editor)
     - [Runtime(VRC)](#--runtimevrc)
@@ -11,7 +11,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     - [Runtime(VRC)](#--runtimevrc-1)
 
 
-## コンポーネント及びプレハブ
+# コンポーネント
 ## レール関係
 
 - レールモデルを敷くために用意された編集用スクリプトと、VRC内で車両にレールデータを受け渡す物
@@ -20,6 +20,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
 - railModelTiler
     
     モデル敷設スクリプト。
+    カーブや中途半端な長さのレールを敷設するために使用します。
     <details>
     <summary>設定値及び機能</summary>
 
@@ -106,7 +107,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     
     前後レールの設定がある場合、Gizmoは \\/ (レール部分) \\/ のような形になります。
 
-    前後レールの設定が無い場合、Gizmoは◯--◯ (レール部分) ◯\\のような形になります。
+    前後レールの設定が無い場合、Gizmoは◯--◯ (レール部分) ◯\/のような形になります。
 
     設定したレール間が離れていると、巨大な球が描画されます。
     </details>
@@ -321,3 +322,59 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     同期の流れ|Interact->TrainManager同期イベント発火<br>->ローカル車両を強制同期待機モードへ,全車両オーナーへ同期データ送信リクエスト<br>->同期データ受信後補完無しで適用
     
     </details>
+# Prefab
+## Train_Prefab
+<details>
+    <summary>設定値及び仕様</summary>
+
+### 内部図
+```
+    Train_Prefab
+    ├── Train ----------------- [Train.u#] [RigidBody] [Configurable Joint(CouplerJoint)]*2
+    │   ├── Rigidbody_Box ----- [NonTrigger Collider]
+    │   ├── Bogie_Front ------- [Transform]
+    │   ├── Bogie_Back -------- [Transform]
+    │   ├── FCouplerObj ------- [CouplerObj.u#]
+    │   └── BCouplerObj ------- [CouplerObj.u#]
+    ├── BrakePressureGauge ---- [Transform]
+    ├── WheelF ---------------- [RigidBody] [Configurable Joint(BogieJoint)]
+    └── WheelB ---------------- [RigidBody] [Configurable Joint(BogieJoint)]
+```
+### 参照図
+```
+    ()は実行時自動参照
+    Train [Train.u#]
+            ├── ([RigidBody])
+            ├── brakePressure : BrakePressureGauge- [Transform]
+            ├── CouplerF : FCouplerObj ------------ [CouplerObj.u#]
+            ├── CouplerB : BCouplerObj ------------ [CouplerObj.u#]
+            ├── Bogie_F : Bogie_Front ------------- [Transform]
+            ├── Bogie_B : Bogie_Back -------------- [Transform]
+            ├── BogieWheel_F : WheelF ------------- [RigidBody]
+            └── BogieWheel_B : WheelB ------------- [RigidBody]
+
+    FCouplerObj,BCouplerObj
+        [CouplerObj.u#]
+            ├── (TrainScript:Train [Train.u#])
+            └── (Train [Configurable Joint(CouplerJoint)])
+
+    WheelF,WheelB [Configurable Joint(BogieJoint)]
+                    └── Train [RigidBody]
+```
+### 使用方法
+0. シーン上にレールを敷き、TrainManagerの付いたオブジェクトを用意しておく
+1. Train_Prefabをシーン上に設置
+    1. Train下にモデルを挿入
+    2. シーンに敷いてあるレール上に移動
+    3. Trainの角度をレールに合わせる
+    - Train_Prefab自体を回転させると浮動小数点演算誤差の問題が出やすくなるので非推奨。
+2. 位置参照を合わせる
+    1. Bogie_Front/Backの位置をレール踏面・台車中心に移動
+    2. WheelF/Bの位置をBogie_Front/Backに合わせる
+    3. WheelF/Bの[Configurable Joint]のConnected AnchorをBogie_Front/BackのLocalPosition(Inspector上表示値)に合わせる。
+3. シーン上オブジェクトを参照する
+    1. [Train.u#]のBogieRail_F/Bにそれぞれシーン上のレールを設定
+    2. アニメーション制御の場合はcontrollerAnimatorに任意のAnimatorを設定
+    3. 他車と連結する場合、CouplerF/B[CouplerObj.u#]のconnectedCouplerに対応する他車Coupler[CouplerObj.u#]を設定。
+
+</details>
