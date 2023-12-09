@@ -8862,8 +8862,6 @@ MonoBehaviour:
   Trains: []
   pathRes: 0
   railsManager: {fileID: 916543461}
-  BogieRailID: 
-  BogieOnRailPosition: []
 --- !u!1001 &985685548
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9283,6 +9281,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 963990233}
     m_Modifications:
+    - target: {fileID: 340472044, guid: 36076a7dcffcb1747ac629d48c6310ca, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 920497260, guid: 36076a7dcffcb1747ac629d48c6310ca, type: 3}
       propertyPath: serializedProgramAsset
       value: 
@@ -10939,6 +10941,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Train_Prefab1 (3)
+      objectReference: {fileID: 0}
+    - target: {fileID: 2741501986673686233, guid: 36076a7dcffcb1747ac629d48c6310ca,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2967380417953759528, guid: 36076a7dcffcb1747ac629d48c6310ca,
         type: 3}
@@ -22463,6 +22470,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Train_Prefab1 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 2741501986673686233, guid: 36076a7dcffcb1747ac629d48c6310ca,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2967380417953759528, guid: 36076a7dcffcb1747ac629d48c6310ca,
         type: 3}
       propertyPath: m_IsActive
@@ -25181,6 +25193,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 963990233}
     m_Modifications:
+    - target: {fileID: 340472044, guid: 36076a7dcffcb1747ac629d48c6310ca, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 340472044, guid: 36076a7dcffcb1747ac629d48c6310ca, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 920497260, guid: 36076a7dcffcb1747ac629d48c6310ca, type: 3}
       propertyPath: serializedProgramAsset
       value: 
@@ -25345,6 +25365,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Train_Prefab1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2741501986673686233, guid: 36076a7dcffcb1747ac629d48c6310ca,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3326473912352133218, guid: 36076a7dcffcb1747ac629d48c6310ca,
         type: 3}
