@@ -1004,6 +1004,28 @@ namespace frou01.RigidBodyTrain
             rigidbody_.isKinematic = false;
             rigidbody_.velocity = Vector3.zero;
         }
+        void OnDrawGizmos()
+        {
+            Gizmos.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
+            Gizmos.DrawSphere(transform.TransformPoint(CenterOfMass), 0.3f);
+            Gizmos.color = new Color(1f, 0f, 0f, 0.5f);
+            Gizmos.DrawSphere(Bogie_F.transform.position, 0.3f);
+            Gizmos.DrawLine(Bogie_F.transform.position, BogieWheel_F.transform.position);
+            Gizmos.color = new Color(1f, 0f, 0f, 0.5f);
+            Gizmos.DrawSphere(Bogie_B.transform.position, 0.3f);
+            Gizmos.DrawLine(Bogie_B.transform.position, BogieWheel_B.transform.position);
+        }
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = new Color(0.2f, 0.2f, 0.2f, 1f);
+            Gizmos.DrawSphere(transform.TransformPoint(CenterOfMass), 0.3f);
+            Gizmos.color = new Color(1f, 0f, 0f, 1f);
+            Gizmos.DrawSphere(Bogie_F.transform.position, 0.3f);
+            Gizmos.DrawLine(Bogie_F.transform.position, BogieWheel_F.transform.position);
+            Gizmos.color = new Color(1f, 0f, 0f, 1f);
+            Gizmos.DrawSphere(Bogie_B.transform.position, 0.3f);
+            Gizmos.DrawLine(Bogie_B.transform.position, BogieWheel_B.transform.position);
+        }
     }
 
 
