@@ -95,7 +95,8 @@ namespace frou01.RigidBodyTrain
         public void PostStart()
         {
             pathResolution = trainManager.pathRes;
-
+            CouplerF.ApplyPresettedConnected();
+            CouplerB.ApplyPresettedConnected();
             if (Networking.IsOwner(mineGameObject))
             {
 
