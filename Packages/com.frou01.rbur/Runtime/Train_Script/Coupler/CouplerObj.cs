@@ -62,6 +62,19 @@ namespace frou01.RigidBodyTrain
         {
             Initialize();
 
+            //couplerRigidBody.isKinematic = false;
+            TrainScript.setCoupler(this, FrontOrBack);
+            started = true;
+            localPlayer = Networking.LocalPlayer;
+        }
+
+        float jointLinerLimit;
+
+        [System.NonSerialized]public Transform chachedTransform;
+        Transform connectedTransform;
+
+        public void ApplyPresettedConnected()
+        {
             if (connectedCoupler != null)
             {
                 connectedCoupler.Initialize();
@@ -74,17 +87,7 @@ namespace frou01.RigidBodyTrain
             {
                 this.setConnectedCoupler(null);
             }
-
-            //couplerRigidBody.isKinematic = false;
-            TrainScript.setCoupler(this, FrontOrBack);
-            started = true;
-            localPlayer = Networking.LocalPlayer;
         }
-
-        float jointLinerLimit;
-
-        [System.NonSerialized]public Transform chachedTransform;
-        Transform connectedTransform;
         public void Initialize()
         {
             //initialPos = transform.localPosition;
