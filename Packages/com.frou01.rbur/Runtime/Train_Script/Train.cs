@@ -883,6 +883,7 @@ namespace frou01.RigidBodyTrain
         [UdonSynced] public bool isDiscontinuitySync;
         public void resync()
         {
+            isOwnerState = Networking.IsOwner(mineGameObject);
             isDiscontinuitySync = true;
             RequestSerialization();
         }
