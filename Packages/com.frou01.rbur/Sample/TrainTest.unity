@@ -25184,6 +25184,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Point_GAC
       objectReference: {fileID: 0}
+    - target: {fileID: 4440364579894857619, guid: 33c4c02a8907ad240bb09bc978f12a23,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 33c4c02a8907ad240bb09bc978f12a23, type: 3}
 --- !u!1001 &7015052895798337495
