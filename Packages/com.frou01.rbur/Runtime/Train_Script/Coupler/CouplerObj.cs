@@ -154,13 +154,13 @@ namespace frou01.RigidBodyTrain
             if (connectedCoupler == null)
             {
                 if (state == 2) state = 1;
-                if (Knuckle_Closed) CouplerAudioSource.PlayOneShot(OpenSound);
-                else CouplerAudioSource.PlayOneShot(unLockSound);
+                if (Knuckle_Closed) if(CouplerAudioSource) CouplerAudioSource.PlayOneShot(OpenSound);
+                else if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
                 Knuckle_Closed = false;
             }
             else
             {
-                CouplerAudioSource.PlayOneShot(unLockSound);
+                if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
             }
             if (Networking.IsOwner(gameObject)) RequestSerialization();
             UpdateKnuckleModel();
@@ -168,7 +168,7 @@ namespace frou01.RigidBodyTrain
         public void knuckleClose()
         {
             state = 0;
-            if (!Knuckle_Closed) CouplerAudioSource.PlayOneShot(CloseSound);
+            if (!Knuckle_Closed) if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(CloseSound);
             Knuckle_Closed = true;
             if (Networking.IsOwner(gameObject)) RequestSerialization();
             UpdateKnuckleModel();
@@ -300,16 +300,16 @@ namespace frou01.RigidBodyTrain
             {
                 if(miss)
                 {
-                    CouplerAudioSource.PlayOneShot(missConnectSound);
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(missConnectSound);
                 }
                 else
                 if (ConnectedTrainID == -1)
                 {
-                    CouplerAudioSource.PlayOneShot(unCoupleSound);
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unCoupleSound);
                 }
                 else
                 {
-                    CouplerAudioSource.PlayOneShot(connectSound);
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(connectSound);
                 }
             }
             prevID = ConnectedTrainID;
@@ -339,16 +339,16 @@ namespace frou01.RigidBodyTrain
             {
                 if(state == 2)
                 {
-                    CouplerAudioSource.PlayOneShot(unLockSound);
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
                 }
                 else if(state == 1 && prevstate == 0)
                 {
-                    CouplerAudioSource.PlayOneShot(OpenSound);
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(OpenSound);
                 }
             }
             if(prevKnuckle_Closed && !Knuckle_Closed)
             {
-                CouplerAudioSource.PlayOneShot(CloseSound);
+                if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(CloseSound);
             }
             //Debug.Log(ConnectedTrainID);
             if (ConnectedTrainID != -1)

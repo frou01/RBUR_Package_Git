@@ -900,6 +900,8 @@ namespace frou01.RigidBodyTrain
             }
             else
             {
+                CouplerF.RequestSerialization();
+                CouplerB.RequestSerialization();
                 syncedVelocity = Vector3.zero;
             }
             expectedSyncedVelocity.Set(0, 0, 0);
