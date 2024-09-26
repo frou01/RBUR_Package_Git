@@ -20,7 +20,7 @@ namespace frou01.RigidBodyTrain
                 if (sound.gameObject.activeSelf)
                 {
                     sound.enabled = true;
-                    sound.PlayOneShot(sound.clip);
+                    sound.Play();
                 }
             }
         }
