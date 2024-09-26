@@ -267,6 +267,14 @@ public class railModelTiler : MonoBehaviour
             float t = cinemachinePath.ToNativePathUnits(generatingDistance + (isZinverted ? 0 : +modelLength), PositionUnits.Distance);
             if (isZinverted) copied.transform.forward = copied.transform.position - cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - offset;
             else copied.transform.forward = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + offset - copied.transform.position;
+            if (isZinverted)
+            {
+                Vector3 fitScale = copied.transform.localScale;
+                float aT = cinemachinePath.ToNativePathUnits(generatingDistance + (isZinverted ? 0 : +modelLength), PositionUnits.Distance);
+                float bT = cinemachinePath.ToNativePathUnits(generatingDistance + (isZinverted ? +modelLength : 0), PositionUnits.Distance);
+                fitScale.z = Vector3.Distance(cinemachinePath.EvaluatePositionAtUnit(aT, PositionUnits.PathUnits), cinemachinePath.EvaluatePositionAtUnit(bT, PositionUnits.PathUnits))/modelLength;
+                copied.transform.localScale = fitScale;
+            }
             copied.name += "instanced";
         }
         gened.Add(copied);
