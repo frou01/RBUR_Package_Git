@@ -175,6 +175,29 @@ public class railModelLocator : MonoBehaviour
             UnityEditor.SceneView.RepaintAll();
         }
     }
+    public void OnDrawGizmosSelected()
+    {
+        if (cinemachinePath == null) return;
+        Gizmos.color = new Color(0f, 0, 1f, 1f);
+        float t = cinemachinePath.ToNativePathUnits(TilingStart, PositionUnits.Distance);
+
+        Gizmos.DrawLine(
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right,
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right);
+        Gizmos.DrawLine(
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up,
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up);
+        Gizmos.color = new Color(1f, 0, 0f, 1f);
+        t = cinemachinePath.ToNativePathUnits(TilingEnd, PositionUnits.Distance);
+        Gizmos.DrawLine(
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right,
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right);
+        Gizmos.DrawLine(
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up,
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up);
+
+
+    }
 }
 
 #endif
