@@ -15,13 +15,11 @@ namespace frou01.RigidBodyTrain
         }
         void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.GetComponent<SoundDetector>() != null)
+
+            if (sound.gameObject.activeSelf)
             {
-                if (sound.gameObject.activeSelf)
-                {
-                    sound.enabled = true;
-                    sound.Play();
-                }
+                sound.enabled = true;
+                sound.Play();
             }
         }
     }
