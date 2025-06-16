@@ -22,8 +22,10 @@ public class railModelLocator : MonoBehaviour
     [SerializeField] bool isZinverted;
     [SerializeField] bool ignoreRoll;
     [SerializeField] bool ignorePitch;
-    
-    
+    [SerializeField] bool MoveChildObject = false;
+    [SerializeField] Vector3 offset;
+
+
     float generatingDistance;
     GameObject copied;
     List<GameObject> gened = new List<GameObject>();
@@ -70,11 +72,6 @@ public class railModelLocator : MonoBehaviour
         copied = (GameObject)PrefabUtility.InstantiatePrefab(objectPrefab);
         copied.transform.SetParent(this.transform);
         float t = cinemachinePath.StandardizeUnit(generatingDistance, PositionUnits.Distance);//z座標を元にレール座標を取得
-        copied.transform.position = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.Distance);
-        if (generatingDistance > cinemachinePath.PathLength)
-        {
-            copied.transform.position += cinemachinePath.EvaluateTangentAtUnit(t, PositionUnits.Distance).normalized * (generatingDistance - cinemachinePath.PathLength);
-        }
         if (ignoreRoll || ignorePitch)
         {
             Vector3 fwd = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.Distance) * Vector3.forward;
@@ -91,6 +88,11 @@ public class railModelLocator : MonoBehaviour
         {
             copied.transform.rotation = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.Distance);
         }
+        copied.transform.position = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.Distance) + copied.transform.rotation * this.offset;
+        if (generatingDistance > cinemachinePath.PathLength)
+        {
+            copied.transform.position += cinemachinePath.EvaluateTangentAtUnit(t, PositionUnits.Distance).normalized * (generatingDistance - cinemachinePath.PathLength);
+        }
         inversedCopiedRotation = Quaternion.Inverse(copied.transform.rotation);
         copied.name += gameObjID;
         setUp = false;
@@ -106,13 +108,12 @@ public class railModelLocator : MonoBehaviour
     {
         gameObjID++;
         setUp = true;
-        transFormChildObject(copied.transform);
+        if(MoveChildObject) transFormChildObject(copied.transform);
         this.generatingDistance += modelLength;
 
 
         if (this.generatingDistance >= TilingEnd)
         {
-            railModelTiler.SetUpColliderBaseCuller(modelLength,gened, cinemachinePath.transform, false,false);
             EditorUtility.ClearProgressBar();
         }
     }
@@ -141,8 +142,8 @@ public class railModelLocator : MonoBehaviour
             }
             Quaternion rotation = inversedCopiedRotation * childLocatedRotation;
 
-            child.position = copied.transform.TransformPoint(originPos + rotation * (localPos - originPos) + offset);
-            child.rotation = childLocatedRotation;
+            child.position = copied.transform.TransformPoint(originPos + rotation * (localPos - originPos) + offset + rotation * this.offset);
+            child.rotation = child.rotation * rotation;
             if (PrefabUtility.GetPrefabInstanceHandle(child) != objectPrefab) continue;
             transFormChildObject(child);
         }
@@ -182,21 +183,35 @@ public class railModelLocator : MonoBehaviour
         float t = cinemachinePath.ToNativePathUnits(TilingStart, PositionUnits.Distance);
 
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right,
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right);
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up,
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up);
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
         Gizmos.color = new Color(1f, 0, 0f, 1f);
         t = cinemachinePath.ToNativePathUnits(TilingEnd, PositionUnits.Distance);
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right,
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right);
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up,
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.up);
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
 
-
+        if (modelLength > 2)
+        {
+            for (float genDist = TilingStart + modelLength; genDist < TilingEnd;)
+            {
+                t = cinemachinePath.ToNativePathUnits(genDist, PositionUnits.Distance);
+                Gizmos.color = new Color(1f, 1f, 0f, 1f);
+                Gizmos.DrawLine(
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+                Gizmos.DrawLine(
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
+                genDist += modelLength;
+            }
+        }
     }
 }
 
