@@ -1,6 +1,7 @@
 ﻿using Cinemachine;
 using System;
 using UdonSharp;
+using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
@@ -124,40 +125,42 @@ namespace frou01.RigidBodyTrain
             return cinemachinePath.FindClosestPoint(Point, 0, -1, 10);
 
         }
-
         void OnDrawGizmos()
         {
-            Gizmos.color = new Color(1f, 0, 0f, 0.1f);
-            if (next != null)
+            if (cinemachinePath)
             {
-                CinemachinePathBase nextPath = next.cinemachinePath;
-                Vector3 nextClosestPoint = nextPath.EvaluatePosition(nextPath.FindClosestPoint(GetEndPoint() + GetEndTangent(), 0, -1, 2)) + new Vector3(0, 1, 0);
-                float edgeDist = Vector3.Distance(GetEndPoint(), nextPath.EvaluatePosition(nextPath.FindClosestPoint(GetEndPoint(), 0, -1, 2)));
-                Gizmos.color = new Color(1f, 0, 0f, 0.3f + edgeDist);
-                Gizmos.DrawLine(GetEndPoint(), nextClosestPoint);
-                Gizmos.DrawSphere(GetEndPoint(), edgeDist);
-            }
-            else
-            {
-                Gizmos.color = new Color(1f, 0, 0f, 1f);
-                Gizmos.DrawLine(GetEndPoint(), GetEndPoint() - GetEndTangent());
-                Gizmos.DrawSphere(GetEndPoint() - GetEndTangent(), 0.3f);
-            }
-            Gizmos.color = new Color(0f, 0, 1f, 0.1f);
-            if (prev != null)
-            {
-                CinemachinePathBase prevPath = prev.cinemachinePath;
-                Vector3 prevClosestPoint = prevPath.EvaluatePosition(prevPath.FindClosestPoint(GetStartPoint() - GetStartTangent(), 0, -1, 2)) + new Vector3(0, 1, 0);
-                float edgeDist = Vector3.Distance(GetStartPoint(), prevPath.EvaluatePosition(prevPath.FindClosestPoint(GetStartPoint(), 0, -1, 2)));
-                Gizmos.color = new Color(0, 0, 1f, 0.3f + edgeDist);
-                Gizmos.DrawLine(GetStartPoint(), prevClosestPoint);
-                Gizmos.DrawSphere(GetStartPoint(), edgeDist);
-            }
-            else
-            {
-                Gizmos.color = new Color(0f, 0, 1f, 1f);
-                Gizmos.DrawLine(GetStartPoint(), GetStartPoint() + GetStartTangent());
-                Gizmos.DrawSphere(GetStartPoint() + GetStartTangent(), 0.3f);
+                Gizmos.color = new Color(1f, 0, 0f, 0.1f);
+                if (next != null)
+                {
+                    CinemachinePathBase nextPath = next.cinemachinePath;
+                    Vector3 nextClosestPoint = nextPath.EvaluatePosition(nextPath.FindClosestPoint(GetEndPoint() + GetEndTangent(), 0, -1, 2)) + new Vector3(0, 1, 0);
+                    float edgeDist = Vector3.Distance(GetEndPoint(), nextPath.EvaluatePosition(nextPath.FindClosestPoint(GetEndPoint(), 0, -1, 2)));
+                    Gizmos.color = new Color(1f, 0, 0f, 0.3f + edgeDist);
+                    Gizmos.DrawLine(GetEndPoint(), nextClosestPoint);
+                    Gizmos.DrawSphere(GetEndPoint(), edgeDist);
+                }
+                else
+                {
+                    Gizmos.color = new Color(1f, 0, 0f, 1f);
+                    Gizmos.DrawLine(GetEndPoint(), GetEndPoint() - GetEndTangent());
+                    Gizmos.DrawSphere(GetEndPoint() - GetEndTangent(), 0.3f);
+                }
+                Gizmos.color = new Color(0f, 0, 1f, 0.1f);
+                if (prev != null)
+                {
+                    CinemachinePathBase prevPath = prev.cinemachinePath;
+                    Vector3 prevClosestPoint = prevPath.EvaluatePosition(prevPath.FindClosestPoint(GetStartPoint() - GetStartTangent(), 0, -1, 2)) + new Vector3(0, 1, 0);
+                    float edgeDist = Vector3.Distance(GetStartPoint(), prevPath.EvaluatePosition(prevPath.FindClosestPoint(GetStartPoint(), 0, -1, 2)));
+                    Gizmos.color = new Color(0, 0, 1f, 0.3f + edgeDist);
+                    Gizmos.DrawLine(GetStartPoint(), prevClosestPoint);
+                    Gizmos.DrawSphere(GetStartPoint(), edgeDist);
+                }
+                else
+                {
+                    Gizmos.color = new Color(0f, 0, 1f, 1f);
+                    Gizmos.DrawLine(GetStartPoint(), GetStartPoint() + GetStartTangent());
+                    Gizmos.DrawSphere(GetStartPoint() + GetStartTangent(), 0.3f);
+                }
             }
         }
     }
