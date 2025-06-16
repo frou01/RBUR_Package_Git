@@ -10,7 +10,7 @@ namespace frou01.RigidBodyTrain
     public class CouplerDebugger : UdonSharpBehaviour
     {
         [SerializeField]CouplerObj coupler;
-        [SerializeField] TextMeshProUGUI display;
+        [SerializeField] TMP_Text display;
         private void Update()
         {
             display.text = "<color=white>肘 : " + (coupler.Knuckle_Closed ? "閉" : "開") + "<br>錠 : ";
