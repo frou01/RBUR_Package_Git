@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2338560973623077308}
   - component: {fileID: 2338560973623077311}
   m_Layer: 0
-  m_Name: RailPrefab
+  m_Name: RailPrefab_SmoothPath
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
