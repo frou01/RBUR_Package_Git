@@ -29,6 +29,7 @@ public class railModelTiler : MonoBehaviour
     [SerializeField] bool isZinverted;
     [SerializeField] bool ignoreRoll;
     [SerializeField] bool ignorePitch;
+    [SerializeField] bool UseColliderBaseCuller;
     [SerializeField] float disbaleInstancedThreshold = 0.001f;
 
     [SerializeField] public string saveFolder;
@@ -122,22 +123,9 @@ public class railModelTiler : MonoBehaviour
         {
             copied.transform.position += cinemachinePath.EvaluateTangentAtUnit(t, PositionUnits.PathUnits).normalized * (generatingDistance - cinemachinePath.PathLength);
         }
-        if (ignoreRoll || ignorePitch)
-        {
-            Vector3 fwd = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits) * Vector3.forward;
-            if (ignoreRoll) copied.transform.up = Vector3.up;
-            else
-            {
-                Vector3 rgt = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits) * Vector3.right;
-                copied.transform.right = rgt;
-            }
-            if (ignorePitch) fwd.y = 0;
-            copied.transform.forward = fwd;
-        }
-        else
-        {
-            copied.transform.rotation = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits);
-        }
+        Quaternion rotation;
+        getRotationOnT(t, out rotation, Quaternion.identity);
+        copied.transform.rotation = rotation;
         copied.transform.position = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + copied.transform.rotation * this.offset;
         instancedMesh = Instantiate(copied.GetComponent<MeshFilter>().sharedMesh);
         VerticesId = 0;
@@ -145,10 +133,8 @@ public class railModelTiler : MonoBehaviour
         transformedVertices = new Vector3[instancedMesh.vertices.Length];
         setUp = false;
         transforming = true;
-        inversedCopiedRotation = Quaternion.Inverse(copied.transform.rotation);
     }
 
-    Quaternion inversedCopiedRotation;
     public void transformVetices()
     {
         for(int stepsCnt = 0; stepsCnt < veticesTransformSteps; stepsCnt++)
@@ -168,24 +154,9 @@ public class railModelTiler : MonoBehaviour
                 {
                     ReplaceMesh = true;
                 }
-                Quaternion rotation;
-                if (ignoreRoll || ignorePitch)
-                {
-                    rotation = (cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits)).normalized;
-                    Vector3 EulerRailRotation = rotation.eulerAngles;
-                    if (ignoreRoll) EulerRailRotation.z = 0;
-                    else
-                    {
-                    }
-                    if (ignorePitch) EulerRailRotation.x = 0;
-                    rotation.eulerAngles = EulerRailRotation;
-                    rotation = inversedCopiedRotation * rotation;
-                }
-                else
-                {
-                    rotation = inversedCopiedRotation * (cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits)).normalized;
-                }
                 if (!ReplaceMesh && offset.sqrMagnitude > disbaleInstancedThreshold) ReplaceMesh = true;
+                Quaternion rotation;
+                getRotationOnT(t, out rotation, Quaternion.Inverse(copied.transform.rotation));
                 transformedVertices[VerticesId] = originPos + rotation * this.offset +  rotation * (originVertices[VerticesId] - originPos) + offset;
                 VerticesId++;
             }
@@ -195,6 +166,26 @@ public class railModelTiler : MonoBehaviour
             }
         }
         EditorUtility.DisplayProgressBar("RailModelTiler", "Vetices Transforming...", (generatingDistance + modelLength * VerticesId / originVertices.Length) / TilingEnd);
+    }
+
+    public void getRotationOnT(float t, out Quaternion rotation, Quaternion Rotationoffset)
+    {
+        if (ignoreRoll || ignorePitch)
+        {
+            rotation = (cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits)).normalized;
+            Vector3 EulerRailRotation = rotation.eulerAngles;
+            if (ignoreRoll) EulerRailRotation.z = 0;
+            else
+            {
+            }
+            if (ignorePitch) EulerRailRotation.x = 0;
+            rotation.eulerAngles = EulerRailRotation;
+            rotation = Rotationoffset * rotation;
+        }
+        else
+        {
+            rotation = Rotationoffset * (cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits)).normalized;
+        }
     }
 
     int FBXID = 0;
@@ -265,14 +256,26 @@ public class railModelTiler : MonoBehaviour
         else
         {
             float t = cinemachinePath.ToNativePathUnits(generatingDistance + (isZinverted ? 0 : +modelLength), PositionUnits.Distance);
-            if (isZinverted) copied.transform.forward = copied.transform.position - cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - offset;
-            else copied.transform.forward = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + offset - copied.transform.position;
+            Quaternion rotation;
+            getRotationOnT(t, out rotation, Quaternion.identity);
+            if (isZinverted)
+            {
+                copied.transform.forward = copied.transform.position - (cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.offset);
+            }
+            else
+            {
+                copied.transform.forward = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.offset - copied.transform.position;
+            }
             if (isZinverted)
             {
                 Vector3 fitScale = copied.transform.localScale;
-                float aT = cinemachinePath.ToNativePathUnits(generatingDistance + (isZinverted ? 0 : +modelLength), PositionUnits.Distance);
-                float bT = cinemachinePath.ToNativePathUnits(generatingDistance + (isZinverted ? +modelLength : 0), PositionUnits.Distance);
-                fitScale.z = Vector3.Distance(cinemachinePath.EvaluatePositionAtUnit(aT, PositionUnits.PathUnits), cinemachinePath.EvaluatePositionAtUnit(bT, PositionUnits.PathUnits))/modelLength;
+                fitScale.z = (copied.transform.position - (cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.offset)).magnitude /modelLength;
+                copied.transform.localScale = fitScale;
+            }
+            else
+            {
+                Vector3 fitScale = copied.transform.localScale;
+                fitScale.z = (cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.offset - copied.transform.position).magnitude / modelLength;
                 copied.transform.localScale = fitScale;
             }
             copied.name += "instanced";
@@ -281,13 +284,20 @@ public class railModelTiler : MonoBehaviour
         setUp = true;
         transFormChildObject(copied.transform);
 
-        copied.transform.parent = cinemachinePath.transform;
+        if (root == null)
+        {
+            copied.transform.parent = cinemachinePath.transform;
+        }
+        else
+        {
+            copied.transform.parent = root;
+        }
         this.generatingDistance += modelLength;
 
 
         if (this.generatingDistance >= TilingEnd)
         {
-            SetUpColliderBaseCuller(modelLength,gened, cinemachinePath.transform,true,true);
+            if(UseColliderBaseCuller) SetUpColliderBaseCuller(modelLength,gened, cinemachinePath.transform,true,true);
 
             if (copies.Count > 0)
             {
@@ -426,6 +436,7 @@ public class railModelTiler : MonoBehaviour
                 if (ignorePitch) eulered.x = 0; ;
                 childLocatedRotation = Quaternion.Euler(eulered.x, eulered.y, eulered.z);
             }
+            Quaternion inversedCopiedRotation = Quaternion.Inverse(copied.transform.rotation);
             Quaternion rotation = inversedCopiedRotation * childLocatedRotation;
 
             child.position = copied.transform.TransformPoint(originPos + rotation * (localPos - originPos) + offset + rotation * this.offset);
@@ -497,14 +508,35 @@ public class railModelTiler : MonoBehaviour
         float t = cinemachinePath.ToNativePathUnits(TilingStart, PositionUnits.Distance);
 
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right,
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right);
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+        Gizmos.DrawLine(
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
         Gizmos.color = new Color(1f, 0, 0f, 1f);
         t = cinemachinePath.ToNativePathUnits(TilingEnd, PositionUnits.Distance);
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) - cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right,
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * Vector3.right);
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+        Gizmos.DrawLine(
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
+            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
 
+        if (modelLength > 2)
+        {
+            for (float genDist = TilingStart + modelLength; genDist < TilingEnd;)
+            {
+                t = cinemachinePath.ToNativePathUnits(genDist, PositionUnits.Distance);
+                Gizmos.color = new Color(1f, 1f, 0f, 1f);
+                Gizmos.DrawLine(
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+                Gizmos.DrawLine(
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
+                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
+                genDist += modelLength;
+            }
+        }
 
     }
 
