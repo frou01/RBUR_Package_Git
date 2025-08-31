@@ -115,6 +115,7 @@ namespace frou01.RigidBodyTrain
         Vector3 positionBogie_F;
         Vector3 positionBogie_B;
 
+        float distanceErrorThreshold;
         float FixedDeltaTime;
         Vector3 calculatedVelocity;
 
@@ -183,6 +184,7 @@ namespace frou01.RigidBodyTrain
             }
             positionBogie_F = Bogie_F.position;
             positionBogie_B = Bogie_B.position;
+            distanceErrorThreshold = FixedDeltaTime * (1 + Mathf.Abs(nowSpeed));
             BogieCalculateNextPos();
             //if (currentVelocity.sqrMagnitude > 0.0001f)
             //{
@@ -644,9 +646,9 @@ namespace frou01.RigidBodyTrain
 
 
 
-        float BogieToWheelPosLengthF;
+        float BogieToWheelPosLength_F;
         bool tooLongDiffF;
-        float BogieToWheelPosLengthB;
+        float BogieToWheelPosLength_B;
         bool tooLongDiffB;
 
         Vector3 prevpositionBogieF;
@@ -666,13 +668,17 @@ namespace frou01.RigidBodyTrain
             if (moveableRail_F) orProxy = true;
             if (tooLongDiffF) orProxy = true;
             //if (moveableRail_F || tooLongDiffF)
+            //Get Next onRailPoint
             if (orProxy)
             {
+                //Use findClosest
                 isDirty = true;
                 onRailPoint_F = BogieCinemachinePath_F.FindClosestPoint(positionBogie_F, (int)onRailPoint_F, 1, pathResolution);
                 prevpositionBogieF = positionBogie_F;
-            }else if (Vector3.Distance(positionBogie_F, prevpositionBogieF) > 0.01f)
+                //Debug.Log("Use FindClosest");
+            }else if (Vector3.Distance(positionBogie_F, prevpositionBogieF) > distanceErrorThreshold)
             {
+                //Use tangent algorithm
                 isDirty = true;
                 tempVector = BogieCinemachinePath_F.EvaluateTangent(onRailPoint_F);
                 float Dot = Vector3.Dot(positionBogie_F - prevpositionBogieF, tempVector.normalized);
@@ -681,10 +687,7 @@ namespace frou01.RigidBodyTrain
                 if (onRailPoint_F > railMaxPoint_F) onRailPoint_F = railMaxPoint_F;
                 prevpositionBogieF = positionBogie_F;
             }
-            orProxy = false;
-            if (moveableRail_F) orProxy = true;
             if (isDirty) orProxy = true;
-            if (tooLongDiffF) orProxy = true;
             if (orProxy)
             {
                 updateWheel(true);
@@ -704,7 +707,7 @@ namespace frou01.RigidBodyTrain
                 onRailPoint_B = BogieCinemachinePath_B.FindClosestPoint(positionBogie_B, (int)onRailPoint_B, 1, pathResolution);
                 prevpositionBogieB = positionBogie_B;
             }
-            else if (Vector3.Distance(positionBogie_B, prevpositionBogieB) > 0.01f)
+            else if (Vector3.Distance(positionBogie_B, prevpositionBogieB) > distanceErrorThreshold)
             {
                 tempVector = BogieCinemachinePath_B.EvaluateTangent(onRailPoint_B);
                 float Dot = Vector3.Dot(positionBogie_B - prevpositionBogieB, tempVector.normalized);
@@ -714,10 +717,7 @@ namespace frou01.RigidBodyTrain
                 if (onRailPoint_B > railMaxPoint_B) onRailPoint_B = railMaxPoint_B;
                 prevpositionBogieB = positionBogie_B;
             }
-            orProxy = false;
-            if (moveableRail_B) orProxy = true;
             if (isDirty) orProxy = true;
-            if (tooLongDiffB) orProxy = true;
             if (orProxy)
             {
                 updateWheel(false);
@@ -745,8 +745,8 @@ namespace frou01.RigidBodyTrain
                 BogieWheel_F.position = onRailPosition_F = BogieCinemachinePath_F.EvaluatePosition(onRailPoint_F);
                 BogieWheel_F.rotation = BogieCinemachinePath_F.EvaluateOrientation(onRailPoint_F);
                 tempVector = onRailPosition_F - positionBogie_F;
-                BogieToWheelPosLengthF = tempVector.sqrMagnitude;
-                tooLongDiffF = BogieToWheelPosLengthB > 0.1f;
+                BogieToWheelPosLength_F = tempVector.sqrMagnitude;
+                tooLongDiffF = BogieToWheelPosLength_F > distanceErrorThreshold*5;
                 prevpositionBogieF = onRailPosition_F;
             }
             else
@@ -754,19 +754,19 @@ namespace frou01.RigidBodyTrain
                 BogieWheel_B.position = onRailPosition_B = BogieCinemachinePath_B.EvaluatePosition(onRailPoint_B);
                 BogieWheel_B.rotation = BogieCinemachinePath_B.EvaluateOrientation(onRailPoint_B);
                 tempVector = onRailPosition_B - positionBogie_B;
-                BogieToWheelPosLengthB = tempVector.sqrMagnitude;
-                tooLongDiffB = BogieToWheelPosLengthB > 0.1f;
+                BogieToWheelPosLength_B = tempVector.sqrMagnitude;
+                tooLongDiffB = BogieToWheelPosLength_B > distanceErrorThreshold*5;
                 prevpositionBogieB = onRailPosition_B;
             }
         }
 
         private void tryChangeRailF()
         {
-            if (BogieToWheelPosLengthF > (onRailPosition_F - RailEnd__Point_F).sqrMagnitude)
+            if (BogieToWheelPosLength_F > (onRailPosition_F - RailEnd__Point_F).sqrMagnitude)
             {
                 changeRailF(true);
             }
-            else if (BogieToWheelPosLengthF > (onRailPosition_F - RailStartPoint_F).sqrMagnitude)
+            else if (BogieToWheelPosLength_F > (onRailPosition_F - RailStartPoint_F).sqrMagnitude)
             {
                 changeRailF(false);
             }
@@ -816,11 +816,11 @@ namespace frou01.RigidBodyTrain
 
         private void tryChangeRailB()
         {
-            if (BogieToWheelPosLengthB > (onRailPosition_B - RailEnd__Point_B).sqrMagnitude)
+            if (BogieToWheelPosLength_B > (onRailPosition_B - RailEnd__Point_B).sqrMagnitude)
             {
                 changeRailB(true);
             }
-            else if (BogieToWheelPosLengthB > (onRailPosition_B - RailStartPoint_B).sqrMagnitude)
+            else if (BogieToWheelPosLength_B > (onRailPosition_B - RailStartPoint_B).sqrMagnitude)
             {
                 changeRailB(false);
             }
@@ -879,6 +879,7 @@ namespace frou01.RigidBodyTrain
         float fromLastSync;
 
         public bool InitsyncRecieveMode = true;
+        public int LastSent_Resync = 0;
 
         [UdonSynced] public bool isDiscontinuitySync;
         public void resync()
@@ -996,7 +997,8 @@ namespace frou01.RigidBodyTrain
         public override void OnPostSerialization(VRC.Udon.Common.SerializationResult result) {
             if(!result.success && isDiscontinuitySync)
             {
-                SendCustomEventDelayedFrames(nameof(resync), Random.Range(1,5));
+                Debug.Log("Something went wrong, retry Init sync");
+                SendCustomEventDelayedSeconds(nameof(resync), Random.Range(10f,20f));
             }
             else
             {
