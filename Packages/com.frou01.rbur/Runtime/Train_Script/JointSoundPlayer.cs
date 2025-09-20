@@ -19,6 +19,7 @@ namespace frou01.RigidBodyTrain
             if (sound.gameObject.activeSelf)
             {
                 sound.enabled = true;
+                sound.transform.position = this.transform.position;
                 sound.Play();
             }
         }

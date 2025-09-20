@@ -142,8 +142,14 @@ namespace frou01.RigidBodyTrain
                 if (!Networking.IsOwner(train.gameObject))
                 {
                     //Debug.Log("FirstSync");
-                    train.InitsyncRecieveMode = true;
-                    train.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(train.resync));
+                    int nowtime = Networking.GetNetworkDateTime().Second;
+                    Debug.Log("Sync Time : " + nowtime);
+                    if (nowtime - train.LastSent_Resync > 10)
+                    {
+                        train.LastSent_Resync = nowtime;
+                        train.InitsyncRecieveMode = true;
+                        train.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(train.resync));
+                    }
                 }
             }
             //RequestSerialization();

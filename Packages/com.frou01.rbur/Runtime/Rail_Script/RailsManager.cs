@@ -25,6 +25,7 @@ namespace frou01.RigidBodyTrain
                 id = 0;
                 SetRailOnChild(transform);
             }
+            this.enabled = false;
         }
 
         [RecursiveMethod]
