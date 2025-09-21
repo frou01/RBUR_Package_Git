@@ -507,20 +507,26 @@ public class railModelTiler : MonoBehaviour
         Gizmos.color = new Color(0f, 0, 1f, 1f);
         float t = cinemachinePath.ToNativePathUnits(TilingStart, PositionUnits.Distance);
 
+        Vector3 PositionAtT;
+        Quaternion OrientationAtT;
+        PositionAtT = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits);
+        OrientationAtT = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized;
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+            PositionAtT + OrientationAtT * (-Vector3.right + this.offset),
+            PositionAtT + OrientationAtT * (Vector3.right + this.offset));
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
+            PositionAtT + OrientationAtT * (-Vector3.up + this.offset),
+            PositionAtT + OrientationAtT * (Vector3.up + this.offset));
         Gizmos.color = new Color(1f, 0, 0f, 1f);
         t = cinemachinePath.ToNativePathUnits(TilingEnd, PositionUnits.Distance);
+        PositionAtT = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits);
+        OrientationAtT = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized;
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+            PositionAtT + OrientationAtT * (-Vector3.right + this.offset),
+            PositionAtT + OrientationAtT * (Vector3.right + this.offset));
         Gizmos.DrawLine(
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
-            cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
+            PositionAtT + OrientationAtT * (-Vector3.up + this.offset),
+            PositionAtT + OrientationAtT * (Vector3.up + this.offset));
 
         if (modelLength > 2)
         {
@@ -528,12 +534,14 @@ public class railModelTiler : MonoBehaviour
             {
                 t = cinemachinePath.ToNativePathUnits(genDist, PositionUnits.Distance);
                 Gizmos.color = new Color(1f, 1f, 0f, 1f);
+                PositionAtT = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits);
+                OrientationAtT = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized;
                 Gizmos.DrawLine(
-                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.right + this.offset),
-                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.right + this.offset));
+                    PositionAtT + OrientationAtT * (-Vector3.right + this.offset),
+                    PositionAtT + OrientationAtT * (Vector3.right + this.offset));
                 Gizmos.DrawLine(
-                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (-Vector3.up + this.offset),
-                    cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized * (Vector3.up + this.offset));
+                    PositionAtT + OrientationAtT * (-Vector3.up + this.offset),
+                    PositionAtT + OrientationAtT * (Vector3.up + this.offset));
                 genDist += modelLength;
             }
         }
