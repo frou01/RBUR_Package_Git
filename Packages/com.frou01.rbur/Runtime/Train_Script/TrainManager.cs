@@ -144,7 +144,7 @@ namespace frou01.RigidBodyTrain
                     //Debug.Log("FirstSync");
                     int nowtime = Networking.GetNetworkDateTime().Second;
                     Debug.Log("Sync Time : " + nowtime);
-                    if (nowtime - train.LastSent_Resync > 10)
+                    if (nowtime - train.LastSent_Resync > 10 || ((nowtime < train.LastSent_Resync) && (60 + nowtime - train.LastSent_Resync > 10)))
                     {
                         train.LastSent_Resync = nowtime;
                         train.InitsyncRecieveMode = true;
