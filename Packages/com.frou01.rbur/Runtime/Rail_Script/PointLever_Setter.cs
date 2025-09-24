@@ -1,8 +1,10 @@
 ﻿
 using Cinemachine;
+using System.IO;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
+using VRC.Udon;
 using static Cinemachine.CinemachinePathBase;
 
 namespace frou01.RigidBodyTrain
@@ -15,21 +17,13 @@ namespace frou01.RigidBodyTrain
         public bool changeType2;//true:next  false:prev
         public Rail_Script to1;
         public Rail_Script to2;
+        public UdonSharpBehaviour[] callbackUdons = new UdonSharpBehaviour[0]; 
 
         [UdonSynced] public bool state;
 
         void Start()
         {
-            if (!state)
-            {
-                //Debug.Log("debug1 " + to1.name);
-                applyChange(to1);
-            }
-            else
-            {
-                //Debug.Log("debug2 " + to2.name);
-                applyChange(to2);
-            }
+            applyChange();
         }
 
         public void SetRoute1()
@@ -44,37 +38,37 @@ namespace frou01.RigidBodyTrain
         private void owner_SetRoute1()
         {
             //Debug.Log("debug1 " + to1.name);
-            applyChange(to1);
             state = false;
+            applyChange();
             RequestSerialization();
         }
         private void owner_SetRoute2()
         {
             //Debug.Log("debug2 " + to2.name);
-            applyChange(to2);
             state = true;
+            applyChange();
             RequestSerialization();
         }
 
         public override void OnDeserialization()
         {
+            applyChange();
+        }
 
-            //Debug.Log("debug_PointRecieve");
+        private void applyChange()
+        {
+            Rail_Script target;
             if (!state)
             {
                 //Debug.Log("debug1 " + to1.name);
-                applyChange(to1);
+                target = to1;
             }
             else
             {
                 //Debug.Log("debug2 " + to2.name);
-                applyChange(to2);
+                target = to2;
             }
-        }
-
-        private void applyChange(Rail_Script target)
-        {
-            if(from1 != null)
+            if (from1 != null)
             {
                 if (changeType1) from1.next = target;
                 else from1.prev = target;
@@ -84,22 +78,24 @@ namespace frou01.RigidBodyTrain
                 if (changeType2) from2.next = target;
                 else from2.prev = target;
             }
+            foreach (UdonSharpBehaviour udon in callbackUdons)
+            {
+                udon.SendCustomEvent("PointUpdate");
+            }
         }
 
         Vector3 offset = new Vector3(0, 1, 0);
         void OnDrawGizmos()
         {
-            DrawGizmo(0.1f);
+            DrawGizmo(0.1f,true, true);
         }
         void OnDrawGizmosSelected()
         {
-            DrawGizmo(1f);
+            DrawGizmo(1f,true,true);
         }
 
-        void DrawGizmo(float alpha)
+        public void DrawGizmo(float alpha,bool drawTo1,bool drawTo2)
         {
-
-
             if (from1 != null)
             {
                 CinemachinePathBase fromPath = from1.cinemachinePath;
@@ -126,25 +122,33 @@ namespace frou01.RigidBodyTrain
                 Gizmos.color = new Color(0f, 1f, 0f, alpha);
                 Gizmos.DrawLine(changeLineStart + offset * 2, changeLinePoint);
 
-                Gizmos.color = new Color(0f, 1f, 1f, alpha);
-                CinemachinePathBase toPath = to1.cinemachinePath;
-                float nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
-                nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
-                if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
-                else nextClosestUnit += 10;
-                nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
-                Vector3 toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
-                Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
-
-                Gizmos.color = new Color(1f, 1f, 0f, alpha);
-                toPath = to2.cinemachinePath;
-                nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
-                nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
-                if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
-                else nextClosestUnit += 10;
-                nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
-                toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
-                Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                CinemachinePathBase toPath;
+                Vector3 toClosestPoint;
+                float nextClosestUnit;
+                if (drawTo1)
+                {
+                    Gizmos.color = new Color(0f, 1f, 1f, alpha);
+                    toPath = to1.cinemachinePath;
+                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
+                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                    else nextClosestUnit += 10;
+                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                }
+                if (drawTo2)
+                {
+                    Gizmos.color = new Color(1f, 1f, 0f, alpha);
+                    toPath = to2.cinemachinePath;
+                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
+                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                    else nextClosestUnit += 10;
+                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                }
             }
             if (from2 != null)
             {
@@ -172,25 +176,33 @@ namespace frou01.RigidBodyTrain
                 Gizmos.color = new Color(0f, 1f, 0f, alpha);
                 Gizmos.DrawLine(changeLineStart + offset * 2, changeLinePoint);
 
-                Gizmos.color = new Color(0f, 1f, 1f, alpha);
-                CinemachinePathBase toPath = to1.cinemachinePath;
-                float nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
-                nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
-                if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
-                else nextClosestUnit += 10;
-                nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
-                Vector3 toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
-                Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
-
-                Gizmos.color = new Color(1f, 1f, 0f, alpha);
-                toPath = to2.cinemachinePath;
-                nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
-                nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
-                if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
-                else nextClosestUnit += 10;
-                nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
-                toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
-                Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                CinemachinePathBase toPath;
+                Vector3 toClosestPoint;
+                float nextClosestUnit;
+                if (drawTo1)
+                {
+                    Gizmos.color = new Color(0f, 1f, 1f, alpha);
+                    toPath = to1.cinemachinePath;
+                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
+                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                    else nextClosestUnit += 10;
+                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                }
+                if (drawTo2)
+                {
+                    Gizmos.color = new Color(1f, 1f, 0f, alpha);
+                    toPath = to2.cinemachinePath;
+                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
+                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                    else nextClosestUnit += 10;
+                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                }
             }
         }
     }

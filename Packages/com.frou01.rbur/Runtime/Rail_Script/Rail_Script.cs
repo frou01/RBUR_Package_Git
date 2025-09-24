@@ -1,10 +1,12 @@
 ﻿using Cinemachine;
 using System;
 using UdonSharp;
+using UnityEditor;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
 using VRC.Udon.Common.Interfaces;
+using static Cinemachine.CinemachinePathBase;
 
 namespace frou01.RigidBodyTrain
 {
@@ -124,41 +126,68 @@ namespace frou01.RigidBodyTrain
             return cinemachinePath.FindClosestPoint(Point, 0, -1, 10);
 
         }
-
         void OnDrawGizmos()
         {
-            Gizmos.color = new Color(1f, 0, 0f, 0.1f);
-            if (next != null)
+            if (cinemachinePath)
             {
-                CinemachinePathBase nextPath = next.cinemachinePath;
-                Vector3 nextClosestPoint = nextPath.EvaluatePosition(nextPath.FindClosestPoint(GetEndPoint() + GetEndTangent(), 0, -1, 2)) + new Vector3(0, 1, 0);
-                float edgeDist = Vector3.Distance(GetEndPoint(), nextPath.EvaluatePosition(nextPath.FindClosestPoint(GetEndPoint(), 0, -1, 2)));
-                Gizmos.color = new Color(1f, 0, 0f, 0.3f + edgeDist);
-                Gizmos.DrawLine(GetEndPoint(), nextClosestPoint);
-                Gizmos.DrawSphere(GetEndPoint(), edgeDist);
+                Gizmos.color = new Color(1f, 0, 0f, 0.1f);
+                if (next != null)
+                {
+                    CinemachinePathBase nextPath = next.cinemachinePath;
+                    Vector3 nextIndicatePoint;
+                    float edgeDist;
+                    mathIndicatePoint(nextPath, GetEndPoint(), out nextIndicatePoint, out edgeDist);
+                    Gizmos.color = new Color(1f, 0, 0f, 0.3f + edgeDist);
+                    Gizmos.DrawLine(GetEndPoint(), nextIndicatePoint);
+                    Gizmos.DrawSphere(GetEndPoint(), edgeDist);
+                }
+                else
+                {
+                    Gizmos.color = new Color(1f, 0, 0f, 1f);
+                    Gizmos.DrawLine(GetEndPoint(), GetEndPoint() - GetEndTangent());
+                    Gizmos.DrawSphere(GetEndPoint() - GetEndTangent(), 0.3f);
+                }
+                Gizmos.color = new Color(0f, 0, 1f, 0.1f);
+                if (prev != null)
+                {
+                    CinemachinePathBase prevPath = prev.cinemachinePath;
+                    Vector3 prevIndicatePoint;
+                    float edgeDist;
+                    mathIndicatePoint(prevPath, GetStartPoint(), out prevIndicatePoint, out edgeDist);
+                    Gizmos.color = new Color(0, 0, 1f, 0.3f + edgeDist);
+                    Gizmos.DrawLine(GetStartPoint(), prevIndicatePoint);
+                    Gizmos.DrawSphere(GetStartPoint(), edgeDist);
+                }
+                else
+                {
+                    Gizmos.color = new Color(0f, 0, 1f, 1f);
+                    Gizmos.DrawLine(GetStartPoint(), GetStartPoint() + GetStartTangent());
+                    Gizmos.DrawSphere(GetStartPoint() + GetStartTangent(), 0.3f);
+                }
             }
-            else
-            {
-                Gizmos.color = new Color(1f, 0, 0f, 1f);
-                Gizmos.DrawLine(GetEndPoint(), GetEndPoint() - GetEndTangent());
-                Gizmos.DrawSphere(GetEndPoint() - GetEndTangent(), 0.3f);
-            }
-            Gizmos.color = new Color(0f, 0, 1f, 0.1f);
-            if (prev != null)
-            {
-                CinemachinePathBase prevPath = prev.cinemachinePath;
-                Vector3 prevClosestPoint = prevPath.EvaluatePosition(prevPath.FindClosestPoint(GetStartPoint() - GetStartTangent(), 0, -1, 2)) + new Vector3(0, 1, 0);
-                float edgeDist = Vector3.Distance(GetStartPoint(), prevPath.EvaluatePosition(prevPath.FindClosestPoint(GetStartPoint(), 0, -1, 2)));
-                Gizmos.color = new Color(0, 0, 1f, 0.3f + edgeDist);
-                Gizmos.DrawLine(GetStartPoint(), prevClosestPoint);
-                Gizmos.DrawSphere(GetStartPoint(), edgeDist);
-            }
-            else
-            {
-                Gizmos.color = new Color(0f, 0, 1f, 1f);
-                Gizmos.DrawLine(GetStartPoint(), GetStartPoint() + GetStartTangent());
-                Gizmos.DrawSphere(GetStartPoint() + GetStartTangent(), 0.3f);
-            }
+        }
+
+        float NativeValueOffsetOnDistance(CinemachinePathBase path, float NativePoint,float DistanceOffset)
+        {
+
+            float newNativeValue;
+
+            newNativeValue = path.FromPathNativeUnits(NativePoint, PositionUnits.Distance);
+            newNativeValue += DistanceOffset;
+            newNativeValue = path.ToNativePathUnits(newNativeValue, PositionUnits.Distance);
+
+            return newNativeValue;
+        }
+
+        void mathIndicatePoint(CinemachinePathBase targetPath,Vector3 IndicateBasePos ,out Vector3 IndicatePos, out float edgeDist)
+        {
+            float closestPoint = targetPath.FindClosestPoint(IndicateBasePos, 0, -1, 2);
+            bool contact = Mathf.Abs(closestPoint - targetPath.MinPos) < Mathf.Abs(closestPoint - targetPath.MaxPos);
+            //true = contact on Min
+            float contactPoint = contact ? targetPath.MinPos : targetPath.MaxPos;
+            float offset = contact ? +1 : -1;
+            IndicatePos = targetPath.EvaluatePosition(NativeValueOffsetOnDistance(targetPath, contactPoint, offset)) + new Vector3(0, 1, 0);
+            edgeDist = Vector3.Distance(IndicateBasePos, targetPath.EvaluatePosition(contactPoint));
         }
     }
 }

@@ -3,13 +3,31 @@
 RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可能な鉄道を敷くことを目的に開発さた、エディタスクリプト、U#スクリプト及びPrefabが含まれています。
 
 # 目次
-- [レール関係](#レール関係)
-    - [Editor](#--editor)
-    - [Runtime(VRC)](#--runtimevrc)
-- [車両関係](#車両関係)
-    - [Editor](#--editor-1)
-    - [Runtime(VRC)](#--runtimevrc-1)
+- [ビルドプロセス](#ビルドプロセス)
+- [コンポーネント](#コンポーネント)
+    - [レール関係](#レール関係)
+        - [Editor](#--editor)
+        - [Runtime(VRC)](#--runtimevrc)
+    - [車両関係](#車両関係)
+        - [Editor](#--editor-1)
+        - [Runtime(VRC)](#--runtimevrc-1)
+# ビルドプロセス
+参照を同期する必要からビルドプロセスにて全レール、列車を配列登録しています。
 
+他に連結器参照の自動設定や、走行用コンポーネントの設定値変更が今後増える可能性があります。
+
+## RailManager_onEditor
+- シーンルートにあるRailsManagerを探索します
+- 全Rail_Scriptを収集し、レールリストにします。
+    - RailsManagerにレールリストを登録します。
+    - Rail_Scriptに対してレールリスト上のIndexを渡します。
+- 全Rail_Scriptの子として、RailsManagerのパラメーターに基づきメッシュコライダーを生成します。（WheelCollider用）
+## TrainManager_onEditor
+- シーンルート上にあるtrainManager,RailsManagerを探索します
+- 全Trainを収集し、レールリストにします。
+    - Trainにレールリストを登録します。
+    - Trainに対してレールリスト上のIndexを渡します。
+    - Trainに対してtrainManager,RailsManagerを渡します。
 
 # コンポーネント
 ## レール関係
@@ -114,8 +132,23 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
 - RailsManager
     
     レール管理スクリプト。
+
+    ビルド時自動設定が行われます。
     
-    ビルド時自動設定が行われるため、設置のみ必要です。シーンルート直下に配置してください。
+    同期のために設置が必要です。シーンルート直下に配置してください。
+
+    またこのコンポーネントの設定に基づきレールに対してコライダーが生成されます。
+    
+    <details>
+    <summary>設定値/仕様</summary>
+    
+    |設定値|概要|
+    |---:|:---|
+    railColliderMaxLength|レールコライダーの最大長。これを越えているレールは収まる大きさに分割されます。
+    railFaceMaxDivide|レールメッシュコライダーの分割数（将来的なポリゴン数最適化が行われる可能性があります）
+    railFaceWidth|レールメッシュコライダーの幅
+    railColliderLayerName|レールコライダーのレイヤー名。未設定の場合はDefaultが使われます。
+    </details>
 
 - RailroadCrossing
     
