@@ -24,7 +24,7 @@ namespace frou01.RigidBodyTrain
         //[Tooltip("split rail collider threshold [deg]")][SerializeField] public float railColliderSplitThreshold_Roll = 0.5f;//最適化は一旦見送り
         [Tooltip("rail collider face width [m]")][SerializeField] public float railFaceWidth = 2;
 
-        [Tooltip("collider layer name. if not found, use \"Default\" layer")][SerializeField] public string railColliderLayerName = "RailAndWheel";
+        [Tooltip("collider layer name. if not found, use \"Default\" layer")][SerializeField] public string railColliderLayerName = "RBUR_RailAndWheel";
 
         void Start()
         {

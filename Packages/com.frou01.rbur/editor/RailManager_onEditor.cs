@@ -59,7 +59,7 @@ public class RailManager_onEditor : IProcessSceneWithReport
 
         //LayerMask.NameToLayerでレイヤーを取得しておく
         //Name = RBUR_RailAndWheel;
-        int ColliderLayer = LayerMask.NameToLayer("RBUR_RailAndWheel");
+        int ColliderLayer = LayerMask.NameToLayer(railsManager.railColliderLayerName);
         if (ColliderLayer == -1)
         {
             ColliderLayer = 0;//見つからなければDefault
@@ -74,7 +74,7 @@ public class RailManager_onEditor : IProcessSceneWithReport
 
             float pathLength = rail.cinemachinePath.PathLength;
             GameObject targetObject = rail.gameObject;
-            Task generatorTask = new Task(() => { genRailCollider(rail.cinemachinePath, targetObject, pathLength, railsManager, ColliderLayer); });
+            Task generatorTask = new Task(() => { genRailCollider(rail.cinemachinePath, targetObject, pathLength, railsManager.railFaceWidth , railsManager, ColliderLayer); });
             generatorTask.Start();
             Tasks.Add(generatorTask);
         }
@@ -104,8 +104,9 @@ public class RailManager_onEditor : IProcessSceneWithReport
         public int DivisionID;
     }
 
-    private void genRailCollider(CinemachinePathBase RailCinemachinePath, GameObject TargetObject,float pathLength, RailsManager railsManager,int ColliderLayer)
+    private void genRailCollider(CinemachinePathBase RailCinemachinePath, GameObject TargetObject,float pathLength,float colliderWidth, RailsManager railsManager,int ColliderLayer)
     {
+        colliderWidth /= 2;
         Debug.Log("Generate new Rails Collider task");
         //最初にCinemachineをrailColliderMaxLengthに収まるよう分割する数を設定
         int ColliderDivisionNum = 1 + (int)(pathLength / railsManager.railColliderMaxLength);
@@ -134,8 +135,8 @@ public class RailManager_onEditor : IProcessSceneWithReport
             t = RailCinemachinePath.ToNativePathUnits(Edge_dist, PositionUnits.Distance);
             PositionAtT = RailCinemachinePath.EvaluateLocalPosition(t);
             OrientationAtT = RailCinemachinePath.EvaluateLocalOrientation(t).normalized;
-            newPosX = PositionAtT + (OrientationAtT * Vector3.right);//Local
-            newNegX = PositionAtT - (OrientationAtT * Vector3.right);
+            newPosX = PositionAtT + OrientationAtT * Vector3.right * colliderWidth;//Local
+            newNegX = PositionAtT - OrientationAtT * Vector3.right * colliderWidth;
             vertices.Add(newPosX);
             vertices.Add(newNegX);
 
@@ -151,8 +152,8 @@ public class RailManager_onEditor : IProcessSceneWithReport
                 PositionAtT = RailCinemachinePath.EvaluateLocalPosition(t);
                 OrientationAtT = RailCinemachinePath.EvaluateLocalOrientation(t).normalized;
 
-                newPosX = PositionAtT + (OrientationAtT * Vector3.right);//Local
-                newNegX = PositionAtT - (OrientationAtT * Vector3.right);
+                newPosX = PositionAtT + OrientationAtT * Vector3.right * colliderWidth;//Local
+                newNegX = PositionAtT - OrientationAtT * Vector3.right * colliderWidth;
                 vertices.Add(newPosX);
                 vertices.Add(newNegX);
 
