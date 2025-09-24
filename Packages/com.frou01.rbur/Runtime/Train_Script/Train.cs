@@ -33,11 +33,9 @@ namespace frou01.RigidBodyTrain
         [SerializeField] float brakeFactor;
         [SerializeField] bool brakeUpdateBypass;
 
-        [UdonSynced] float m_brakePressure_float;//4byte
+        [UdonSynced] float m_brakePressure_float;//4byte,[MPa]
 
 
-        float brake_delta_F;
-        float brake_delta_B;
         public float[] brakePressure_float = new float[1];
         public bool useLegacyBrakeForce = true;
         float currentFriction;
@@ -349,6 +347,37 @@ namespace frou01.RigidBodyTrain
         float connectedPr_F;
         float connectedPr_B;
 
+        float pressure_delta_F;//流量の単位は[kg/s]
+        float pressure_delta_B;
+        //抵抗は無視する。
+        //参考 https://kenkidryer.jp/2020/09/03/pressure-flow-rate-bernoullis-principle/
+        //気体の性質 https://www.hakko.co.jp/library/qa/qakit/html/h01040.htm
+        //温度20度における密度定数 m = 11.5075252899[kg/m³*MPa] 理想気体では無いので近似的な物。
+
+        //大気圧は0.101325[MPa]
+        //圧力Q,qは[MPa]とする(Q>q)
+        //ある圧力に於ける密度p [kg/m³] は m[kg/m³MPa]*Q[MPa]
+        //V = 1000*√(2*(Q-q)[MPa]/(Q*m))[m/s]
+
+        //S[m²]を管径とする
+        //V*Sが体積流量[m³/s]である
+        //質量流量はV*S*Q*m
+        //=s*Q*m*1000*√(2*q[MPa]/Q*m)
+        //=s*1000*√(2*q[MPa]*Q*m)
+
+        //質量Mから圧力Qを求める（温度は20度で変わらないことにする）
+        //Q = (M[kg]/m[kg/m³*MPa])/L[m³]
+
+        //圧力変化を求めると、
+        //ΔQ = 10³ * S/(L*√m)*√(2*(Q-q)*Q)
+        //定数×√(2*(Q-q)*Q)になった
+
+        //定数の参考値は
+        //S=0.001m²(径1.375inch)、BP管容量Lを1m³として
+        //10³*S/(L*√m) = 0.29478747759 = 0.3
+        //Lは実際には各車で違うことが考えられる。
+
+        //実際には流速が音速を下回る状況もある。その場合、以下の計算は甚だ不自然なものということになるが、今は考えないものとする。
         float targetPressure;
         void Update()
         {
@@ -356,10 +385,10 @@ namespace frou01.RigidBodyTrain
             {
                 m_brakePressure_float = brakePressure_float[0];
                 DeltaTime = Time.deltaTime;
-                m_brakePressure_float += brake_delta_F * DeltaTime;
-                if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= brake_delta_F * DeltaTime;
-                m_brakePressure_float += brake_delta_B * DeltaTime;
-                if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= brake_delta_B * DeltaTime;
+                m_brakePressure_float += pressure_delta_F * DeltaTime;
+                if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F * DeltaTime;
+                m_brakePressure_float += pressure_delta_B * DeltaTime;
+                if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B * DeltaTime;
 
                 brakePressure_float[0] = m_brakePressure_float;
             }
@@ -372,17 +401,17 @@ namespace frou01.RigidBodyTrain
             m_brakePressure_float = brakePressure_float[0];//LateUpdateではm_brakePressure_floatは参照のみ
             if (!brakeUpdateBypass)//Trainでのブレーキ圧調整を行わない設定
             {
-                brake_delta_F = 0;
-                brake_delta_B = 0;
+                pressure_delta_F = 0;
+                pressure_delta_B = 0;
                 //低い方へ流す（高圧からは受け入れだけする）
                 if (BrakeOpenF)
                 {
                     connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
                     if (connectedPr_F < m_brakePressure_float)
                     {
-                        brake_delta_F = m_brakePressure_float - connectedPr_F;
-                        brake_delta_F = -Mathf.Sqrt(brake_delta_F);
-                        Debug.Log("brake_delta_F " + brake_delta_F);
+                        pressure_delta_F = m_brakePressure_float - connectedPr_F;
+                        pressure_delta_F = -0.3f * Mathf.Sqrt(pressure_delta_F * m_brakePressure_float);
+                        Debug.Log("pressure_delta_F " + pressure_delta_F);
                     }
                 }
                 if (BrakeOpenB)
@@ -390,9 +419,9 @@ namespace frou01.RigidBodyTrain
                     connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
                     if (connectedPr_B < m_brakePressure_float)
                     {
-                        brake_delta_B = m_brakePressure_float - connectedPr_B;
-                        brake_delta_B = -Mathf.Sqrt(brake_delta_B);
-                        Debug.Log("brake_delta_B " + brake_delta_B);
+                        pressure_delta_B = m_brakePressure_float - connectedPr_B;
+                        pressure_delta_B = -0.3f * Mathf.Sqrt(pressure_delta_B * m_brakePressure_float);
+                        Debug.Log("pressure_delta_B " + pressure_delta_B);
                     }
                 }
             }
