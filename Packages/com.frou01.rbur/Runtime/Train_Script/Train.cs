@@ -39,6 +39,7 @@ namespace frou01.RigidBodyTrain
         float brake_delta_F;
         float brake_delta_B;
         public float[] brakePressure_float = new float[1];
+        public bool useLegacyBrakeForce = true;
         float currentFriction;
         [SerializeField] float friction = 0.004f;
         [SerializeField] float static_friction = 0.013f;
@@ -168,19 +169,23 @@ namespace frou01.RigidBodyTrain
             {
                 onRemote();
             }
-            if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > brakeFactor * FixedDeltaTime)
+
+            if (useLegacyBrakeForce)
             {
-                FunctionProxy_Float1 = m_nowSpeed > 0 ? -brakeFactor : brakeFactor;
-                FunctionProxy_Vector1.z = FunctionProxy_Float1;
-                rigidbody_.AddRelativeForce(FunctionProxy_Vector1, ForceMode.Force);
-                lastSpeed = m_nowSpeed + (m_nowSpeed > 0 ? -brakeFactor : brakeFactor) / rigidBodyMass * FixedDeltaTime;
-            }
-            else
-            {
-                FunctionProxy_Float1 = -m_nowSpeed - changedSpeed;
-                FunctionProxy_Vector1.z = FunctionProxy_Float1;
-                rigidbody_.AddRelativeForce(FunctionProxy_Vector1, ForceMode.VelocityChange);
-                lastSpeed = -changedSpeed;
+                if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > brakeFactor * FixedDeltaTime)
+                {
+                    FunctionProxy_Float1 = m_nowSpeed > 0 ? -brakeFactor : brakeFactor;
+                    FunctionProxy_Vector1.z = FunctionProxy_Float1;
+                    rigidbody_.AddRelativeForce(FunctionProxy_Vector1, ForceMode.Force);
+                    lastSpeed = m_nowSpeed + (m_nowSpeed > 0 ? -brakeFactor : brakeFactor) / rigidBodyMass * FixedDeltaTime;
+                }
+                else
+                {
+                    FunctionProxy_Float1 = -m_nowSpeed - changedSpeed;
+                    FunctionProxy_Vector1.z = FunctionProxy_Float1;
+                    rigidbody_.AddRelativeForce(FunctionProxy_Vector1, ForceMode.VelocityChange);
+                    lastSpeed = -changedSpeed;
+                }
             }
             if (hasAnimator)
             {
@@ -393,12 +398,15 @@ namespace frou01.RigidBodyTrain
             }
 
             //Legacy brakeforce logic
-            currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
-            brakeFactor = (1 - m_brakePressure_float) * 3.57f;// * 5/(5-((5-1.4)))
-            if (brakeFactor > 1) brakeFactor = 1;
-            if (brakeFactor < 0) brakeFactor = 0;
-            brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));
-            brakeFactor += (handBrakeState ? handBrakeForce : 0) + currentFriction;
+            if (useLegacyBrakeForce)
+            {
+                currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
+                brakeFactor = (1 - m_brakePressure_float) * 3.57f;// * 5/(5-((5-1.4)))
+                if (brakeFactor > 1) brakeFactor = 1;
+                if (brakeFactor < 0) brakeFactor = 0;
+                brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));
+                brakeFactor += (handBrakeState ? handBrakeForce : 0) + currentFriction;
+            }
 
             if (hasAnimator)
             {
