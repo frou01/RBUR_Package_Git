@@ -1079,15 +1079,18 @@ MonoBehaviour:
   BrakeMultiplier: 70000
   brakeFactor: 0
   brakeUpdateBypass: 0
+  brakePressure_float:
+  - 0
   friction: 1
   static_friction: 12
-  brakePressure: {fileID: 7996415975957908070}
   CenterOfMass: {x: 0, y: 0, z: 0}
   BrakeOpenF: 0
   BrakeOpenB: 0
   CouplerF: {fileID: 920409449037452229}
   CouplerB: {fileID: 7814482539821002173}
   controllerAnimator: {fileID: 0}
+  nowSpeed:
+  - 0
   connectedTrain_F: {fileID: 0}
   connectedTrain_B: {fileID: 0}
   CanTransferOwner: 0
@@ -1418,11 +1421,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -5673800444676590066, guid: ab18a1ee213678e49a1362d46501d14b,
         type: 3}
-    - target: {fileID: -5673800444676590066, guid: ab18a1ee213678e49a1362d46501d14b,
-        type: 3}
-      propertyPath: serializationData.SerializedFormat
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 310551585388811983, guid: ab18a1ee213678e49a1362d46501d14b,
         type: 3}
       propertyPath: m_Layer
