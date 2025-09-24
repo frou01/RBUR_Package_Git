@@ -20,40 +20,47 @@ public class RailManager_onEditor : IProcessSceneWithReport
 
 
     BlockingCollection<GeneratedColliderData> colliderDatas;
+    RailsManager railsManager = null;
     public void OnProcessScene(Scene scene, BuildReport report)
     {
-        RailsManager railsManager = null;
+        railsManager = null;
+        colliderDatas = new BlockingCollection<GeneratedColliderData>();
+
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
             //Debug.Log(obj.transform.name);
             railsManager = obj.GetComponent<RailsManager>();
             if (railsManager != null) break;
         }
-        if (railsManager == null) return;
+        if (railsManager == null)
+        {
+            Debug.LogError("No RailsManager on Scene root");
+            return;
+        }
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
             if (railsManager != null)
             {
                 if (obj.GetComponent<Rail_Script>() != null)
                 {
-                    railsManager.railsNum++;
+                    railsNum++;
                 }
-                railsManager.CountRailOnChild(obj.transform);
+                CountRailOnChild(obj.transform);
             }
         }
-        railsManager.Rails = new Rail_Script[railsManager.railsNum];
-        railsManager.id = 0;
+        railsManager.Rails = new Rail_Script[railsNum];
+        id = 0;
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
             if (railsManager != null)
             {
                 if (obj.GetComponent<Rail_Script>() != null)
                 {
-                    railsManager.Rails[railsManager.id] = obj.GetComponent<Rail_Script>();
-                    obj.GetComponent<Rail_Script>().RailID = railsManager.id;
-                    railsManager.id++;
+                    railsManager.Rails[id] = obj.GetComponent<Rail_Script>();
+                    obj.GetComponent<Rail_Script>().RailID = id;
+                    id++;
                 }
-                railsManager.SetRailOnChild(obj.transform);
+                SetRailOnChild(obj.transform);
             }
         }
 
@@ -64,7 +71,6 @@ public class RailManager_onEditor : IProcessSceneWithReport
         {
             ColliderLayer = 0;//見つからなければDefault
         }
-        colliderDatas = new BlockingCollection<GeneratedColliderData>();
         //全レールにコライダーを設置する
         List<Task> Tasks = new List<Task>();//終了待機用タスク（走り切る前に他に移られちゃ困る）
         foreach (Rail_Script rail in railsManager.Rails)
@@ -102,6 +108,35 @@ public class RailManager_onEditor : IProcessSceneWithReport
         public Vector3[] generatedVertices;
         public int[] generatedPolygon;
         public int DivisionID;
+    }
+
+    public int railsNum = 0;
+    public int id;
+    public void CountRailOnChild(Transform currentTransform)
+    {
+        //Debug.Log("SearchingOn " + currentTransform + " Child Num " + currentTransform.childCount);
+        foreach (Transform child in currentTransform)
+        {
+            //Debug.Log("SearchingOn " + currentTransform + " , now seeing " + child);
+            if (child.gameObject.GetComponent<Rail_Script>() != null)
+            {
+                railsNum++;
+            }
+            CountRailOnChild(child);
+        }
+    }
+    public void SetRailOnChild(Transform currentTransform)
+    {
+        foreach (Transform child in currentTransform)
+        {
+            if (child.gameObject.GetComponent<Rail_Script>() != null)
+            {
+                railsManager.Rails[id] = child.gameObject.GetComponent<Rail_Script>();
+                child.gameObject.GetComponent<Rail_Script>().RailID = id;
+                id++;
+            }
+            SetRailOnChild(child);
+        }
     }
 
     private void genRailCollider(CinemachinePathBase RailCinemachinePath, GameObject TargetObject,float pathLength,float colliderWidth, RailsManager railsManager,int ColliderLayer)

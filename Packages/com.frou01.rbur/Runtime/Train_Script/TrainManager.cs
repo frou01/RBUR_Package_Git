@@ -16,13 +16,6 @@ namespace frou01.RigidBodyTrain
 
         public RailsManager railsManager;
 
-        [System.NonSerialized] public int trainsNum = 0;
-        [System.NonSerialized] public int id;
-
-
-        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public int[] BogieRailID;//偶数：前 奇数：後
-
-        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public float[] BogieOnRailPosition;//偶数：前 奇数：後
 
 
         //private bool Started = false;
@@ -30,39 +23,6 @@ namespace frou01.RigidBodyTrain
         //[System.NonSerialized] public bool nowSynced = true;
         //private bool applyFlag = false;
         //private bool updatedFlag = false;
-
-        public void Start()
-        {
-            if (Trains == null)
-            {
-                CountTrainOnChild(transform);
-                Trains = new Train[trainsNum];
-                BogieRailID = new int[trainsNum * 2];
-                BogieOnRailPosition = new float[trainsNum * 2];
-                id = 0;
-                PickTrainOnChild(transform);
-            }
-            else
-            {
-                foreach (Train train in Trains)
-                {
-                    train.Start();
-                }
-            }
-
-            //foreach (Train train in Trains)
-            //{
-            //    if(train.transform.parent != null) Debug.Log(train.transform.parent.name);
-            //}
-
-            //Started = true;
-            //nowSynced = false;
-            //if (!Networking.IsOwner(gameObject))
-            //{
-            //    SendCustomEventDelayedSeconds("ReSyncRequest", 10);
-            //}
-
-        }
 
         public override void OnPlayerJoined(VRCPlayerApi player)
         {
@@ -153,38 +113,6 @@ namespace frou01.RigidBodyTrain
                 }
             }
             //RequestSerialization();
-        }
-
-
-        [RecursiveMethod]
-        public void CountTrainOnChild(Transform currentTransform)
-        {
-            foreach (Transform child in currentTransform)
-            {
-                if (child.gameObject.GetComponent<Train>() != null)
-                {
-                    trainsNum++;
-                }
-                CountTrainOnChild(child);
-            }
-        }
-        [RecursiveMethod]
-        public void PickTrainOnChild(Transform currentTransform)
-        {
-            foreach (Transform child in currentTransform)
-            {
-                if (child.gameObject.GetComponent<Train>() != null)
-                {
-                    Debug.Log(child.transform.name);
-                    Trains[id] = child.gameObject.GetComponent<Train>();
-                    Trains[id].trainManager = this;
-                    Trains[id].railsManager = railsManager;
-                    Trains[id].Start();
-                    child.gameObject.GetComponent<Train>().TrainID = id;
-                    id++;
-                }
-                PickTrainOnChild(child);
-            }
         }
     }
 }
