@@ -38,6 +38,7 @@ namespace frou01.RigidBodyTrain
 
         public float[] brakePressure_float = new float[1];
         public bool useLegacyBrakeForce = true;
+        [SerializeField] public float baseBrakePressure = 1;
         float currentFriction;
         [SerializeField] float friction = 0.004f;
         [SerializeField] float static_friction = 0.013f;
@@ -112,7 +113,7 @@ namespace frou01.RigidBodyTrain
         private float changedSpeed;
         private float lastSpeed;
         private float m_nowSpeed;
-        public float[] nowSpeed = new float[1];
+        public float[] Rigidbody_Speed_LocalZ = new float[1];
 
         Vector3 positionBogie_F;
         Vector3 positionBogie_B;
@@ -144,7 +145,6 @@ namespace frou01.RigidBodyTrain
             currentVelocity = rigidbody_.velocity;
             localVelocity = Quaternion.Inverse(chacedTransform.rotation) * currentVelocity;
             m_nowSpeed = localVelocity.z;
-            changedSpeed = m_nowSpeed - lastSpeed;
             fromLastSync += FixedDeltaTime;
             if (isOwnerState)
             {
@@ -170,6 +170,7 @@ namespace frou01.RigidBodyTrain
 
             if (useLegacyBrakeForce)
             {
+                changedSpeed = m_nowSpeed - lastSpeed;
                 if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > brakeFactor * FixedDeltaTime)
                 {
                     FunctionProxy_Float1 = m_nowSpeed > 0 ? -brakeFactor : brakeFactor;
@@ -192,8 +193,8 @@ namespace frou01.RigidBodyTrain
             positionBogie_F = Bogie_F.position;
             positionBogie_B = Bogie_B.position;
             distanceErrorThreshold = FixedDeltaTime * (1 + Mathf.Abs(m_nowSpeed));
-            nowSpeed[0] = m_nowSpeed;
             BogieCalculateNextPos();
+            Rigidbody_Speed_LocalZ[0] = m_nowSpeed;
             //if (currentVelocity.sqrMagnitude > 0.0001f)
             //{
             //    PlayFlangeSound();
@@ -274,7 +275,7 @@ namespace frou01.RigidBodyTrain
             //}
             calculatedVelocity.x = 0;
             calculatedVelocity.y = 0;
-            rigidbody_.AddRelativeForce(calculatedVelocity, ForceMode.VelocityChange);
+            if(calculatedVelocity.z * calculatedVelocity.z > 0.0001) rigidbody_.AddRelativeForce(calculatedVelocity, ForceMode.VelocityChange);
             orProxy = false;
             if (RailID_F != SyncedRailID_F)orProxy = true;
             if (SyncedRailID_B != RailID_B) orProxy = true;
@@ -373,13 +374,13 @@ namespace frou01.RigidBodyTrain
         //定数×√(2*(Q-q)*Q)になった
 
         //定数の参考値は
-        //S=0.001m²(径1.375inch)、BP管容量Lを1m³として
-        //10³*S/(L*√m) = 0.29478747759 = 0.3
+        //S=0.0001m²、BP管容量Lを0.02m³として
+        //10³*S/(L*√m) = 1.47 = 1.5
         //Lは実際には各車で違うことが考えられる。
 
         //実際には流速が音速を下回る状況もある。その場合、以下の計算は甚だ不自然なものということになるが、今は考えないものとする。
         //将来的にブレーキ管をTrainから切り離して連結時参照の同期するオブジェクトとした場合に、各車のパイプ容積を考えた実装をすることになるだろう。
-        float targetPressure;
+        //float targetPressure;
         void Update()
         {
             if(!brakeUpdateBypass)//Trainでのブレーキ圧調整を行わない設定
@@ -400,6 +401,7 @@ namespace frou01.RigidBodyTrain
         {
             if (!started) return;
             m_brakePressure_float = brakePressure_float[0];//LateUpdateではm_brakePressure_floatは参照のみ
+            //rigidbody_.WakeUp();
             if (!brakeUpdateBypass)//Trainでのブレーキ圧調整を行わない設定
             {
                 pressure_delta_F = 0;
@@ -411,8 +413,8 @@ namespace frou01.RigidBodyTrain
                     if (connectedPr_F < m_brakePressure_float)
                     {
                         pressure_delta_F = m_brakePressure_float - connectedPr_F;
-                        pressure_delta_F = -0.3f * Mathf.Sqrt(pressure_delta_F * m_brakePressure_float);
-                        Debug.Log("pressure_delta_F " + pressure_delta_F);
+                        pressure_delta_F = -1.5f * Mathf.Sqrt(2 * pressure_delta_F * m_brakePressure_float);
+                        //Debug.Log("pressure_delta_F " + pressure_delta_F);
                     }
                 }
                 if (BrakeOpenB)
@@ -421,29 +423,34 @@ namespace frou01.RigidBodyTrain
                     if (connectedPr_B < m_brakePressure_float)
                     {
                         pressure_delta_B = m_brakePressure_float - connectedPr_B;
-                        pressure_delta_B = -0.3f * Mathf.Sqrt(pressure_delta_B * m_brakePressure_float);
-                        Debug.Log("pressure_delta_B " + pressure_delta_B);
+                        pressure_delta_B = -1.5f * Mathf.Sqrt(2 * pressure_delta_B * m_brakePressure_float);
+                        //Debug.Log("pressure_delta_B " + pressure_delta_B);
                     }
                 }
-            }
-
-            //Legacy brakeforce logic
-            if (useLegacyBrakeForce)
-            {
-                currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
-                brakeFactor = (1 - m_brakePressure_float) * 3.57f;// * 5/(5-((5-1.4)))
-                if (brakeFactor > 1) brakeFactor = 1;
-                if (brakeFactor < 0) brakeFactor = 0;
-                brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));
-                brakeFactor += (handBrakeState ? handBrakeForce : 0) + currentFriction;
             }
 
             if (hasAnimator)
             {
                 controllerAnimator.SetFloat(brakePressureParamaterID, m_brakePressure_float);
-                handBrakeState = controllerAnimator.GetBool(handBrakeStateID);
-                handBrakeForce = controllerAnimator.GetFloat(handBrakeForceID);
             }
+            //Legacy brakeforce logic
+            if (useLegacyBrakeForce)
+            {
+                currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
+                brakeFactor = (baseBrakePressure - m_brakePressure_float) * 3.57f;// * 5/(5-((5-1.4)))
+                brakeFactor /= baseBrakePressure;
+                if (brakeFactor > 1) brakeFactor = 1;
+                if (brakeFactor < 0) brakeFactor = 0;
+                brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));
+                brakeFactor += (handBrakeState ? handBrakeForce : 0) + currentFriction;
+
+                if (hasAnimator)
+                {
+                    handBrakeState = controllerAnimator.GetBool(handBrakeStateID);
+                    handBrakeForce = controllerAnimator.GetFloat(handBrakeForceID);
+                }
+            }
+
         }
 
         public void setCoupler(CouplerObj couplerObj, bool F_B)
