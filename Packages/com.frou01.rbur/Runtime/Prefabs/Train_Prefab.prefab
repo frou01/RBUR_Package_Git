@@ -1081,6 +1081,8 @@ MonoBehaviour:
   brakeUpdateBypass: 0
   brakePressure_float:
   - 0
+  useLegacyBrakeForce: 1
+  baseBrakePressure: 1
   friction: 1
   static_friction: 12
   CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1089,7 +1091,7 @@ MonoBehaviour:
   CouplerF: {fileID: 920409449037452229}
   CouplerB: {fileID: 7814482539821002173}
   controllerAnimator: {fileID: 0}
-  nowSpeed:
+  Rigidbody_Speed_LocalZ:
   - 0
   connectedTrain_F: {fileID: 0}
   connectedTrain_B: {fileID: 0}
@@ -1204,8 +1206,8 @@ ConfigurableJoint:
   m_AngularYMotion: 2
   m_AngularZMotion: 2
   m_LinearLimitSpring:
-    spring: 100000
-    damper: 90000
+    spring: 100000000
+    damper: 90000000
   m_LinearLimit:
     limit: 0.022
     bounciness: 0
@@ -1282,8 +1284,8 @@ ConfigurableJoint:
   m_BreakTorque: Infinity
   m_EnableCollision: 0
   m_EnablePreprocessing: 0
-  m_MassScale: 100000
-  m_ConnectedMassScale: 100000
+  m_MassScale: 1
+  m_ConnectedMassScale: 1
 --- !u!153 &307480487698331581
 ConfigurableJoint:
   m_ObjectHideFlags: 0
@@ -1306,8 +1308,8 @@ ConfigurableJoint:
   m_AngularYMotion: 2
   m_AngularZMotion: 2
   m_LinearLimitSpring:
-    spring: 100000
-    damper: 90000
+    spring: 100000000
+    damper: 90000000
   m_LinearLimit:
     limit: 0.022
     bounciness: 0
@@ -1384,8 +1386,8 @@ ConfigurableJoint:
   m_BreakTorque: Infinity
   m_EnableCollision: 0
   m_EnablePreprocessing: 0
-  m_MassScale: 100000
-  m_ConnectedMassScale: 100000
+  m_MassScale: 1
+  m_ConnectedMassScale: 1
 --- !u!1001 &4433634450958673355
 PrefabInstance:
   m_ObjectHideFlags: 0

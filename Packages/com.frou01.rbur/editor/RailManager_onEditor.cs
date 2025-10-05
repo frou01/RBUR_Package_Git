@@ -37,32 +37,19 @@ public class RailManager_onEditor : IProcessSceneWithReport
             Debug.LogError("No RailsManager on Scene root");
             return;
         }
+        List<Rail_Script> Rails_List = new List<Rail_Script>();
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
-            if (railsManager != null)
-            {
-                if (obj.GetComponent<Rail_Script>() != null)
-                {
-                    railsNum++;
-                }
-                CountRailOnChild(obj.transform);
-            }
+            Rails_List.AddRange(obj.GetComponentsInChildren<Rail_Script>(true));
         }
-        railsManager.Rails = new Rail_Script[railsNum];
-        id = 0;
-        foreach (GameObject obj in scene.GetRootGameObjects())
+
+
+        int id = 0;
+        foreach (Rail_Script rails in Rails_List)
         {
-            if (railsManager != null)
-            {
-                if (obj.GetComponent<Rail_Script>() != null)
-                {
-                    railsManager.Rails[id] = obj.GetComponent<Rail_Script>();
-                    obj.GetComponent<Rail_Script>().RailID = id;
-                    id++;
-                }
-                SetRailOnChild(obj.transform);
-            }
+            rails.RailID = id++;
         }
+        railsManager.Rails = Rails_List.ToArray();
 
         //LayerMask.NameToLayerでレイヤーを取得しておく
         //Name = RBUR_RailAndWheel;
@@ -110,42 +97,14 @@ public class RailManager_onEditor : IProcessSceneWithReport
         public int DivisionID;
     }
 
-    public int railsNum = 0;
-    public int id;
-    public void CountRailOnChild(Transform currentTransform)
-    {
-        //Debug.Log("SearchingOn " + currentTransform + " Child Num " + currentTransform.childCount);
-        foreach (Transform child in currentTransform)
-        {
-            //Debug.Log("SearchingOn " + currentTransform + " , now seeing " + child);
-            if (child.gameObject.GetComponent<Rail_Script>() != null)
-            {
-                railsNum++;
-            }
-            CountRailOnChild(child);
-        }
-    }
-    public void SetRailOnChild(Transform currentTransform)
-    {
-        foreach (Transform child in currentTransform)
-        {
-            if (child.gameObject.GetComponent<Rail_Script>() != null)
-            {
-                railsManager.Rails[id] = child.gameObject.GetComponent<Rail_Script>();
-                child.gameObject.GetComponent<Rail_Script>().RailID = id;
-                id++;
-            }
-            SetRailOnChild(child);
-        }
-    }
 
     private void genRailCollider(CinemachinePathBase RailCinemachinePath, GameObject TargetObject,float pathLength,float colliderWidth, RailsManager railsManager,int ColliderLayer)
     {
         colliderWidth /= 2;
-        Debug.Log("Generate new Rails Collider task");
+        //Debug.Log("Generate new Rails Collider task");
         //最初にCinemachineをrailColliderMaxLengthに収まるよう分割する数を設定
         int ColliderDivisionNum = 1 + (int)(pathLength / railsManager.railColliderMaxLength);
-        Debug.Log("ColliderDivisionNum " + ColliderDivisionNum);
+        //Debug.Log("ColliderDivisionNum " + ColliderDivisionNum);
         //CinemachinePathをさらに内部で細分化し、MeshColliderとして踏面を生成する。
         //Edge = 0は別で計算
         //参考 https://qiita.com/notargs/items/64a3de46c48e3cff176a
@@ -198,7 +157,7 @@ public class RailManager_onEditor : IProcessSceneWithReport
                 triangles.Add((int)currentEdge * 2 + 3);
                 triangles.Add((int)currentEdge * 2 + 2);
                 triangles.Add((int)currentEdge * 2 + 0);
-                Debug.Log(Edge_dist);
+                //Debug.Log(Edge_dist);
             }
 
             GeneratedColliderData newColliderData = new GeneratedColliderData();
@@ -209,7 +168,7 @@ public class RailManager_onEditor : IProcessSceneWithReport
             triangles.Clear();
             newColliderData.DivisionID = (int)currentColliderDivision;
             colliderDatas.Add(newColliderData);
-            Debug.Log("Generated an collider division");
+            //Debug.Log("Generated an collider division");
         }
     }
 }
