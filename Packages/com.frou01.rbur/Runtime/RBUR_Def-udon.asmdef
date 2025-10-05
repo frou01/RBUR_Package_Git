@@ -1,10 +1,12 @@
 {
     "name": "RBUR_Def-udon",
+    "rootNamespace": "",
     "references": [
         "VRC.Udon",
         "UdonSharp.Runtime",
         "Cinemachine",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Frou01UtilAssembly.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
