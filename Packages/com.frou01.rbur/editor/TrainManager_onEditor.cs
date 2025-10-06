@@ -12,14 +12,13 @@ public class TrainManager_onEditor : IProcessSceneWithReport
     public int callbackOrder => 0;
 
 
-    TrainManager trainManager = null;
     public void OnProcessScene(Scene scene, BuildReport report)
     {
-        trainManager = null;
+        TrainManager trainManager = null;
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
             trainManager = obj.GetComponent<TrainManager>();
-            if(trainManager != null) break;
+            if (trainManager != null) break;
         }
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
@@ -31,70 +30,27 @@ public class TrainManager_onEditor : IProcessSceneWithReport
             }
         }
         if (trainManager == null) return;
+
+        List<Train> Trains_List = new List<Train>();
         foreach (GameObject obj in scene.GetRootGameObjects())
         {
-            if (trainManager != null)
-            {
-                if (obj.GetComponent<Train>() != null)
-                {
-                    trainsNum++;
-                }
-                CountTrainOnChild(obj.transform);
-            }
+            Trains_List.AddRange(obj.GetComponentsInChildren<Train>(true));
         }
-        trainManager.Trains = new Train[trainsNum];
-        id = 0;
-        foreach (GameObject obj in scene.GetRootGameObjects())
+
+        int id = 0;
+        foreach (Train train in Trains_List)
         {
-            if (trainManager != null)
-            {
-                if (obj.GetComponent<Train>() != null)
-                {
-                    trainManager.Trains[id] = obj.GetComponent<Train>();
-                    trainManager.Trains[id].trainManager = trainManager;
-                    trainManager.Trains[id].railsManager = trainManager.railsManager;
-                    trainManager.Trains[id].InitsyncRecieveMode = true;
-                    //trainManager.Trains[trainManager.id].Start();
-                    obj.GetComponent<Train>().TrainID = id;
-                    id++;
-                }
-                PickTrainOnChild(obj.transform);
-            }
+            train.trainManager = trainManager;
+            train.railsManager = trainManager.railsManager;
+            train.InitsyncRecieveMode = true;
+            train.TrainID = id;
+            id++;
         }
+        trainManager.Trains = Trains_List.ToArray();
 
         //foreach (Train train in trainManager.Trains)
         //{
         //    Debug.Log(train.transform.parent.name);
         //}
-    }
-    public int trainsNum = 0;
-    public int id;
-    public void CountTrainOnChild(Transform currentTransform)
-    {
-        foreach (Transform child in currentTransform)
-        {
-            if (child.gameObject.GetComponent<Train>() != null)
-            {
-                trainsNum++;
-            }
-            CountTrainOnChild(child);
-        }
-    }
-    public void PickTrainOnChild(Transform currentTransform)
-    {
-        foreach (Transform child in currentTransform)
-        {
-            if (child.gameObject.GetComponent<Train>() != null)
-            {
-                Debug.Log(child.transform.name);
-                trainManager.Trains[id] = child.gameObject.GetComponent<Train>();
-                trainManager.Trains[id].trainManager = trainManager;
-                trainManager.Trains[id].railsManager = trainManager.railsManager;
-                trainManager.Trains[id].Start();
-                child.gameObject.GetComponent<Train>().TrainID = id;
-                id++;
-            }
-            PickTrainOnChild(child);
-        }
     }
 }

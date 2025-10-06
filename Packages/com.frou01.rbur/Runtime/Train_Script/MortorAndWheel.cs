@@ -14,42 +14,40 @@ namespace frou01.RigidBodyTrain
         [SerializeField] public float[] MortorForce = new float[1];//基本的に制御側から参照を渡される想定をしている。もちろん制御側が参照を貰ってもいい。
         /*[HideInInspector]*/
         [SerializeField] public float[] BrakeForce = new float[1];
-        [SerializeField] WheelCollider wheel;
-        [SerializeField] bool override_wheelFriction;
+        [SerializeField] private bool overrideFriction = false;
+        [SerializeField] public float[] Friction = new float[] { 0.5f, 0.2f };//Static/Dynamic
         [SerializeField] Rigidbody rb;
+        private Transform trainTransform;
+        [SerializeField] Rigidbody wheel;
+        PhysicMaterial wheelMaterial;
+        [SerializeField] Rigidbody brake;
+        [SerializeField] float[] WheelPressure = new float[1];
         float wheelRadius = 0;
+        float brakeFriction = 1;
         private void Start()
         {
-            wheelRadius = wheel.radius;
-            wheel.motorTorque = 0;
-            wheel.brakeTorque = 0;
-
-            friction = wheel.forwardFriction;
+            wheel.maxAngularVelocity = 1000;
+            wheelRadius = wheel.GetComponent<SphereCollider>().radius;
+            wheelMaterial = wheel.GetComponent<SphereCollider>().material;
+            trainTransform = rb.transform;
+            brakeFriction = brake.GetComponent<CapsuleCollider>().material.dynamicFriction;
         }
 
-        float currentTorque;
-        float currentBrake;
-        float TreadSpeed = 0;
-        WheelFrictionCurve friction;
+        Vector3 tempForceVector;
         private void FixedUpdate()
         {
-            WheelTreadSpeed[index] = TreadSpeed = wheel.rotationSpeed * Mathf.Deg2Rad * wheelRadius;
-            if (MortorForce[0] != currentTorque)
-            {
-                wheel.motorTorque = currentTorque = MortorForce[0] * wheelRadius;
-            }
+            WheelTreadSpeed[index] = trainTransform.InverseTransformVector(wheel.angularVelocity).x * wheelRadius;
 
-            if (BrakeForce[0] != currentBrake)
+            tempForceVector = trainTransform.up;
+
+            wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * WheelPressure[0]);
+            wheel.AddRelativeTorque(MortorForce[0] * wheelRadius, 0, 0, ForceMode.Force);
+            brake.AddForce(-tempForceVector * BrakeForce[0]/ brakeFriction * wheelRadius, ForceMode.Force);
+
+            if (overrideFriction)
             {
-                wheel.brakeTorque = currentBrake = BrakeForce[0] * wheelRadius; ;
-            }
-            if (override_wheelFriction)
-            {
-#if UNITY_EDITOR
-                friction = wheel.forwardFriction;//パラメーター調整用。Runtimeでは動かない。
-#endif
-                friction.stiffness = 0.4f * (1 / (1 + Mathf.Abs(TreadSpeed - (Quaternion.Inverse(rb.rotation) * rb.velocity).z) * 4));//WheelCollider純正では粘着の計算がタイヤ仕様なので鉄輪化する
-                wheel.forwardFriction = friction;
+                wheelMaterial.staticFriction = Friction[0];
+                wheelMaterial.dynamicFriction = Friction[1];
             }
         }
     }
