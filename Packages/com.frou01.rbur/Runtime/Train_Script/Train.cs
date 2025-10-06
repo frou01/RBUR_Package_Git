@@ -437,8 +437,7 @@ namespace frou01.RigidBodyTrain
             if (useLegacyBrakeForce)
             {
                 currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
-                brakeFactor = (baseBrakePressure - m_brakePressure_float) * 3.57f;// * 5/(5-((5-1.4)))
-                brakeFactor /= baseBrakePressure;
+                brakeFactor = (baseBrakePressure - m_brakePressure_float) / baseBrakePressure * 3.57f;// * 5/(5-((5-1.4)))
                 if (brakeFactor > 1) brakeFactor = 1;
                 if (brakeFactor < 0) brakeFactor = 0;
                 brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));

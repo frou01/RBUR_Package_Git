@@ -33,13 +33,10 @@ namespace frou01.RigidBodyTrain
             brakeFriction = brake.GetComponent<CapsuleCollider>().material.dynamicFriction;
         }
 
-        float currentTorque;
-        float currentBrake;
-        float TreadSpeed = 0;
         Vector3 tempForceVector;
         private void FixedUpdate()
         {
-            WheelTreadSpeed[index] = TreadSpeed = trainTransform.InverseTransformVector(wheel.angularVelocity).x * wheelRadius;
+            WheelTreadSpeed[index] = trainTransform.InverseTransformVector(wheel.angularVelocity).x * wheelRadius;
 
             tempForceVector = trainTransform.up;
 
