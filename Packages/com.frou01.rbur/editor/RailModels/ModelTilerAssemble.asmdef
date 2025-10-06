@@ -1,5 +1,6 @@
 {
     "name": "ModelTilerAssemble",
+    "rootNamespace": "",
     "references": [
         "GUID:4307f53044263cf4b835bd812fc161a4",
         "GUID:ba8c092d026123a418fb4bfb797a7bd8",
@@ -10,25 +11,7 @@
         "GUID:99835874ee819da44948776e0df4ff1d"
     ],
     "includePlatforms": [
-        "Android",
-        "CloudRendering",
-        "Editor",
-        "GameCoreScarlett",
-        "GameCoreXboxOne",
-        "iOS",
-        "LinuxStandalone64",
-        "Lumin",
-        "macOSStandalone",
-        "PS4",
-        "PS5",
-        "Stadia",
-        "Switch",
-        "tvOS",
-        "WSA",
-        "WebGL",
-        "WindowsStandalone32",
-        "WindowsStandalone64",
-        "XboxOne"
+        "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

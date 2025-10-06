@@ -1079,15 +1079,20 @@ MonoBehaviour:
   BrakeMultiplier: 70000
   brakeFactor: 0
   brakeUpdateBypass: 0
+  brakePressure_float:
+  - 0
+  useLegacyBrakeForce: 1
+  baseBrakePressure: 1
   friction: 1
   static_friction: 12
-  brakePressure: {fileID: 7996415975957908070}
   CenterOfMass: {x: 0, y: 0, z: 0}
   BrakeOpenF: 0
   BrakeOpenB: 0
   CouplerF: {fileID: 920409449037452229}
   CouplerB: {fileID: 7814482539821002173}
   controllerAnimator: {fileID: 0}
+  Rigidbody_Speed_LocalZ:
+  - 0
   connectedTrain_F: {fileID: 0}
   connectedTrain_B: {fileID: 0}
   CanTransferOwner: 0
@@ -1201,8 +1206,8 @@ ConfigurableJoint:
   m_AngularYMotion: 2
   m_AngularZMotion: 2
   m_LinearLimitSpring:
-    spring: 100000
-    damper: 90000
+    spring: 100000000
+    damper: 90000000
   m_LinearLimit:
     limit: 0.022
     bounciness: 0
@@ -1279,8 +1284,8 @@ ConfigurableJoint:
   m_BreakTorque: Infinity
   m_EnableCollision: 0
   m_EnablePreprocessing: 0
-  m_MassScale: 100000
-  m_ConnectedMassScale: 100000
+  m_MassScale: 1
+  m_ConnectedMassScale: 1
 --- !u!153 &307480487698331581
 ConfigurableJoint:
   m_ObjectHideFlags: 0
@@ -1303,8 +1308,8 @@ ConfigurableJoint:
   m_AngularYMotion: 2
   m_AngularZMotion: 2
   m_LinearLimitSpring:
-    spring: 100000
-    damper: 90000
+    spring: 100000000
+    damper: 90000000
   m_LinearLimit:
     limit: 0.022
     bounciness: 0
@@ -1381,8 +1386,8 @@ ConfigurableJoint:
   m_BreakTorque: Infinity
   m_EnableCollision: 0
   m_EnablePreprocessing: 0
-  m_MassScale: 100000
-  m_ConnectedMassScale: 100000
+  m_MassScale: 1
+  m_ConnectedMassScale: 1
 --- !u!1001 &4433634450958673355
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1418,11 +1423,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: -5673800444676590066, guid: ab18a1ee213678e49a1362d46501d14b,
         type: 3}
-    - target: {fileID: -5673800444676590066, guid: ab18a1ee213678e49a1362d46501d14b,
-        type: 3}
-      propertyPath: serializationData.SerializedFormat
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 310551585388811983, guid: ab18a1ee213678e49a1362d46501d14b,
         type: 3}
       propertyPath: m_Layer
