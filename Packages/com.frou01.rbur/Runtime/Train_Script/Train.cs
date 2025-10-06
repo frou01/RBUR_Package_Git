@@ -941,7 +941,7 @@ namespace frou01.RigidBodyTrain
         float fromLastSync;
 
         public bool InitsyncRecieveMode = true;
-        public int LastSent_Resync = 0;
+        [HideInInspector] public System.DateTime LastSent_Resync = System.DateTime.MinValue;
 
         [UdonSynced] public bool isDiscontinuitySync;
         public void resync()

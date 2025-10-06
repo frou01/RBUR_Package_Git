@@ -1,4 +1,5 @@
 ﻿
+using System;
 using UdonSharp;
 using Unity.Collections;
 using UnityEngine;
@@ -99,12 +100,12 @@ namespace frou01.RigidBodyTrain
         {
             foreach (Train train in Trains)
             {
+                DateTime nowtime = Networking.GetNetworkDateTime();
                 if (!Networking.IsOwner(train.gameObject))
                 {
                     //Debug.Log("FirstSync");
-                    int nowtime = Networking.GetNetworkDateTime().Second;
-                    Debug.Log("Sync Time : " + nowtime);
-                    if (nowtime - train.LastSent_Resync > 10)
+                    Debug.Log("Time FromSync : " + (nowtime - train.LastSent_Resync).TotalSeconds);
+                    if ((nowtime - train.LastSent_Resync).TotalSeconds > 10)
                     {
                         train.LastSent_Resync = nowtime;
                         train.InitsyncRecieveMode = true;
