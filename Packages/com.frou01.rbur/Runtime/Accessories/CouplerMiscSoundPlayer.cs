@@ -50,7 +50,7 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
                 if (prevForce < shockThreshold && force > shockThreshold && DeltaForce > pullThreshold)
                 {
                     //Debug.Log("pull f "+ force + " , pf " + prevForce + " , delta " + DeltaForce);
-                    targetSource.PlayOnshot(pullClip);
+                    targetSource.Play(pullClip);
                     cnt = cooltime;
                     syncedDeltaForce = DeltaForce;
                     pull = true;
@@ -60,7 +60,7 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
                 else if (prevForce > -shockThreshold && force < -shockThreshold && DeltaForce < pushStrongThreshold)
                 {
                     //Debug.Log("pushStrong f " + force + " , pf " + prevForce + " , delta " + DeltaForce);
-                    targetSource.PlayOnshot(pushStrongClip);
+                    targetSource.Play(pushStrongClip);
                     cnt = cooltime;
                     syncedDeltaForce = DeltaForce;
                     pushStrong = true;
@@ -70,7 +70,7 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
                 else if (prevForce > -shockThreshold && force < -shockThreshold && DeltaForce < pushThreshold)
                 {
                     //Debug.Log("push f " + force + " , pf " + prevForce + " , delta " + DeltaForce);
-                    targetSource.PlayOnshot(pushClip);
+                    targetSource.Play(pushClip);
                     cnt = cooltime;
                     syncedDeltaForce = DeltaForce;
                     push = true;
@@ -92,7 +92,7 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
         {
             if (!pull)
             {
-                targetSource.PlayOnshot(pullClip);
+                targetSource.Play(pullClip);
                 cnt = cooltime;
                 pull = true;
             }
@@ -102,7 +102,7 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
         {
             if (!pushStrong)
             {
-                targetSource.PlayOnshot(pushStrongClip);
+                targetSource.Play(pushStrongClip);
                 cnt = cooltime;
                 pushStrong = true;
             }
@@ -112,7 +112,7 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
         {
             if (!push)
             {
-                targetSource.PlayOnshot(pushClip);
+                targetSource.Play(pushClip);
                 cnt = cooltime;
                 push = true;
             }
