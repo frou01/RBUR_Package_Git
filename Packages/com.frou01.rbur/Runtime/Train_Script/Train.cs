@@ -133,7 +133,7 @@ namespace frou01.RigidBodyTrain
         Vector3 bezierC;
 
         float FunctionProxy_Float1;
-        Vector3 FunctionProxy_Vector1;
+        //Vector3 FunctionProxy_Vector1;
         void FixedUpdate()
         {
             if (!started)
@@ -174,15 +174,15 @@ namespace frou01.RigidBodyTrain
                 if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > brakeFactor * FixedDeltaTime)
                 {
                     FunctionProxy_Float1 = m_nowSpeed > 0 ? -brakeFactor : brakeFactor;
-                    FunctionProxy_Vector1.z = FunctionProxy_Float1;
-                    rigidbody_.AddRelativeForce(FunctionProxy_Vector1, ForceMode.Force);
+                    //FunctionProxy_Vector1.z = FunctionProxy_Float1;
+                    rigidbody_.AddRelativeForce(0,0, FunctionProxy_Float1);
                     lastSpeed = m_nowSpeed + (m_nowSpeed > 0 ? -brakeFactor : brakeFactor) / rigidBodyMass * FixedDeltaTime;
                 }
                 else
                 {
                     FunctionProxy_Float1 = -m_nowSpeed - changedSpeed;
-                    FunctionProxy_Vector1.z = FunctionProxy_Float1;
-                    rigidbody_.AddRelativeForce(FunctionProxy_Vector1, ForceMode.VelocityChange);
+                    //FunctionProxy_Vector1.z = FunctionProxy_Float1;
+                    rigidbody_.AddRelativeForce(0,0, FunctionProxy_Float1, ForceMode.VelocityChange);
                     lastSpeed = -changedSpeed;
                 }
             }
