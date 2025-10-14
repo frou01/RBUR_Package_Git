@@ -5851,7 +5851,7 @@ MonoBehaviour:
       Data: 
     - Name: <IsSerialized>k__BackingField
       Entry: 5
-      Data: true
+      Data: false
     - Name: _fieldAttributes
       Entry: 7
       Data: 275|System.Collections.Generic.List`1[[System.Attribute, mscorlib]],
@@ -5861,7 +5861,7 @@ MonoBehaviour:
       Data: 1
     - Name: 
       Entry: 7
-      Data: 276|UnityEngine.HideInInspector, UnityEngine.CoreModule
+      Data: 276|System.NonSerializedAttribute, mscorlib
     - Name: 
       Entry: 8
       Data: 
