@@ -24,13 +24,24 @@ namespace frou01.RigidBodyTrain
         [SerializeField] float[] WheelPressure = new float[1];
         float wheelRadius = 0;
         float brakeFriction = 1;
+        Transform WheelTransform;
+        Transform BrakeTransform;
+        Vector3 wheelInitialPos;
+        Vector3 BrakeInitialPos;
         private void Start()
         {
             wheel.maxAngularVelocity = 1000;
+            wheel.isKinematic = false;
             wheelRadius = wheel.GetComponent<SphereCollider>().radius;
             wheelMaterial = wheel.GetComponent<SphereCollider>().material;
             trainTransform = rb.transform;
             brakeFriction = brake.GetComponent<CapsuleCollider>().material.dynamicFriction;
+            brake.isKinematic = false;
+
+            WheelTransform = wheel.transform;
+            BrakeTransform = brake.transform;
+            wheelInitialPos = WheelTransform.localPosition;
+            BrakeInitialPos = BrakeTransform.localPosition;
         }
 
         Vector3 tempForceVector;
@@ -48,6 +59,31 @@ namespace frou01.RigidBodyTrain
             {
                 wheelMaterial.staticFriction = Friction[0];
                 wheelMaterial.dynamicFriction = Friction[1];
+            }
+        }
+
+        int checkInterval;
+        int checkCounter;
+        private void Update()
+        {
+            checkCounter += 1;
+            if(checkCounter < checkInterval)
+            {
+                CheckWheelTransform();
+                checkCounter = 0;
+                checkInterval = Random.Range(0, 60);
+            }
+        }
+        private void CheckWheelTransform()
+        {
+            if (BrakeTransform.localPosition.y - WheelTransform.localPosition.y < wheelRadius)
+            {
+                Debug.Log("Object penetration : " + this.name);
+                Debug.Log("WheelBody pos " + WheelTransform.localPosition);
+                Debug.Log("BrakeBody pos " + BrakeTransform.localPosition);
+                WheelTransform.localPosition = wheelInitialPos;
+                BrakeTransform.localPosition = BrakeInitialPos;
+                Physics.SyncTransforms();
             }
         }
     }
