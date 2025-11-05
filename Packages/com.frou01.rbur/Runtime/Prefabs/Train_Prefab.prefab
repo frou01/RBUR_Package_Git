@@ -55,16 +55,19 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 5249052666130846501}
-  connectionTags:
-  - Brake
+  connectionTags: []
   train: {fileID: -8642092351258596855}
   straightBrakePressure:
   - 0
   BrakeOpenF: 0
   BrakeOpenB: 0
   indicateAnimator: {fileID: 0}
-  train_legacy_brakePressure_float:
+  brakeFactor:
   - 0
+  baseBrakePressure: 0.55
+  BrakeMultiplier: 70000
+  friction: 90
+  static_friction: 2240
 --- !u!114 &5249052666130846501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1048,42 +1051,29 @@ MonoBehaviour:
     PrefabModifications: []
     SerializationNodes: []
   _udonSharpBackingUdonBehaviour: {fileID: 7996415977434343486}
-  TrainID: 0
   trainManager: {fileID: 0}
   railsManager: {fileID: 0}
-  started: 0
-  BrakeMultiplier: 70000
-  legacy_brakePressure_float:
-  - 0
-  useLegacyBrakeForce: 1
-  baseBrakePressure: 1
-  friction: 1
-  static_friction: 12
+  TrainID: 0
   CenterOfMass: {x: 0, y: 0, z: 0}
   CouplerF: {fileID: 920409449037452229}
   CouplerB: {fileID: 7814482539821002173}
   controllerAnimator: {fileID: 0}
   connectionRecievers:
   - {fileID: 7190728409426361598}
-  Rigidbody_Speed_LocalZ:
-  - 0
   connectedTrain_F: {fileID: 0}
   connectedTrain_B: {fileID: 0}
+  BogieRail_F: {fileID: 0}
+  BogieRail_B: {fileID: 0}
   Bogie_F: {fileID: 7996415975659671437}
   BogieWheel_F: {fileID: 2203311123852151394}
-  RailID_F: 0
-  BogieRail_F: {fileID: 0}
   Bogie_B: {fileID: 7996415976838151246}
   BogieWheel_B: {fileID: 3272760750009074263}
-  RailID_B: 0
-  BogieRail_B: {fileID: 0}
-  SyncedRailID_F: 0
-  SyncedRailID_B: 0
-  SyncedRailPoint_F: 0
-  SyncedRailPoint_B: 0
-  SyncedRailUnitOrder: 0
-  InitsyncRecieveMode: 1
-  isDiscontinuitySync: 0
+  BrakeMultiplier: 70000
+  baseBrakePressure: 1
+  friction: 1
+  static_friction: 12
+  Rigidbody_Speed_LocalZ:
+  - 0
 --- !u!114 &7996415977434343486
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -17,15 +17,13 @@ public class SpeedSoundPlayer : UdonSharpBehaviour
 
     private float[] speed = new float[1];
     private float[] brake = new float[1];
-    private float baseBrakePressure = 0f;
     bool playing;
     bool hasRunning = false;
     bool hasBrake = false;
     void Start()
     {
         speed = train.Rigidbody_Speed_LocalZ;
-        brake = train.legacy_brakePressure_float;
-        baseBrakePressure = train.baseBrakePressure;
+        brake = brakeModule.brakeFactor;
         if(runningSound) hasRunning = true;
         if(brakingSound) hasBrake = true;
     }
@@ -54,7 +52,7 @@ public class SpeedSoundPlayer : UdonSharpBehaviour
 
             if (hasBrake)
             {
-                brakePressure = Mathf.Clamp01((baseBrakePressure - brake[0]) * 3.57f);
+                brakePressure = brake[0];
                 if (brakePressure > 0.01f)
                 {
                     brakingSound.volume = brakePressure * Speed * brakeMultiply;

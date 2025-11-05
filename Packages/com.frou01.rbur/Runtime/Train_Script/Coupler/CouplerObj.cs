@@ -12,17 +12,17 @@ namespace frou01.RigidBodyTrain
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
     public class CouplerObj : UdonSharpBehaviour
     {
-        //[System.NonSerialized] public Rigidbody couplerRigidBody;
+        //[SerializeField][HideInInspector] public Rigidbody couplerRigidBody;
 
          public Train TrainScript;
-        [System.NonSerialized] Rigidbody MotherTrain_RigidBody;
-        //[System.NonSerialized] Rigidbody ConnecTrain_RigidBody;
+        [SerializeField][HideInInspector] Rigidbody MotherTrain_RigidBody;
+        //[SerializeField][HideInInspector] Rigidbody ConnecTrain_RigidBody;
 
-        [System.NonSerialized] TrainManager trainManager;
+        [SerializeField][HideInInspector] TrainManager trainManager;
 
-        [System.NonSerialized] public Rigidbody anchorBody;
-        [System.NonSerialized] public ConfigurableJoint joint;
-        [System.NonSerialized] public ConfigurableJoint connectedJoint;
+        [SerializeField][HideInInspector] public Rigidbody anchorBody;
+        [SerializeField][HideInInspector] public ConfigurableJoint joint;
+        [SerializeField][HideInInspector] public ConfigurableJoint connectedJoint;
 
 
 
@@ -31,9 +31,9 @@ namespace frou01.RigidBodyTrain
 
         [UdonSynced(UdonSyncMode.None)] public bool Knuckle_Closed = true;//falseでナックルが開
         [UdonSynced(UdonSyncMode.None)] public byte state;//0:固定 1:閉じたら開かない 2:錠控え
-        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public int ConnectedTrainID = -1;
-        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public bool ConnectedCouplerFB;
-        [System.NonSerialized] [UdonSynced(UdonSyncMode.None)] public bool crashed;
+        [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public int ConnectedTrainID = -1;
+        [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public bool ConnectedCouplerFB;
+        [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public bool crashed;
 
 
 
@@ -49,7 +49,7 @@ namespace frou01.RigidBodyTrain
         [SerializeField] private float disconnectForce = 1000;
 
 
-        public CouplerObj connectedCoupler;
+        [SerializeField][HideInInspector] CouplerObj connectedCoupler;
 
         bool started = false;
 
@@ -64,7 +64,6 @@ namespace frou01.RigidBodyTrain
             Initialize();
 
             //couplerRigidBody.isKinematic = false;
-            TrainScript.setCoupler(this, FrontOrBack);
             started = true;
 
             TrainConnectionReciever foundModule = (TrainScript.GetConnectionRecieverByTag("Brake"));
@@ -73,25 +72,9 @@ namespace frou01.RigidBodyTrain
 
         float jointLinerLimit;
 
-        [System.NonSerialized]public Transform chachedTransform;
+        [SerializeField][HideInInspector]public Transform chachedTransform;
         Transform connectedTransform;
-
-        public void ApplyPresettedConnected()
-        {
-            if (connectedCoupler != null)
-            {
-                connectedCoupler.Initialize();
-                knuckleClose();
-                connectedCoupler.knuckleClose();
-                this.setConnectedCoupler(connectedCoupler);
-                connectedCoupler.setConnectedCoupler(this);
-            }
-            else
-            {
-                this.setConnectedCoupler(null);
-            }
-        }
-        public void Initialize()
+        public void Initialize()//CallFromBuildProcess
         {
             //initialPos = transform.localPosition;
             //initialRotation = transform.localRotation;
@@ -200,11 +183,6 @@ namespace frou01.RigidBodyTrain
             }
         }
 
-        public void changeBrakeValve()
-        {
-            if(BrakeModule) BrakeModule.changeBrakeValve(FrontOrBack);
-        }
-
 
         private void disConnect()
         {
@@ -274,10 +252,8 @@ namespace frou01.RigidBodyTrain
                 connectedJoint = connectingCoupler.joint;
                 connectedTransform = connectingCoupler.chachedTransform;
                 //ConnecTrain_RigidBody = connectingCoupler.TrainScript.GetComponent<Rigidbody>();
-                if (TrainScript.started)
-                {
-                    TrainScript.setConnectedTrain(connectingCoupler.TrainScript, FrontOrBack);
-                }
+
+                TrainScript.setConnectedTrain(connectingCoupler.TrainScript, FrontOrBack);
                 ConnectedTrainID = connectingCoupler.TrainScript.TrainID;
                 ConnectedCouplerFB = connectingCoupler.FrontOrBack;
             }
@@ -289,7 +265,7 @@ namespace frou01.RigidBodyTrain
                 connectedJoint = null;
                 connectedTransform = null;
                 //ConnecTrain_RigidBody = null;
-                if (TrainScript.started) TrainScript.setConnectedTrain(null, FrontOrBack);
+                TrainScript.setConnectedTrain(null, FrontOrBack);
 
 
                 ConnectedTrainID = -1;
@@ -299,7 +275,7 @@ namespace frou01.RigidBodyTrain
             {
                 RequestSerialization();
             }
-            if (prevID != -2 && prevID != ConnectedTrainID)
+            if (prevID != ConnectedTrainID)
             {
                 if(miss)
                 {
@@ -318,7 +294,7 @@ namespace frou01.RigidBodyTrain
             prevID = ConnectedTrainID;
         }
 
-        int prevID = -2;
+        int prevID = -1;
 
 
         public override void OnPreSerialization()

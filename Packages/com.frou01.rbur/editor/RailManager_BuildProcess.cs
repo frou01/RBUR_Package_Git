@@ -14,7 +14,7 @@ using UnityEngine.UIElements;
 using static Cinemachine.CinemachinePathBase;
 using static UnityEngine.ParticleSystem;
 
-public class RailManager_onEditor : IProcessSceneWithReport
+public class RailManager_BuildProcess : IProcessSceneWithReport
 {
     public int callbackOrder => 0;
 

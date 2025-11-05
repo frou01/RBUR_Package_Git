@@ -29,7 +29,7 @@ namespace frou01.RigidBodyTrain
                 }
             }
             {
-                if (coupler.TrainScript != null && coupler.TrainScript.started)
+                if (coupler.TrainScript != null)
                 {
                     if (coupler.BrakeModule)
                     {

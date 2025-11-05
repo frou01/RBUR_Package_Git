@@ -2,6 +2,7 @@
 using frou01.RigidBodyTrain;
 using UdonSharp;
 using UnityEngine;
+using VRC.SDK3.UdonNetworkCalling;
 using VRC.SDKBase;
 using VRC.Udon;
 using VRC.Udon.Common;
@@ -31,6 +32,8 @@ public class AbstractBrake : TrainConnectionReciever
     [SerializeField] protected Animator indicateAnimator;
     protected bool hasAnimator;
     protected int brakePressureParamaterID;
+
+    [HideInInspector] public float[] brakeFactor = new float[1];
 
     protected virtual void Start()
     {
@@ -148,6 +151,7 @@ public class AbstractBrake : TrainConnectionReciever
         }
     }
     bool isOwnerState;
+    [NetworkCallable]
     public void changeBrakeValve(bool F_B)//空制弁開放/閉鎖
     {
         if (F_B)

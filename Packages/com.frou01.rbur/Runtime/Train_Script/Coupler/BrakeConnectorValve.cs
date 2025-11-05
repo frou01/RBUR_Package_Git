@@ -11,6 +11,7 @@ namespace frou01.RigidBodyTrain
     public class BrakeConnectorValve : UdonSharpBehaviour
     {
         [SerializeField] CouplerObj coupler;
+        [SerializeField] public AbstractBrake brakeModule;//Refered by BuildProcess
 
         void Start()
         {
@@ -23,7 +24,7 @@ namespace frou01.RigidBodyTrain
 
         public override void Interact()
         {
-            coupler.SendCustomNetworkEvent(NetworkEventTarget.Owner, "changeBrakeValve");
+            brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.changeBrakeValve), coupler.FrontOrBack);
         }
     }
 }

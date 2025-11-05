@@ -1,5 +1,6 @@
 ﻿
 using Cinemachine;
+using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
@@ -10,56 +11,25 @@ namespace frou01.RigidBodyTrain
 {
     public class Train : UdonSharpBehaviour
     {
+        //PresetByBuildProcess
+        [HideInInspector] public TrainManager trainManager;
+        [HideInInspector] public RailsManager railsManager;
+        [HideInInspector] public int TrainID;//連結他同期用
+
+
         //43byte
         //tips:Max 1600bit
-        GameObject mineGameObject;
-        Transform chacedTransform;
-        public int TrainID;//連結他同期用
-
-        public TrainManager trainManager;
-        public RailsManager railsManager;
-        Rigidbody rigidbody_;
-        float rigidBodyMass;
-
-        bool isOwnerState;
-
-        [SerializeField] public bool started = false;
-        private bool needSync;
-        private bool stopSync;
-
-        [SerializeField] float BrakeMultiplier = 0.01f;
-        float brakeFactor;
-
-        float m_legacy_brakePressure_float;//4byte,[MPa]
-        public float[] legacy_brakePressure_float = new float[1];
-        public bool useLegacyBrakeForce = true;
-        [SerializeField] public float baseBrakePressure = 1;
-        float currentFriction;
-        [SerializeField] float friction = 0.004f;
-        [SerializeField] float static_friction = 0.013f;
-
 
         [SerializeField] private Vector3 CenterOfMass;
 
-        private bool Coupler_InitedF;
-        private bool Coupler_InitedB;
         public CouplerObj CouplerF;
         public CouplerObj CouplerB;
 
         //public Vector3 gravity = new Vector3(0, -9.8f, 0);
 
-        public Animator controllerAnimator;
-        private bool hasAnimator;
+        [SerializeField] Animator controllerAnimator;
 
-        private int rigidBodySpeedParamaterID;
-
-        //private Vector3 zero = Vector3.zero;
-
-        private int pathResolution = 3;
-        float RailErrorTime = 0;
-
-        public TrainConnectionReciever[] connectionRecievers;
-
+        [SerializeField] TrainConnectionReciever[] connectionRecievers;
         public TrainConnectionReciever GetConnectionRecieverByTag(string targetTag)
         {
             foreach (TrainConnectionReciever connection in connectionRecievers)
@@ -75,10 +45,80 @@ namespace frou01.RigidBodyTrain
             return null;
         }
 
+        public Train connectedTrain_F;
+        public Train connectedTrain_B;
+        public void setConnectedTrain(Train connectedTrain, bool F_B)//車両連結/解結
+        {
+            if (F_B)
+            {
+                connectedTrain_F = connectedTrain;
+                if (connectedTrain_F != null && Networking.GetOwner(connectedTrain_F.gameObject) != Networking.GetOwner(gameObject))
+                    Networking.SetOwner(Networking.GetOwner(gameObject), connectedTrain_F.gameObject);
+
+            }
+            else
+            {
+                connectedTrain_B = connectedTrain;
+                if (connectedTrain_B != null && Networking.GetOwner(connectedTrain_B.gameObject) != Networking.GetOwner(gameObject))
+                    Networking.SetOwner(Networking.GetOwner(gameObject), connectedTrain_B.gameObject);
+            }
+            if (connectedTrain_F != null && connectedTrain_B != null)
+            {
+                syncInterval = 2.9f + UnityEngine.Random.Range(0, 0.2f);
+            }
+            else
+            {
+                syncInterval = 0.2f;
+            }
+            nextSync = syncInterval;
+            expectedSyncedPosition = syncedPosition = transform.localPosition;
+            if (syncedVelocity != Vector3.zero) expectedSyncedVelocity = syncedVelocity = currentVelocity;
+            if (stopSync)
+            {
+                expectedSyncedVelocity = syncedVelocity = Vector3.zero;
+            }
+            updatePredicteBezier();
+
+            foreach (TrainConnectionReciever reciever in connectionRecievers)
+            {
+                reciever.TrainConnectionUpdate(connectedTrain, F_B);
+            }
+        }
+
+        [SerializeField] private Rail_Script BogieRail_F;
+        [SerializeField] private Rail_Script BogieRail_B;
+        [SerializeField] private Transform Bogie_F;
+        [SerializeField] private Rigidbody BogieWheel_F;
+        [SerializeField] private Transform Bogie_B;
+        [SerializeField] private Rigidbody BogieWheel_B;
+
+
+
+#pragma warning disable CS0414
+        [Obsolete][SerializeField] float BrakeMultiplier = 0.01f;
+        //float brakeFactor;
+
+        //float m_legacy_brakePressure_float;//4byte,[MPa]
+        [Obsolete][SerializeField] public float baseBrakePressure = 1;
+        //float currentFriction;
+        [Obsolete][SerializeField] float friction = 0.004f;
+        [Obsolete][SerializeField] float static_friction = 0.013f;
+#pragma warning restore CS0414
+
+
+
+        GameObject mineGameObject;
+        Transform chacedTransform;
+        private int pathResolution = 3;
+        Rigidbody rigidbody_;
+        bool isOwnerState;
+        bool started = false;
+        private bool hasAnimator;
+        private int rigidBodySpeedParamaterID;
         public void Start()
         {
             rigidbody_ = GetComponent<Rigidbody>();
-            rigidBodyMass = rigidbody_.mass;
+            //rigidBodyMass = rigidbody_.mass;
             BogieStart();
             bodyCenterInterpole_F =
                 Mathf.Abs(Bogie_F.localPosition.z) / Mathf.Abs(Bogie_F.localPosition.z - Bogie_B.localPosition.z);
@@ -91,15 +131,15 @@ namespace frou01.RigidBodyTrain
             FixedDeltaTime = Time.fixedDeltaTime;
 
             hasAnimator = controllerAnimator != null;
+
+            setConnectedTrain(connectedTrain_F,true);
+            setConnectedTrain(connectedTrain_B,false);
         }
-        public void PostStart()
+        private void PostStart()
         {
             pathResolution = trainManager.pathRes;
-            CouplerF.ApplyPresettedConnected();
-            CouplerB.ApplyPresettedConnected();
             if (Networking.IsOwner(mineGameObject))
             {
-
                 rigidbody_.isKinematic = false;
                 rigidbody_.centerOfMass = CenterOfMass;
                 rigidbody_.ResetInertiaTensor();
@@ -108,35 +148,23 @@ namespace frou01.RigidBodyTrain
             //transform.parent = null;
         }
 
-        private float changedSpeed;
-        private float lastSpeed;
+
+        private bool needSync;
+        private bool stopSync;
+        private float distanceErrorThreshold;
+        private float FixedDeltaTime;
+        private Vector3 currentVelocity;
+        private Vector3 localVelocity;
+
+        private Vector3 positionBogie_F;
+        private Vector3 positionBogie_B;
         private float m_nowSpeed;
-        public float[] Rigidbody_Speed_LocalZ = new float[1];
-
-        Vector3 positionBogie_F;
-        Vector3 positionBogie_B;
-
-        float distanceErrorThreshold;
-        float FixedDeltaTime;
-        float DeltaTime;
-        Vector3 calculatedVelocity;
-
-        Vector3 currentVelocity;
-        Vector3 localVelocity;
-
-
-        Vector3 dif;
-        float bezierVectorScaler;
-        Vector3 bezierB;
-        Vector3 bezierC;
-
-        float FunctionProxy_Float1;
-        //Vector3 FunctionProxy_Vector1;
+        [HideInInspector] public float[] Rigidbody_Speed_LocalZ = new float[1];
         void FixedUpdate()
         {
             if (!started)
             {
-                started = (trainManager != null && Networking.IsObjectReady(gameObject) && Coupler_InitedF && Coupler_InitedB);
+                started = Networking.IsObjectReady(gameObject);
                 if (started) PostStart();
                 return;
             }
@@ -165,25 +193,6 @@ namespace frou01.RigidBodyTrain
             {
                 onRemote();
             }
-
-            if (useLegacyBrakeForce)
-            {
-                changedSpeed = m_nowSpeed - lastSpeed;
-                if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > brakeFactor * FixedDeltaTime)
-                {
-                    FunctionProxy_Float1 = m_nowSpeed > 0 ? -brakeFactor : brakeFactor;
-                    //FunctionProxy_Vector1.z = FunctionProxy_Float1;
-                    rigidbody_.AddRelativeForce(0,0, FunctionProxy_Float1);
-                    lastSpeed = m_nowSpeed + (m_nowSpeed > 0 ? -brakeFactor : brakeFactor) / rigidBodyMass * FixedDeltaTime;
-                }
-                else
-                {
-                    FunctionProxy_Float1 = -m_nowSpeed - changedSpeed;
-                    //FunctionProxy_Vector1.z = FunctionProxy_Float1;
-                    rigidbody_.AddRelativeForce(0,0, FunctionProxy_Float1, ForceMode.VelocityChange);
-                    lastSpeed = -changedSpeed;
-                }
-            }
             if (hasAnimator)
             {
                 controllerAnimator.SetFloat(rigidBodySpeedParamaterID, m_nowSpeed / 100);
@@ -195,7 +204,13 @@ namespace frou01.RigidBodyTrain
             Rigidbody_Speed_LocalZ[0] = m_nowSpeed;
         }
 
+        Vector3 calculatedVelocity;
+        Vector3 dif;
+        float bezierVectorScaler;
+        Vector3 bezierB;
+        Vector3 bezierC;
         float initWaiting = 0;
+        float RailErrorTime = 0;
         private void onRemote()
         {
             if (InitsyncRecieveMode)
@@ -285,82 +300,6 @@ namespace frou01.RigidBodyTrain
             }
         }
 
-
-
-        void Update()
-        {
-        }
-
-        public void LateUpdate()
-        {
-            if (!started) return;
-
-            m_legacy_brakePressure_float = legacy_brakePressure_float[0];
-            //Legacy brakeforce logic
-            if (useLegacyBrakeForce)
-            {
-                currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
-                brakeFactor = (baseBrakePressure - m_legacy_brakePressure_float) / baseBrakePressure * 3.57f;// * 5/(5-((5-1.4)))
-                if (brakeFactor > 1) brakeFactor = 1;
-                if (brakeFactor < 0) brakeFactor = 0;
-                brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));
-                brakeFactor += currentFriction;
-            }
-
-        }
-
-        public void setCoupler(CouplerObj couplerObj, bool F_B)
-        {
-            if (F_B)
-            {
-                Coupler_InitedF = true;
-            }
-            else
-            {
-                Coupler_InitedB = true;
-            }
-        }
-
-        public Train connectedTrain_F;
-        public Train connectedTrain_B;
-        public void setConnectedTrain(Train connectedTrain, bool F_B)//車両連結/解結
-        {
-            if (F_B)
-            {
-                connectedTrain_F = connectedTrain;
-                if (connectedTrain_F != null && Networking.GetOwner(connectedTrain_F.gameObject) != Networking.GetOwner(gameObject))
-                    Networking.SetOwner(Networking.GetOwner(gameObject), connectedTrain_F.gameObject);
-
-            }
-            else
-            {
-                connectedTrain_B = connectedTrain;
-                if (connectedTrain_B != null && Networking.GetOwner(connectedTrain_B.gameObject) != Networking.GetOwner(gameObject))
-                    Networking.SetOwner(Networking.GetOwner(gameObject), connectedTrain_B.gameObject);
-            }
-            if (connectedTrain_F != null && connectedTrain_B != null)
-            {
-                syncInterval = 2.9f + Random.Range(0, 0.2f);
-            }
-            else
-            {
-                syncInterval = 0.2f;
-            }
-            nextSync = syncInterval;
-            expectedSyncedPosition = syncedPosition = transform.localPosition;
-            if(syncedVelocity != Vector3.zero) expectedSyncedVelocity = syncedVelocity = currentVelocity;
-            if (stopSync)
-            {
-                expectedSyncedVelocity = syncedVelocity = Vector3.zero;
-            }
-            updatePredicteBezier();
-
-            foreach (TrainConnectionReciever reciever in connectionRecievers)
-            {
-                reciever.TrainConnectionUpdate(connectedTrain,F_B);
-            }
-        }
-
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {
             fromLastSync = 0;
@@ -406,7 +345,7 @@ namespace frou01.RigidBodyTrain
             updatePredicteBezier();
             isOwnerState = Networking.IsOwner(mineGameObject);
         }
-        public string GetHierarchyPath(Transform transform)
+        private string GetHierarchyPath(Transform transform)
         {
             string text = transform.name;
             while (transform.parent != null)
@@ -418,39 +357,14 @@ namespace frou01.RigidBodyTrain
             return text;
         }
 
-        public float LinearMoveParam(float param, float speed, float target)
-        {
-            if (Mathf.Abs(param - target) > speed)
-            {
-                if (param > target)
-                {
-                    param -= speed;
-                }
-                else
-                if (param < target)
-                {
-                    param += speed;
-                }
-            }
-            else
-            {
-                param = target;
-            }
-            return param;
-        }
-
-        float bodyCenterInterpole_F;
+        private float bodyCenterInterpole_F;
 
 
         //前ボギー フィールド ココから
-        [SerializeField] private Transform Bogie_F;
-        [SerializeField] private Rigidbody BogieWheel_F;
-        //private Vector3 BogieAccel_F;
-        [System.NonSerialized] public float onRailPoint_F;
+        private float onRailPoint_F;
         private Vector3 onRailPosition_F;
 
-        public int RailID_F;
-        [SerializeField] public Rail_Script BogieRail_F;
+        private int RailID_F;
         private CinemachinePathBase BogieCinemachinePath_F;
         private float railMaxPoint_F;
 
@@ -458,19 +372,13 @@ namespace frou01.RigidBodyTrain
         private Vector3 RailEnd__Point_F;
 
         private bool moveableRail_F;
-        //private Vector3 prevRailPosition_F;
-        //private Quaternion prevRailRotation_F;
 
 
         //後ボギー フィールド ココから
-        [SerializeField] private Transform Bogie_B;
-        [SerializeField] private Rigidbody BogieWheel_B;
-        //private Vector3 BogieAccel_B;
-        [System.NonSerialized] public float onRailPoint_B;
+        private float onRailPoint_B;
         private Vector3 onRailPosition_B;
 
-        public int RailID_B;
-        [SerializeField] public Rail_Script BogieRail_B;
+        private int RailID_B;
         private CinemachinePathBase BogieCinemachinePath_B;
         private float railMaxPoint_B;
 
@@ -478,17 +386,15 @@ namespace frou01.RigidBodyTrain
         private Vector3 RailEnd__Point_B;
 
         private bool moveableRail_B;
-        //private Vector3 prevRailPosition_B;
-        //private Quaternion prevRailRotation_B;
 
 
 
 
-        [UdonSynced] public int SyncedRailID_F;//4byte
-        [UdonSynced] public int SyncedRailID_B;//4byte
-        [UdonSynced] public float SyncedRailPoint_F;//4byte
-        [UdonSynced] public float SyncedRailPoint_B;//4byte
-        [UdonSynced] public bool SyncedRailUnitOrder;//1byte
+        [HideInInspector] [UdonSynced] int SyncedRailID_F;//4byte
+        [HideInInspector] [UdonSynced] int SyncedRailID_B;//4byte
+        [HideInInspector] [UdonSynced] float SyncedRailPoint_F;//4byte
+        [HideInInspector] [UdonSynced] float SyncedRailPoint_B;//4byte
+        [HideInInspector] [UdonSynced] bool SyncedRailUnitOrder;//1byte
 
         public void BogieStart()
         {
@@ -539,18 +445,18 @@ namespace frou01.RigidBodyTrain
 
 
 
-        float BogieToWheelPosLength_F;
-        bool tooLongDiffF;
-        float BogieToWheelPosLength_B;
-        bool tooLongDiffB;
+        private float BogieToWheelPosLength_F;
+        private bool tooLongDiffF;
+        private float BogieToWheelPosLength_B;
+        private bool tooLongDiffB;
 
-        Vector3 prevpositionBogieF;
-        Vector3 prevpositionBogieB;
+        private Vector3 prevpositionBogieF;
+        private Vector3 prevpositionBogieB;
 
-        bool isDirty;
+        private bool isDirty;
 
-        Vector3 tempVector;
-        bool orProxy;
+        private Vector3 tempVector;
+        private bool orProxy;
         public void BogieCalculateNextPos()
         {
             if (moveableRail_F)
@@ -760,21 +666,21 @@ namespace frou01.RigidBodyTrain
             }
 
         }
-        Vector3 prevSyncedVelocity;
-        Vector3 prevSyncedPosition;
-        Vector3 expectedSyncedPosition;
-        Vector3 expectedSyncedVelocity;
-        [UdonSynced] Vector3 syncedPosition;//12byte
-        [UdonSynced] Vector3 syncedVelocity;//12byte
-        [UdonSynced] float syncInterval = 1;//4byte
-        float nextSync = 1;
+        private Vector3 prevSyncedVelocity;
+        private Vector3 prevSyncedPosition;
+        private Vector3 expectedSyncedPosition;
+        private Vector3 expectedSyncedVelocity;
+        [UdonSynced] private Vector3 syncedPosition;//12byte
+        [UdonSynced] private Vector3 syncedVelocity;//12byte
+        [UdonSynced] private float syncInterval = 1;//4byte
+        private float nextSync = 1;
 
-        float fromLastSync;
+        private float fromLastSync;
 
-        public bool InitsyncRecieveMode = true;
+        [System.NonSerialized] public bool InitsyncRecieveMode = true;
         [System.NonSerialized] public System.DateTime LastSent_Resync = System.DateTime.MinValue;
 
-        [UdonSynced] public bool isDiscontinuitySync;
+        [HideInInspector] [UdonSynced] private bool isDiscontinuitySync;
         public void resync()
         {
             isOwnerState = Networking.IsOwner(mineGameObject);
@@ -870,9 +776,9 @@ namespace frou01.RigidBodyTrain
 
         }
 
-        float uPBa;
-        float uPBb;
-        float uPBc;
+        private float uPBa;
+        private float uPBb;
+        private float uPBc;
         void updatePredicteBezier()
         {
             prevSyncedPosition = expectedSyncedPosition;
@@ -891,7 +797,7 @@ namespace frou01.RigidBodyTrain
             if(!result.success && isDiscontinuitySync)
             {
                 Debug.Log("Something went wrong, retry Init sync");
-                SendCustomEventDelayedSeconds(nameof(resync), Random.Range(10f,20f));
+                SendCustomEventDelayedSeconds(nameof(resync), UnityEngine.Random.Range(10f,20f));
             }
             else
             {
@@ -903,6 +809,8 @@ namespace frou01.RigidBodyTrain
             rigidbody_.isKinematic = false;
             rigidbody_.velocity = Vector3.zero;
         }
+
+#if UNITY_EDITOR
         void OnDrawGizmos()
         {
             Gizmos.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
@@ -924,8 +832,81 @@ namespace frou01.RigidBodyTrain
             Gizmos.color = new Color(1f, 0f, 0f, 1f);
             Gizmos.DrawSphere(Bogie_B.transform.position, 0.3f);
             Gizmos.DrawLine(Bogie_B.transform.position, BogieWheel_B.transform.position);
+            if(connectedTrain_F != null) drawKnucle(connectedTrain_F,CouplerF);
+            Gizmos.color = new Color(0f, 0f, 1f, 1f);
+            if (connectedTrain_B != null) drawKnucle(connectedTrain_B,CouplerB);
         }
-    }
+        private Vector3 drawingPos;
+        private Quaternion drawingRot;
+        private Vector3 drawingStart;
+        private Vector3 drawingEnd;
 
+        void drawKnucle(Train connectedTrain, CouplerObj ConnectingCoupler)
+        {
+            Transform ConnectingCouplerTransform = ConnectingCoupler.transform;
+            CouplerObj connectCoupler = searchKnucle(connectedTrain);
+            Transform connectCouplerTransform = connectCoupler.transform;
+
+            float scale = (connectCouplerTransform.position - ConnectingCoupler.transform.position).magnitude + 0.4f;
+
+            drawingPos = ConnectingCouplerTransform.position + ConnectingCouplerTransform.forward * -0.4f;
+            drawingRot = ConnectingCouplerTransform.rotation;
+            drawingStart = new Vector3();
+            drawingEnd = new Vector3();
+
+            drawingPos.y += 2f;
+
+            drawingEnd.x = 0.5f * scale;
+            drawingEnd.z = 0.6f * scale;
+            DrawLine(drawingPos, drawingRot, drawingStart, drawingEnd);
+
+            drawingStart = drawingEnd;
+            drawingEnd.x = 0;
+            drawingEnd.z = 1.2f * scale;
+            DrawLine(drawingPos, drawingRot, drawingStart, drawingEnd);
+
+            if (connectCoupler.FrontOrBack)
+            {
+                Gizmos.color = new Color(1f, 0f, 0f, 1f);
+            }
+            else
+            {
+                Gizmos.color = new Color(0f, 0f, 1f, 1f);
+            }
+                drawingPos = connectCouplerTransform.position + connectCouplerTransform.forward * -0.4f;
+            drawingRot = connectCouplerTransform.rotation;
+            drawingStart = new Vector3();
+            drawingEnd = new Vector3();
+
+            drawingPos.y += 2f;
+
+            drawingEnd.x = 0.5f * scale;
+            drawingEnd.z = 0.6f * scale;
+            DrawLine(drawingPos, drawingRot, drawingStart, drawingEnd);
+
+            drawingStart = drawingEnd;
+            drawingEnd.x = 0;
+            drawingEnd.z = 1.2f * scale;
+            DrawLine(drawingPos, drawingRot, drawingStart, drawingEnd);
+        }
+        void DrawLine(Vector3 originOffset , Quaternion rotation, Vector3 start,Vector3 end)
+        {
+            Gizmos.DrawLine(originOffset + rotation * start, originOffset + rotation * end);
+        }
+
+        CouplerObj searchKnucle(Train connectedTrain)
+        {
+
+            if (Vector3.Dot(connectedTrain.transform.forward, transform.position - connectedTrain.transform.position) > 0)
+            {
+                return connectedTrain.CouplerF;
+            }
+            else
+            {
+                return connectedTrain.CouplerB;
+            }
+        }
+#endif
+    }
 
 }
