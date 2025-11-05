@@ -22,6 +22,8 @@ public class Legacy_BrakeModule : AbstractBrake
     [SerializeField] protected float friction = 90;
     [SerializeField] protected float static_friction = 2240;
 
+    protected bool[] trainOwnerState = new bool[1];
+
     protected override void Start()
     {
         base.Start();
@@ -31,6 +33,7 @@ public class Legacy_BrakeModule : AbstractBrake
         rigidbody_ = train.GetComponent<Rigidbody>();
         rigidBodyMass = rigidbody_.mass;
         FixedDeltaTime = Time.fixedDeltaTime;
+        trainOwnerState = train.exposedOwnerState;
     }
     protected override void Update()
     {
@@ -60,19 +63,26 @@ public class Legacy_BrakeModule : AbstractBrake
         m_nowSpeed = localVelocity.z;
 
         changedSpeed = m_nowSpeed - lastSpeed;
-        if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > m_brakeFactor * FixedDeltaTime)
+        if (trainOwnerState[0])
         {
-            FunctionProxy_Float1 = m_nowSpeed > 0 ? -m_brakeFactor : m_brakeFactor;
-            //FunctionProxy_Vector1.z = FunctionProxy_Float1;
-            rigidbody_.AddRelativeForce(0, 0, FunctionProxy_Float1);
-            lastSpeed = m_nowSpeed + (m_nowSpeed > 0 ? -m_brakeFactor : m_brakeFactor) / rigidBodyMass * FixedDeltaTime;
+            if (Mathf.Abs(m_nowSpeed + changedSpeed) * rigidBodyMass > m_brakeFactor * FixedDeltaTime)
+            {
+                FunctionProxy_Float1 = m_nowSpeed > 0 ? -m_brakeFactor : m_brakeFactor;
+                //FunctionProxy_Vector1.z = FunctionProxy_Float1;
+                rigidbody_.AddRelativeForce(0, 0, FunctionProxy_Float1);
+                lastSpeed = m_nowSpeed + (m_nowSpeed > 0 ? -m_brakeFactor : m_brakeFactor) / rigidBodyMass * FixedDeltaTime;
+            }
+            else
+            {
+                FunctionProxy_Float1 = -m_nowSpeed - changedSpeed;
+                //FunctionProxy_Vector1.z = FunctionProxy_Float1;
+                rigidbody_.AddRelativeForce(0, 0, FunctionProxy_Float1, ForceMode.VelocityChange);
+                lastSpeed = -changedSpeed;
+            }
         }
         else
         {
-            FunctionProxy_Float1 = -m_nowSpeed - changedSpeed;
-            //FunctionProxy_Vector1.z = FunctionProxy_Float1;
-            rigidbody_.AddRelativeForce(0, 0, FunctionProxy_Float1, ForceMode.VelocityChange);
-            lastSpeed = -changedSpeed;
+            lastSpeed = m_nowSpeed;
         }
     }
 }

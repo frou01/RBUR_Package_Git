@@ -145,6 +145,7 @@ namespace frou01.RigidBodyTrain
                 rigidbody_.ResetInertiaTensor();
             }
             isOwnerState = Networking.IsOwner(mineGameObject);
+            exposedOwnerState[0] = isOwnerState;
             //transform.parent = null;
         }
 
@@ -160,6 +161,7 @@ namespace frou01.RigidBodyTrain
         private Vector3 positionBogie_B;
         private float m_nowSpeed;
         [HideInInspector] public float[] Rigidbody_Speed_LocalZ = new float[1];
+        [HideInInspector] public bool[] exposedOwnerState = new bool[1];
         void FixedUpdate()
         {
             if (!started)
@@ -344,6 +346,15 @@ namespace frou01.RigidBodyTrain
             }
             updatePredicteBezier();
             isOwnerState = Networking.IsOwner(mineGameObject);
+            exposedOwnerState[0] = isOwnerState;
+            if (isOwnerState)
+            {
+                rigidbody_.useGravity = true;
+            }
+            else
+            {
+                rigidbody_.useGravity = false;
+            }
         }
         private string GetHierarchyPath(Transform transform)
         {
@@ -684,6 +695,7 @@ namespace frou01.RigidBodyTrain
         public void resync()
         {
             isOwnerState = Networking.IsOwner(mineGameObject);
+            exposedOwnerState[0] = isOwnerState;
             isDiscontinuitySync = true;
             RequestSerialization();
         }
