@@ -27,16 +27,11 @@ namespace frou01.RigidBodyTrain
         private bool needSync;
         private bool stopSync;
 
-        [SerializeField] public bool handBrakeState;
-        [SerializeField] float handBrakeForce;
         [SerializeField] float BrakeMultiplier = 0.01f;
-        [SerializeField] float brakeFactor;
-        [SerializeField] bool brakeUpdateBypass;
+        float brakeFactor;
 
-        [UdonSynced] float m_brakePressure_float;//4byte,[MPa]
-
-
-        public float[] brakePressure_float = new float[1];
+        float m_legacy_brakePressure_float;//4byte,[MPa]
+        public float[] legacy_brakePressure_float = new float[1];
         public bool useLegacyBrakeForce = true;
         [SerializeField] public float baseBrakePressure = 1;
         float currentFriction;
@@ -44,15 +39,7 @@ namespace frou01.RigidBodyTrain
         [SerializeField] float static_friction = 0.013f;
 
 
-
         [SerializeField] private Vector3 CenterOfMass;
-
-
-        [UdonSynced] public bool BrakeOpenF;//1byte
-        [UdonSynced] public bool BrakeOpenB;//1byte
-
-        private float[] ConnectedBrakePressure_F;
-        private float[] ConnectedBrakePressure_B;
 
         private bool Coupler_InitedF;
         private bool Coupler_InitedB;
@@ -65,14 +52,28 @@ namespace frou01.RigidBodyTrain
         private bool hasAnimator;
 
         private int rigidBodySpeedParamaterID;
-        private int brakePressureParamaterID;
-        private int handBrakeStateID;
-        private int handBrakeForceID;
 
         //private Vector3 zero = Vector3.zero;
 
         private int pathResolution = 3;
         float RailErrorTime = 0;
+
+        public TrainConnectionReciever[] connectionRecievers;
+
+        public TrainConnectionReciever GetConnectionRecieverByTag(string targetTag)
+        {
+            foreach (TrainConnectionReciever connection in connectionRecievers)
+            {
+                foreach (string tag in connection.connectionTags)
+                {
+                    if (tag == targetTag)
+                    {
+                        return connection;
+                    }
+                }
+            }
+            return null;
+        }
 
         public void Start()
         {
@@ -85,9 +86,6 @@ namespace frou01.RigidBodyTrain
             mineGameObject = gameObject;
             chacedTransform = transform;
             rigidBodySpeedParamaterID = Animator.StringToHash("RigidBodySpeed");
-            brakePressureParamaterID = Animator.StringToHash("BrakePressure");
-            handBrakeStateID = Animator.StringToHash("HandBrakeState");
-            handBrakeForceID = Animator.StringToHash("HandBrakeForce");
 
             setPositionFromBogie();
             FixedDeltaTime = Time.fixedDeltaTime;
@@ -195,15 +193,6 @@ namespace frou01.RigidBodyTrain
             distanceErrorThreshold = FixedDeltaTime * (1 + Mathf.Abs(m_nowSpeed));
             BogieCalculateNextPos();
             Rigidbody_Speed_LocalZ[0] = m_nowSpeed;
-            //if (currentVelocity.sqrMagnitude > 0.0001f)
-            //{
-            //    PlayFlangeSound();
-            //}
-            //else
-            //{
-            //    stopAudioSource(ref FlangeSound_F_stop, FlangeSound_F);
-            //    stopAudioSource(ref FlangeSound_B_stop, FlangeSound_B);
-            //}
         }
 
         float initWaiting = 0;
@@ -286,7 +275,6 @@ namespace frou01.RigidBodyTrain
                 RailErrorTime += FixedDeltaTime;
                 if (RailErrorTime > 30)
                 {
-                    //trainManager.nowSynced = false;
                     trainManager.SendCustomEvent(nameof(trainManager.ReSyncRequest));
                     RailErrorTime = 0;
                 }
@@ -296,158 +284,27 @@ namespace frou01.RigidBodyTrain
                 if (RailErrorTime > 0) RailErrorTime -= FixedDeltaTime * 2;
             }
         }
-        //public void PlayFlangeSound()
-        //{
-        //    float flangeDot_F = Mathf.Abs(Vector3.Dot(currentVelocity, BogieWheel_F.transform.forward));
-        //
-        //    //Debug.Log("flangeDot_F" + flangeDot_F);
-        //    if (currentVelocity.magnitude - flangeDot_F > 0.001f)
-        //    {
-        //        playAudioSource(ref FlangeSound_F_stop, FlangeSound_F, (currentVelocity.magnitude - flangeDot_F - 0.001f) * 2000);
-        //    }
-        //    else if (!FlangeSound_F_stop)
-        //    {
-        //        stopAudioSource(ref FlangeSound_F_stop, FlangeSound_F);
-        //    }
-        //    float flangeDot_B = Mathf.Abs(Vector3.Dot(currentVelocity, BogieWheel_B.transform.forward));
-        //    if (currentVelocity.magnitude - flangeDot_B > 0.001f)
-        //    {
-        //        playAudioSource(ref FlangeSound_B_stop, FlangeSound_B, (currentVelocity.magnitude - flangeDot_B - 0.001f) * 2000);
-        //    }
-        //    else if (!FlangeSound_B_stop)
-        //    {
-        //        stopAudioSource(ref FlangeSound_B_stop, FlangeSound_B);
-        //    }
-        //}
-
-        void playAudioSource(ref bool isStop, AudioSource audioSource, float volume)
-        {
-            if (isStop)
-            {
-                audioSource.enabled = true;
-                audioSource.Play();
-                isStop = false;
-            }
-            audioSource.volume = volume;
-        }
-        void stopAudioSource(ref bool isStop, AudioSource audioSource)
-        {
-            if (!isStop)
-            {
-                audioSource.Stop();
-                isStop = true;
-                audioSource.volume = 0;
-                audioSource.enabled = false;
-            }
-        }
 
 
 
-
-
-        float connectedPr_F;
-        float connectedPr_B;
-
-        float pressure_delta_F;//流量の単位は[kg/s]
-        float pressure_delta_B;
-        //抵抗は無視する。
-        //参考 https://kenkidryer.jp/2020/09/03/pressure-flow-rate-bernoullis-principle/
-        //気体の性質 https://www.hakko.co.jp/library/qa/qakit/html/h01040.htm
-        //温度20度における密度定数 m = 11.5075252899[kg/m³*MPa] 理想気体では無いので近似的な物。
-
-        //大気圧は0.101325[MPa]
-        //圧力Q,qは[MPa]とする(Q>q)
-        //ある圧力に於ける密度p [kg/m³] は m[kg/m³MPa]*Q[MPa]
-        //V = 1000*√(2*(Q-q)[MPa]/(Q*m))[m/s]
-
-        //S[m²]を管径とする
-        //V*Sが体積流量[m³/s]である
-        //質量流量はV*S*Q*m
-        //=s*Q*m*1000*√(2*q[MPa]/Q*m)
-        //=s*1000*√(2*q[MPa]*Q*m)
-
-        //質量Mから圧力Qを求める（温度は20度で変わらないことにする）
-        //Q = (M[kg]/m[kg/m³*MPa])/L[m³]
-
-        //圧力変化を求めると、
-        //ΔQ = 10³ * S/(L*√m)*√(2*(Q-q)*Q)
-        //定数×√(2*(Q-q)*Q)になった
-
-        //定数の参考値は
-        //S=0.0001m²、BP管容量Lを0.02m³として
-        //10³*S/(L*√m) = 1.47 = 1.5
-        //Lは実際には各車で違うことが考えられる。
-
-        //実際には流速が音速を下回る状況もある。その場合、以下の計算は甚だ不自然なものということになるが、今は考えないものとする。
-        //将来的にブレーキ管をTrainから切り離して連結時参照の同期するオブジェクトとした場合に、各車のパイプ容積を考えた実装をすることになるだろう。
-        //float targetPressure;
         void Update()
         {
-            if(!brakeUpdateBypass)//Trainでのブレーキ圧調整を行わない設定
-            {
-                m_brakePressure_float = brakePressure_float[0];
-                DeltaTime = Time.deltaTime;
-                m_brakePressure_float += pressure_delta_F * DeltaTime;
-                if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F * DeltaTime;
-                m_brakePressure_float += pressure_delta_B * DeltaTime;
-                if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B * DeltaTime;
-
-                brakePressure_float[0] = m_brakePressure_float;
-            }
         }
 
-        //音速/60=5.7mほど。波を送るには早いくらいか
         public void LateUpdate()
         {
             if (!started) return;
-            m_brakePressure_float = brakePressure_float[0];//LateUpdateではm_brakePressure_floatは参照のみ
-            //rigidbody_.WakeUp();
-            if (!brakeUpdateBypass)//Trainでのブレーキ圧調整を行わない設定
-            {
-                pressure_delta_F = 0;
-                pressure_delta_B = 0;
-                //低い方へ流す（高圧からは受け入れだけする）
-                if (BrakeOpenF)
-                {
-                    connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
-                    if (connectedPr_F < m_brakePressure_float)
-                    {
-                        pressure_delta_F = m_brakePressure_float - connectedPr_F;
-                        pressure_delta_F = -1.5f * Mathf.Sqrt(2 * pressure_delta_F * m_brakePressure_float);
-                        //Debug.Log("pressure_delta_F " + pressure_delta_F);
-                    }
-                }
-                if (BrakeOpenB)
-                {
-                    connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
-                    if (connectedPr_B < m_brakePressure_float)
-                    {
-                        pressure_delta_B = m_brakePressure_float - connectedPr_B;
-                        pressure_delta_B = -1.5f * Mathf.Sqrt(2 * pressure_delta_B * m_brakePressure_float);
-                        //Debug.Log("pressure_delta_B " + pressure_delta_B);
-                    }
-                }
-            }
 
-            if (hasAnimator)
-            {
-                controllerAnimator.SetFloat(brakePressureParamaterID, m_brakePressure_float);
-            }
+            m_legacy_brakePressure_float = legacy_brakePressure_float[0];
             //Legacy brakeforce logic
             if (useLegacyBrakeForce)
             {
                 currentFriction = (1 / (1 + Mathf.Abs(localVelocity.z) * 10)) * static_friction + friction;
-                brakeFactor = (baseBrakePressure - m_brakePressure_float) / baseBrakePressure * 3.57f;// * 5/(5-((5-1.4)))
+                brakeFactor = (baseBrakePressure - m_legacy_brakePressure_float) / baseBrakePressure * 3.57f;// * 5/(5-((5-1.4)))
                 if (brakeFactor > 1) brakeFactor = 1;
                 if (brakeFactor < 0) brakeFactor = 0;
                 brakeFactor *= BrakeMultiplier * (0.5f + 0.5f / (1 + Mathf.Abs(localVelocity.z) / 5));
-                brakeFactor += (handBrakeState ? handBrakeForce : 0) + currentFriction;
-
-                if (hasAnimator)
-                {
-                    handBrakeState = controllerAnimator.GetBool(handBrakeStateID);
-                    handBrakeForce = controllerAnimator.GetFloat(handBrakeForceID);
-                }
+                brakeFactor += currentFriction;
             }
 
         }
@@ -470,19 +327,13 @@ namespace frou01.RigidBodyTrain
         {
             if (F_B)
             {
-                if (connectedTrain != null) ConnectedBrakePressure_F = connectedTrain.brakePressure_float;
-                else ConnectedBrakePressure_F = null;
                 connectedTrain_F = connectedTrain;
-
-
                 if (connectedTrain_F != null && Networking.GetOwner(connectedTrain_F.gameObject) != Networking.GetOwner(gameObject))
                     Networking.SetOwner(Networking.GetOwner(gameObject), connectedTrain_F.gameObject);
 
             }
             else
             {
-                if (connectedTrain != null) ConnectedBrakePressure_B = connectedTrain.brakePressure_float;
-                else ConnectedBrakePressure_B = null;
                 connectedTrain_B = connectedTrain;
                 if (connectedTrain_B != null && Networking.GetOwner(connectedTrain_B.gameObject) != Networking.GetOwner(gameObject))
                     Networking.SetOwner(Networking.GetOwner(gameObject), connectedTrain_B.gameObject);
@@ -503,24 +354,11 @@ namespace frou01.RigidBodyTrain
                 expectedSyncedVelocity = syncedVelocity = Vector3.zero;
             }
             updatePredicteBezier();
-        }
 
-        public void changeBrakeValve(bool F_B)//空制弁開放/閉鎖
-        {
-            if (F_B)
+            foreach (TrainConnectionReciever reciever in connectionRecievers)
             {
-                BrakeOpenF = !BrakeOpenF;
+                reciever.TrainConnectionUpdate(connectedTrain,F_B);
             }
-            else
-            {
-                BrakeOpenB = !BrakeOpenB;
-            }
-            needSync = true;
-        }
-
-        public void PerformHandBrake()
-        {
-            handBrakeState = !handBrakeState;
         }
 
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
@@ -567,12 +405,6 @@ namespace frou01.RigidBodyTrain
             }
             updatePredicteBezier();
             isOwnerState = Networking.IsOwner(mineGameObject);
-        }
-
-        public bool CanTransferOwner;
-        public void OwnerShipLinkTransfer()
-        {
-            CanTransferOwner = currentVelocity.sqrMagnitude < 0.1f;
         }
         public string GetHierarchyPath(Transform transform)
         {
@@ -661,15 +493,14 @@ namespace frou01.RigidBodyTrain
         public void BogieStart()
         {
             onRailPoint_F = BogieRail_F.GetF(Bogie_F.position);
-
             copyRailProperties_F();
             onRailPosition_F = BogieCinemachinePath_F.EvaluatePosition(onRailPoint_F);
 
 
             onRailPoint_B = BogieRail_B.GetF(Bogie_B.position);
-
             copyRailProperties_B();
             onRailPosition_B = BogieCinemachinePath_B.EvaluatePosition(onRailPoint_B);
+
             prevpositionBogieF = positionBogie_F = Bogie_F.position;
             prevpositionBogieB = positionBogie_B = Bogie_B.position;
         }

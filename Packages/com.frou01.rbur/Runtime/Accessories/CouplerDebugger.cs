@@ -31,10 +31,13 @@ namespace frou01.RigidBodyTrain
             {
                 if (coupler.TrainScript != null && coupler.TrainScript.started)
                 {
-                    if (coupler.FrontOrBack)
-                        display.text += "<br>空制弁 : " + (coupler.TrainScript.BrakeOpenF ? "開" : "閉");
-                    else
-                        display.text += "<br>空制弁 : " + (coupler.TrainScript.BrakeOpenB ? "開" : "閉");
+                    if (coupler.BrakeModule)
+                    {
+                        if (coupler.FrontOrBack)
+                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenF ? "開" : "閉");
+                        else
+                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenB ? "開" : "閉");
+                    }
                     display.text += "<br> debug_force" + (coupler.chachedTransform.InverseTransformVector(coupler.joint.currentForce) * 100000);
                 }
             }

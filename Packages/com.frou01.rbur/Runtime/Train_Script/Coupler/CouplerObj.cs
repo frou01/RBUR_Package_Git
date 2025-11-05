@@ -57,7 +57,8 @@ namespace frou01.RigidBodyTrain
         //Vector3 InertiaTensor;
         [SerializeField] GameObject knuckleModel;
         [SerializeField] GameObject knuckleKey;
-        VRCPlayerApi localPlayer;
+
+        public AbstractBrake BrakeModule;
         public void Start()
         {
             Initialize();
@@ -65,7 +66,9 @@ namespace frou01.RigidBodyTrain
             //couplerRigidBody.isKinematic = false;
             TrainScript.setCoupler(this, FrontOrBack);
             started = true;
-            localPlayer = Networking.LocalPlayer;
+
+            TrainConnectionReciever foundModule = (TrainScript.GetConnectionRecieverByTag("Brake"));
+            if (foundModule) BrakeModule = ((AbstractBrake)foundModule);
         }
 
         float jointLinerLimit;
@@ -199,7 +202,7 @@ namespace frou01.RigidBodyTrain
 
         public void changeBrakeValve()
         {
-            TrainScript.changeBrakeValve(FrontOrBack);
+            if(BrakeModule) BrakeModule.changeBrakeValve(FrontOrBack);
         }
 
 

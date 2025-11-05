@@ -8,6 +8,7 @@ using VRC.Udon;
 public class SpeedSoundPlayer : UdonSharpBehaviour
 {
     [SerializeField] Train train;
+    [SerializeField] AbstractBrake brakeModule;
     [SerializeField] AudioSource runningSound;
     [SerializeField] AudioSource brakingSound;
     [SerializeField] float speedMultiply;
@@ -23,7 +24,7 @@ public class SpeedSoundPlayer : UdonSharpBehaviour
     void Start()
     {
         speed = train.Rigidbody_Speed_LocalZ;
-        brake = train.brakePressure_float;
+        brake = train.legacy_brakePressure_float;
         baseBrakePressure = train.baseBrakePressure;
         if(runningSound) hasRunning = true;
         if(brakingSound) hasBrake = true;

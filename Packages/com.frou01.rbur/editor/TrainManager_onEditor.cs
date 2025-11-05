@@ -1,6 +1,8 @@
 ﻿using frou01.RigidBodyTrain;
+using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UdonSharp;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -48,6 +50,17 @@ public class TrainManager_onEditor : IProcessSceneWithReport
         }
         trainManager.Trains = Trains_List.ToArray();
 
+        foreach (GameObject obj in scene.GetRootGameObjects())
+        {
+            foreach(AbstractBrake brake in obj.GetComponentsInChildren<AbstractBrake>(true))
+            {
+                if (!brake.connectionTags.Contains("Brake"))
+                {
+                    Debug.Log("setting brake tag " + brake.name);
+                    brake.connectionTags = brake.connectionTags.Append("Brake").ToArray();
+                }
+            }
+        }
         //foreach (Train train in trainManager.Trains)
         //{
         //    Debug.Log(train.transform.parent.name);
