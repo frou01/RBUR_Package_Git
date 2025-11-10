@@ -51,7 +51,7 @@ namespace frou01.RigidBodyTrain
 
             tempForceVector = trainTransform.up;
 
-            wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * WheelPressure[0]);
+            wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
             wheel.AddRelativeTorque(MortorForce[0] * wheelRadius, 0, 0, ForceMode.Force);
             brake.AddForce(-tempForceVector * BrakeForce[0]/ brakeFriction * wheelRadius, ForceMode.Force);
 
