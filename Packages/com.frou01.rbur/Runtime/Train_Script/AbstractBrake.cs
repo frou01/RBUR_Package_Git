@@ -127,6 +127,15 @@ public class AbstractBrake : TrainConnectionReciever
         //どちらで処理してもよい
     }
 
+    //math_sqrt_2_q_Q_div_mの結果に係数を掛けて用いる
+    //係数は10³*S/(L*√m)
+    //S:断面積
+    //L:体積
+    //密度定数 m = 11.5075252899[kg/m³*MPa]
+    protected static float math_sqrt_2_q_Q_div_m(float to, float from)
+    {
+        return Mathf.Sqrt(2 * Mathf.Abs(from - to) * Mathf.Max(to, from)) * (from > to ? 1 : -1);
+    }
 
     public override void TrainConnectionUpdate(Train connectedTrain, bool F_B)
     {
