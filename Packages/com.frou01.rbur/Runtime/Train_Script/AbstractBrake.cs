@@ -71,7 +71,6 @@ public class AbstractBrake : TrainConnectionReciever
     //Lは実際には各車で違うことが考えられる。
 
     //実際には流速が音速を下回る状況もある。その場合、以下の計算は甚だ不自然なものということになるが、今は考えないものとする。
-    //将来的にブレーキ管をTrainから切り離して連結時参照の同期するオブジェクトとした場合に、各車のパイプ容積を考えた実装をすることになるだろう。
     protected virtual void Update()
     {
         if (isOwnerState)
@@ -150,7 +149,7 @@ public class AbstractBrake : TrainConnectionReciever
             }
         }
     }
-    bool isOwnerState;
+    protected bool isOwnerState;
     [NetworkCallable]
     public void changeBrakeValve(bool F_B)//空制弁開放/閉鎖
     {
@@ -167,6 +166,6 @@ public class AbstractBrake : TrainConnectionReciever
     }
     public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
     {
-        isOwnerState = Networking.IsOwner(gameObject);
+        isOwnerState = player == Networking.LocalPlayer;
     }
 }
