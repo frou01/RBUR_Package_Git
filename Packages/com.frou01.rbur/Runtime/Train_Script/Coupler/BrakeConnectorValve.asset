@@ -128,7 +128,7 @@ MonoBehaviour:
       Data: 8|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: AbstractBrake, RBUR_Def-udon
+      Data: frou01.RigidBodyTrain.AbstractBrake, RBUR_Def-udon
     - Name: 
       Entry: 8
       Data: 

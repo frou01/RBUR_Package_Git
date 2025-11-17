@@ -2,10 +2,6 @@
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
-using VRC.Udon;
-using UnityEditor;
-using VRC.Udon.Common.Interfaces;
-using TMPro;
 
 namespace frou01.RigidBodyTrain
 {
