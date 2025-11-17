@@ -1,5 +1,6 @@
 ﻿using UdonSharp;
 using UnityEngine;
+using VRC.SDKBase;
 
 namespace frou01.RigidBodyTrain
 {
@@ -28,6 +29,10 @@ namespace frou01.RigidBodyTrain
         [SerializeField] protected float emer_sensitivity = 0.020f;
         [SerializeField] protected float emer_sensitivity_2 = 0.1f;
 
+        [SerializeField] protected float StaticFriction = 1020f;
+        [SerializeField] protected float DynamicFriction = 61f;
+        [SerializeField] protected float DynamicFrictionSpeed = 0.5f;
+
         protected float k_supportDelta;
         protected float k_cylinderDelta;
         protected float k_straightDelta;
@@ -39,15 +44,18 @@ namespace frou01.RigidBodyTrain
 
         [SerializeField] protected MortorAndWheel[] controlledWheel;
         [HideInInspector][SerializeField] protected float[][] wheelBrakes = new float[0][];
+        [HideInInspector][SerializeField] protected float[][] wheelTreadSpeeds = new float[0][];
         [SerializeField] protected float[] wheelMultiplier = new float[0];
 
         protected override void Start()
         {
             base.Start();
             wheelBrakes = new float[controlledWheel.Length][];
+            wheelTreadSpeeds = new float[controlledWheel.Length][];
             for (int index = 0; index < wheelBrakes.Length; index++)
             {
                 wheelBrakes[index] = controlledWheel[index].BrakeForce;
+                wheelTreadSpeeds[index] = controlledWheel[index].WheelTreadSpeed;
             }
         }
 
@@ -73,6 +81,7 @@ namespace frou01.RigidBodyTrain
                 for (int index = 0; index < wheelBrakes.Length; index++)
                 {
                     brakeFactor[0] += wheelBrakes[index][0] = (CylinderPressure - 0.1f) * wheelMultiplier[index];
+                    wheelBrakes[index][0] += Mathf.Lerp(StaticFriction, DynamicFriction, Mathf.Abs(wheelTreadSpeeds[index][0])/DynamicFrictionSpeed);
                 }
             else
                 for (int index = 0; index < wheelBrakes.Length; index++)
@@ -262,6 +271,15 @@ namespace frou01.RigidBodyTrain
                         }
                         break;
                 }
+            }
+        }
+
+        public override void OnOwnershipTransferred(VRCPlayerApi player)
+        {
+            base.OnOwnershipTransferred(player);
+            for (int index = 0; index < wheelBrakes.Length; index++)
+            {
+                wheelBrakes[index][0] = 0;
             }
         }
     }
