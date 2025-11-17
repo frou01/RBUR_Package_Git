@@ -46,6 +46,9 @@ public class railModelTiler : MonoBehaviour
     Vector3[] originVertices;
 
     Vector3[] transformedVertices;
+
+    Vector3[] originNormals;
+    Vector3[] transformedNormals;
     bool setUp;
     bool transforming;
     public bool started;
@@ -130,7 +133,9 @@ public class railModelTiler : MonoBehaviour
         instancedMesh = Instantiate(copied.GetComponent<MeshFilter>().sharedMesh);
         VerticesId = 0;
         originVertices = instancedMesh.vertices;
+        originNormals = instancedMesh.normals;
         transformedVertices = new Vector3[instancedMesh.vertices.Length];
+        transformedNormals = new Vector3[instancedMesh.vertices.Length];
         setUp = false;
         transforming = true;
     }
@@ -158,6 +163,7 @@ public class railModelTiler : MonoBehaviour
                 Quaternion rotation;
                 getRotationOnT(t, out rotation, Quaternion.Inverse(copied.transform.rotation));
                 transformedVertices[VerticesId] = originPos + rotation * this.offset +  rotation * (originVertices[VerticesId] - originPos) + offset;
+                transformedNormals[VerticesId] = rotation * originNormals[VerticesId];
                 VerticesId++;
             }
             else
@@ -194,6 +200,7 @@ public class railModelTiler : MonoBehaviour
         if (ReplaceMesh)
         {
             instancedMesh.SetVertices(transformedVertices);
+            instancedMesh.SetNormals(transformedNormals);
             if (generatingDistance + (isZinverted ? +modelLength : modelLength) > TilingEnd)
             {
                 for (int subMeshID = 0; subMeshID < instancedMesh.subMeshCount; subMeshID++)
@@ -230,7 +237,6 @@ public class railModelTiler : MonoBehaviour
                 }
             }
             instancedMesh.RecalculateBounds();
-            instancedMesh.RecalculateNormals();
             instancedMesh.RecalculateTangents();
             instancedMesh.name = copied.name;
             //string meshAssetPath = Path.Combine(saveFolder, instancedMesh.name + gameObjID + ".asset");
