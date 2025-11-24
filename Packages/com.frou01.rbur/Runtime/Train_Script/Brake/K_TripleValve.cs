@@ -24,9 +24,9 @@ namespace frou01.RigidBodyTrain
         [SerializeField] protected float slowRelease_sensitivity = 0.06f;
         [SerializeField] protected float release_sensitivity = 0.005f;
         [SerializeField] protected float immidiateBrake_lap_sensitivity = 0.00f;
-        [SerializeField] protected float immidiateBrake_sensitivity = 0.01f;
-        [SerializeField] protected float brake_sensitivity = 0.015f;
-        [SerializeField] protected float emer_sensitivity = 0.020f;
+        [SerializeField] protected float immidiateBrake_sensitivity = 0.015f;
+        [SerializeField] protected float brake_sensitivity = 0.02f;
+        [SerializeField] protected float emer_sensitivity = 0.025f;
         [SerializeField] protected float emer_sensitivity_2 = 0.1f;
 
         [SerializeField] protected float StaticFriction = 1020f;
@@ -73,20 +73,20 @@ namespace frou01.RigidBodyTrain
             }
             ApplyForceToWheel();
         }
-
         protected virtual void ApplyForceToWheel()
         {
             brakeFactor[0] = 0;
             if (isOwnerState)
                 for (int index = 0; index < wheelBrakes.Length; index++)
                 {
-                    brakeFactor[0] += wheelBrakes[index][0] = (CylinderPressure - 0.1f) * wheelMultiplier[index];
-                    wheelBrakes[index][0] += Mathf.Lerp(StaticFriction, DynamicFriction, Mathf.Abs(wheelTreadSpeeds[index][0])/DynamicFrictionSpeed);
+                    brakeFactor[0] += wheelBrakes[index][0] = (CylinderPressure - 0.1f);
+                    wheelBrakes[index][0] *= wheelMultiplier[index];
+                    wheelBrakes[index][0] += Mathf.Lerp(StaticFriction, DynamicFriction, Mathf.Abs(wheelTreadSpeeds[index][0]) / DynamicFrictionSpeed);
                 }
             else
                 for (int index = 0; index < wheelBrakes.Length; index++)
                 {
-                    brakeFactor[0] += (CylinderPressure - 0.1f) * wheelMultiplier[index];
+                    brakeFactor[0] += (CylinderPressure - 0.1f);
                 }
         }
         //変化の係数は10³*S/(L*√m)
@@ -123,7 +123,7 @@ namespace frou01.RigidBodyTrain
                     piston_Position = 5;//全制動
                 }
                 else
-                if (piston_Position < 3 && SupportPressure > temp_straightBrakePressure + immidiateBrake_sensitivity)
+                if (piston_Position <= 3 && SupportPressure > temp_straightBrakePressure + immidiateBrake_sensitivity)
                 {
                     piston_Position = 3;//急制動
                 }
@@ -150,7 +150,6 @@ namespace frou01.RigidBodyTrain
                         if (temp_cof > slowRefill_sensitivity)
                         {
                             //減速込め
-                            //制動筒 <-> 列車管
                             //列車管 <-> 補助空気溜
                             //列車管の容積は0.02
                             //断面積は1.08mm²
@@ -163,7 +162,6 @@ namespace frou01.RigidBodyTrain
                         else if (temp_cof > 0)
                         {
                             //全込め
-                            //制動筒 <-> 列車管
                             //列車管 <-> 補助空気溜
                             //列車管の容積は0.02
                             //断面積は1.76mm²
@@ -183,10 +181,10 @@ namespace frou01.RigidBodyTrain
                            // = 0.00283585553/CylinderSize
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, CylinderPressure);
                         k_cylinderDelta -= 0.00283585553f / CylinderSize * temp_pressureDiff;
+                        temp_cof = temp_straightBrakePressure - SupportPressure;
                         if (temp_cof > 0)
                         {
                             //全込め
-                            //制動筒 <-> 列車管
                             //列車管 <-> 補助空気溜
                             //列車管の容積は0.02
                             //断面積は1.76mm²
