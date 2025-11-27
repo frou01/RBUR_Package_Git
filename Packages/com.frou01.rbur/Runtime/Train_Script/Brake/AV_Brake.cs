@@ -15,6 +15,16 @@ namespace frou01.RigidBodyTrain
         [SerializeField] protected float EmerTankSize = 0.0035f;//[m³]
         [SerializeField] protected float CylinderSize = 0.02191849924f;//[m³] 行程による体積変化は無視 305mmシリンダ
 
+        [SerializeField] protected float release_constriction = 8.0f;//mm²
+        [SerializeField] protected float refill_constriction = 5.0f;
+        [SerializeField] protected float brake_constriction = 8.04f;
+
+        protected float cylinder_release_coefficient;
+        protected float additional_refill_coefficient;
+        protected float support_refill_coefficient;
+        protected float cylinder_brake_coefficient;
+        protected float support_brake_coefficient;
+
         [SerializeField][UdonSynced] protected float SupportPressure;
         [SerializeField][UdonSynced] protected float AdditionalPressure;
         [SerializeField][UdonSynced] protected float EmerPressure;
@@ -69,6 +79,12 @@ namespace frou01.RigidBodyTrain
                 wheelBrakes[index] = controlledWheel[index].BrakeForce;
                 wheelTreadSpeeds[index] = controlledWheel[index].WheelTreadSpeed;
             }
+
+            cylinder_release_coefficient    = release_constriction  * 0.00029478747f / CylinderSize;
+            additional_refill_coefficient   = refill_constriction   * 0.00029478747f / AdditionalTankSize;
+            support_refill_coefficient      = refill_constriction   * 0.00029478747f / SupportTankSize;
+            cylinder_brake_coefficient      = brake_constriction    * 0.00029478747f / CylinderSize;
+            support_brake_coefficient       = brake_constriction    * 0.00029478747f / SupportTankSize;
         }
 
         protected override void Update()
@@ -112,9 +128,9 @@ namespace frou01.RigidBodyTrain
         //L:体積[m³]
         //密度定数 m = 11.5075252899[kg/m³*MPa]
         //S/10³/√11.5075252899/L
-        //S/294.787477595/L
+        //S*294.787477595/L
         //s[mm²]の場合は
-        //s/0.00029478747/L
+        //s*0.00029478747/L
         protected override void LateUpdate()
         {
             base.LateUpdate();
@@ -182,11 +198,11 @@ namespace frou01.RigidBodyTrain
                         //弛め
                         //シリンダ -> 大気        8.0mm²   ┐
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, CylinderPressure);
-                        A_cylinderDelta -= 0.00235829976f / CylinderSize * temp_pressureDiff;
+                        A_cylinderDelta -= cylinder_release_coefficient * temp_pressureDiff;
                         //補助空気溜 <-> 付加空気溜   5.0mm²   -
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(AdditionalPressure, SupportPressure);
-                        A_additionalDelta += 0.00147393735f / AdditionalTankSize * temp_pressureDiff;
-                        A_supportDelta -= 0.00147393735f / SupportTankSize * temp_pressureDiff;
+                        A_additionalDelta += additional_refill_coefficient * temp_pressureDiff;
+                        A_supportDelta -= support_refill_coefficient * temp_pressureDiff;
 
                         //込め
                         //列車管 <-> 補助空気溜       1.97mm²  ┐
@@ -222,7 +238,7 @@ namespace frou01.RigidBodyTrain
                     case 3:
                         //急制動
                         //列車管  -> 制動筒           ／7.1mm²＼
-                        //補助空気溜め -> 制動筒        /8.4mm²-
+                        //補助空気溜め -> 制動筒        /8.04mm²-
                         //ずらすのは判定面倒だし再現した所でQ現象の元なのでやめとこう
                         temp_cof = SupportPressure - temp_straightBrakePressure;
                         temp_cof2 = Mathf.Clamp01(Mathf.Min(temp_cof - immiBrake_sensitivity, brake_sensitivity - temp_cof) / (brake_sensitivity - immiBrake_sensitivity));
@@ -236,16 +252,16 @@ namespace frou01.RigidBodyTrain
 
                         temp_cof2 = Mathf.Clamp01((temp_cof - immiBrake_sensitivity) / (brake_sensitivity - immiBrake_sensitivity) * 3);
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, SupportPressure);
-                        A_cylinderDelta += temp_cof2 * 0.00247621474f / CylinderSize * temp_pressureDiff;
-                        A_supportDelta -= temp_cof2 * 0.00247621474f / SupportTankSize * temp_pressureDiff;
+                        A_cylinderDelta += temp_cof2 * cylinder_brake_coefficient * temp_pressureDiff;
+                        A_supportDelta -= temp_cof2 * support_brake_coefficient * temp_pressureDiff;
 
                         break;
                     case 5:
                         //全制動
-                        //補助空気溜め -> 制動筒        -8.4mm²-
+                        //補助空気溜め -> 制動筒        -8.04mm²-
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, SupportPressure);
-                        A_cylinderDelta += 0.00247621474f / CylinderSize * temp_pressureDiff;
-                        A_supportDelta -= 0.00247621474f / SupportTankSize * temp_pressureDiff;
+                        A_cylinderDelta += cylinder_brake_coefficient * temp_pressureDiff;
+                        A_supportDelta -= support_brake_coefficient * temp_pressureDiff;
 
                         break;
                     case 6:
