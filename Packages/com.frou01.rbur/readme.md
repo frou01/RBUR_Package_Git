@@ -234,20 +234,20 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     TrainManager|車両管理スクリプト（ビルド時自動設定）
     RailsManager|レール管理スクリプト（ビルド時自動設定）
     Started|初期化フラグ(False必須)
-    HandBrakeState|手ブレーキ状態。trueになるとHandBrakeForce[N]のブレーキ力が掛かります。
-    HandBrakeForce|手ブレーキ力[N]
     BrakeMultiplier|ブレーキ力係数 max=BrakeMultiplier[N]
     BrakeFactor|実効ブレーキ力。実行時debug用
-    brakeUpdateBypass|ブレーキ更新バイパス設定。trueの場合他車からのブレーキ圧の影響を受けなくなります（別スクリプトでブレーキ圧制御を行う場合に用います）
-    friction|摩擦力。動静通して掛かる。[N]
-    static_friction|静止時摩擦力。[N]
-    brakePressure|ブレーキ力指示伝達Transform。このオブジェクトのLocal座標を用いて他車や操作スクリプトからの影響を受けています。
+    useLegacyBrakeForce|RigidBodyWheelを用いず旧来のブレーキ処理を用いるか（デフォルト true）
+    baseBrakePressure|ブレーキ圧の参照値　この値を下回るとブレーキが掛かります。<br>baseBrakePressure*0.72で最大ブレーキ力。
+    friction|摩擦力。動静通して掛かる。[N]<br>brakeUpdateBypass=falseでは無効です。
+    static_friction|静止時摩擦力。[N]<br>brakeUpdateBypass=falseでは無効です。
     CenterOfMass|重心位置設定
     BrakeOpenF|+Z側のブレーキ開放状態。連結時ブレーキ圧の伝達を受けるかどうか
     BrakeOpenB|-Z側のブレーキ解放状態。連結時ブレーキ圧の伝達を受けるかどうか
     CouplerF|+Z側連結器。オーナー同期に用います。
     CouplerB|-Z側連結器
     controllerAnimator|設定の入出力Animator。
+    connectionRecievers|連結関係の情報を受け取るUdon
+    Rigidbody_Speed_LocalZ|外部制御スクリプトで車速を利用する際に用いる長さ1配列。
     connectedTrain_F|+Z側連結車両(初期化時自動設定)
     connectedTrain_B|-Z側連結車両
     Bogie_F|+Z側台車中心
@@ -259,14 +259,12 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     RailID_B|-Z側台車が載っているレールの識別子。実行時debug用
     BogieRail_B|-Z側台車が載っているレール
     InitsyncRecieveMode|初期化同期受信モード(True必須)
+    
 
     |機能|概要|
     |---:|:---|
-    controllerAnimatorについて|必須パラメータと機能を示します。<br>inは入力、outは出力を表します
-    in)RigidBodySpeed|車両の速度です。+Z方向を正、単位は[m/s]/100です。(motionTimeでの扱いを想定しているため)
-    in)BrakePressure|ブレーキ圧です。緩解圧を1としています。
-    out)HandBrakeState|手ブレーキ圧設定値です。
-    out)HandBrakeForce|手ブレーキ力設定値です。
+    controllerAnimatorについて|必須パラメータと機能を示します。<br>inはTrainへの入力、outはTrainからの出力を表します
+    out)RigidBodySpeed|車両の速度です。+Z方向を正、単位は[m/s]/100です。(motionTimeでの扱いを想定しているため)
     ----------|---------
     連結器処理の仕様|連結が行われると、Train.csをアタッチしたオブジェクトのConfigurable Jointに自分の連結器位置と連結対象車両の連結器位置を用いて自動でAnchorの設定が行われ、またOwnerが移行されます。
     ----------|---------
@@ -276,6 +274,32 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     ----------|---------
     同期について|同期は連結された前後1両の車両のみが行います。
 
+    </details>
+- AbstractBrake,Legacy_BrakeModule
+    ブレーキ系のベースクラスです。
+    TrainConnectionRecieverを継承しており、車両の連結と同時に前後の参照が書き換わります。
+    Legacy_BrakeModuleは従来のブレーキ処理を活かすためのもので、将来的に消去予定です。
+
+- MortorAndWheel
+    
+    力行・制動の剛体車軸スクリプト
+    使用方法はプレハブ章のRB_Wheelを参照
+    
+    <details>
+    <summary>設定値及び仕様</summary>
+
+    |設定値|概要|
+    |---:|:---|
+    WheelTreadSpeed|円周上の速度（粘着時WheelTreadSpeed=RigidBodySpeed）
+    index|WheelTreadSpeed[index]で速度書き込みを行う
+    MortorForce|回転力。円周上における力[N]。
+    BrakeForce|ブレーキ力。円周上における力[N]。
+    Friction|摩擦力。[0]=静止、[1]、動。
+    rb|親RigidBody（通常はTrain）
+    wheel|車軸となるRigidBody
+    brake|ブレーキシューとなるRigidBody
+    WheelPressure|車両から押し付けられる力(仮想。RigidBody経由のものではない)
+    
     </details>
 - TrainManager
     
@@ -369,7 +393,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     │   ├── Bogie_Back -------- [Transform]
     │   ├── FCouplerObj ------- [CouplerObj.u#]
     │   └── BCouplerObj ------- [CouplerObj.u#]
-    ├── BrakePressureGauge ---- [Transform]
+    ├── BrakeModule ----------- [AbstractBrake.u#]
     ├── WheelF ---------------- [RigidBody] [Configurable Joint(BogieJoint)]
     └── WheelB ---------------- [RigidBody] [Configurable Joint(BogieJoint)]
 ```
@@ -384,7 +408,8 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
             ├── Bogie_F : Bogie_Front ------------- [Transform]
             ├── Bogie_B : Bogie_Back -------------- [Transform]
             ├── BogieWheel_F : WheelF ------------- [RigidBody]
-            └── BogieWheel_B : WheelB ------------- [RigidBody]
+            ├── BogieWheel_B : WheelB ------------- [RigidBody]
+            └── connectionRecievers : BrakeModule - [TrainConnectionReciever]
 
     FCouplerObj,BCouplerObj
         [CouplerObj.u#]
@@ -411,3 +436,47 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     3. 他車と連結する場合、CouplerF/B[CouplerObj.u#]のconnectedCouplerに対応する他車Coupler[CouplerObj.u#]を設定。
 
 </details>
+
+## RB_Wheel
+<details>
+    <summary>設定値及び仕様</summary>
+
+### 内部図
+```
+    RB_Wheel ------------------ [MortorAndWheel.u#]
+    ├── Wheel ----------------- [RigidBody] [Sphere Collider] [Configurable Joint]
+    └── WheelBrake ------------ [RigidBody] [Sphere Collider] [Configurable Joint]*2
+```
+### 参照図
+```
+    ()は実行時自動参照
+    RB_Wheel [MortorAndWheel.u#]
+            ├──(WheelTreadSpeed ----- [float[]])
+            ├── rb : Train ---------- [RigidBody]
+            ├── Wheel : Wheel ------- [RigidBody]
+            └── Brake : WheelBrake -- [RigidBody]
+
+    Wheel [RigidBody]
+            └── Configurable Joint
+                    └── ConnectedBody : Train -- [RigidBody]
+
+    WheelBrake [RigidBody]
+            ├── Configurable Joint
+            │       └── ConnectedBody : Train -- [RigidBody]
+            └── Configurable Joint
+                    └── ConnectedBody : Train -- [RigidBody]
+```
+### 使用方法
+0. Train_Prefabをシーン上に設置しておく
+1. Wheel,WheelBrakeの各JointのConnectedBodyにtrainのRigidBodyを設定する
+2. WheelPressureへ車体から掛かっているべき力を設定する。単位は[N]（Springは用いていない）
+3. 必要に応じて半径とBrake、Wheelの位置を調整する
+4. 必要に応じて力行・ブレーキ制御を行うUdonに設定を行う
+
+### API
+
+数値類が配列になっているため、参照渡しを活用してオブジェクトを跨いだやり取りを高速に行うことができる。
+
+Update内でMortorForce、BrakeForceの0番数値を用いて力行・停止制御を行う（実行順保障ナシ、パフォーマンス的にはシミュレーションの類はなるべくFixedUpdateを避けるべきなため）
+
+WheelTreadSpeedはStart等で任意の長さの配列を持たせ、index指定することで一次元配列で管理が可能
