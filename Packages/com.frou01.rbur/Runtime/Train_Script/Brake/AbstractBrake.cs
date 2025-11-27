@@ -34,7 +34,7 @@ namespace frou01.RigidBodyTrain
 
         [HideInInspector] public float[] brakeFactor = new float[1];
 
-        float maxDeltatime = 0.05f;//120fps-20fpsだと60倍になっちゃうが仕方ない　プチフリ対策
+        float maxDeltatime = 0.05f;//120fps-20fpsだと6倍になっちゃうが仕方ない　プチフリ対策
         protected virtual void Start()
         {
             brakePressureParamaterID = Animator.StringToHash("BrakePressure");
@@ -87,7 +87,6 @@ namespace frou01.RigidBodyTrain
                 if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F * DeltaTime;
                 m_straightBrakePressure += pressure_delta_B * DeltaTime;
                 if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B * DeltaTime;
-
             }
             straightBrakePressure[0] = m_straightBrakePressure;
         }
@@ -114,33 +113,7 @@ namespace frou01.RigidBodyTrain
         {
             if (isOwnerState)
             {
-                m_straightBrakePressure = straightBrakePressure[0];//LateUpdateではm_straightBrakePressureは参照のみ
-
-                pressure_delta_F = 0;
-                pressure_delta_B = 0;
-                //低い方へ流す（高圧からは受け入れだけする）
-                if (BrakeOpenF)
-                {
-                    connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
-                    if (connectedPr_F < m_straightBrakePressure)
-                    {
-                        pressure_delta_F = m_straightBrakePressure - connectedPr_F;
-                        pressure_delta_F = -1.5f * Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure);
-                        //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
-                        //Debug.Log("pressure_delta_F " + pressure_delta_F);
-                    }
-                }
-                if (BrakeOpenB)
-                {
-                    connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
-                    if (connectedPr_B < m_straightBrakePressure)
-                    {
-                        pressure_delta_B = m_straightBrakePressure - connectedPr_B;
-                        pressure_delta_B = -1.5f * Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure);
-                        //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
-                        //Debug.Log("pressure_delta_B " + pressure_delta_B);
-                    }
-                }
+                updateStraightPressure();
             }
 
             if (hasAnimator)
@@ -150,6 +123,36 @@ namespace frou01.RigidBodyTrain
 
             //ブレーキ圧はLateUpdateでもUpdateでも継承先では一貫した結果になるので、
             //どちらで処理してもよい
+        }
+        protected virtual void updateStraightPressure()
+        {
+            m_straightBrakePressure = straightBrakePressure[0];//LateUpdateではm_straightBrakePressureは参照のみ
+
+            pressure_delta_F = 0;
+            pressure_delta_B = 0;
+            //低い方へ流す（高圧からは受け入れだけする）
+            if (BrakeOpenF)
+            {
+                connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
+                if (connectedPr_F < m_straightBrakePressure)
+                {
+                    pressure_delta_F = m_straightBrakePressure - connectedPr_F;
+                    pressure_delta_F = -1.5f * Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure);
+                    //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
+                    //Debug.Log("pressure_delta_F " + pressure_delta_F);
+                }
+            }
+            if (BrakeOpenB)
+            {
+                connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
+                if (connectedPr_B < m_straightBrakePressure)
+                {
+                    pressure_delta_B = m_straightBrakePressure - connectedPr_B;
+                    pressure_delta_B = -1.5f * Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure);
+                    //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
+                    //Debug.Log("pressure_delta_B " + pressure_delta_B);
+                }
+            }
         }
 
         //math_sqrt_2_q_Q_div_mの結果に係数を掛けて用いる
