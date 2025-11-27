@@ -5,7 +5,8 @@
   "unity": "2022.3",
   "description": "RigidBody Based Railway scripts and prefab for VRChat",
   "vpmDependencies": {
-    "com.vrchat.worlds": "3.4.1"
+    "com.frou01.utils": ">=4.0.0",
+    "com.vrchat.worlds": ">=3.7.4"
   },
   "author": {
     "name": "frou01",
