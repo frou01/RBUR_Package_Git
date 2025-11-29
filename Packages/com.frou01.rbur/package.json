@@ -8,7 +8,7 @@
     "com.frou01.utils": ">=7.0.0",
     "com.vrchat.worlds": ">=3.7.4"
   },
-	"url" : "https://github.com/frou01/RBUR_Package_Git.git#vpm",
+	"documentationUrl" : "https://github.com/frou01/RBUR_Package_Git.git#vpm",
   "author": {
     "name": "frou01",
     "email": "frou01stg44hurutaka@gmail.com"
