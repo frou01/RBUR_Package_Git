@@ -14,5 +14,8 @@
   },
   "legacyFolders": {},
   "legacyFiles": {},
-  "unityRelease": "22f1"
+  "unityRelease": "22f1",
+  "dependencies": {
+    "com.unity.formats.fbx": "4.2.0"
+  }
 }
