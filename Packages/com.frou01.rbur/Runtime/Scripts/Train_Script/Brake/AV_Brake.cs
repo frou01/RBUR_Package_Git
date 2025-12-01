@@ -37,7 +37,9 @@ namespace frou01.RigidBodyTrain
                                                                    //4: brake_lap
                                                                    //5: brake,
                                                                    //6: emer,
-        [SerializeField] protected float refill_sensitivity = 0.03f;
+        protected float piston_Position_float;
+        protected float Emer_piston_Position_Float;
+        [SerializeField] protected float refill_sensitivity = 0.01f;
         [SerializeField] protected float release_sensitivity = 0.005f;
         [SerializeField] protected float releaseLap_sensitivity = 0.005f;
         [SerializeField] protected float immiBrakeLap_sensitivity = 0.01f;
@@ -146,31 +148,35 @@ namespace frou01.RigidBodyTrain
 
                 if (SupportPressure - temp_straightBrakePressure < -refill_sensitivity)
                 {
-                    piston_Position = 0;//込め
-                }else if (piston_Position != 0 && SupportPressure - temp_straightBrakePressure < -release_sensitivity)
+                    piston_Position_float = 0;//込め
+                } else if (piston_Position != 0 && SupportPressure - temp_straightBrakePressure < -release_sensitivity)
                 {
-                    piston_Position = 1;//弛め
+                    if (piston_Position_float > 1) piston_Position_float = 1;//弛め
+                    else piston_Position_float += 0.2f;
                 }
                 else
                 if (SupportPressure - temp_straightBrakePressure > brake_sensitivity)
                 {
-                    piston_Position = 5;//全制動
+                    piston_Position_float += 0.9f;
+                    if (piston_Position_float > 5) piston_Position_float = 5;//全制動
                 }
                 else
                 if (piston_Position <= 3 && SupportPressure - temp_straightBrakePressure > immiBrake_sensitivity)
                 {
-                    piston_Position = 3;//急制動
+                    piston_Position_float += 0.6f;
+                    if (piston_Position_float > 3) piston_Position_float = 3;//急制動
                 }
                 else if (piston_Position == 5)
                 {
-                    piston_Position = 4;//全制動重なり
-                } else if((piston_Position >= 2 && SupportPressure - temp_straightBrakePressure < immiBrakeLap_sensitivity) || SupportPressure - temp_straightBrakePressure > releaseLap_sensitivity)
+                    piston_Position_float = 4;//全制動重なり
+                } else if ((piston_Position >= 2 && SupportPressure - temp_straightBrakePressure < immiBrakeLap_sensitivity) || SupportPressure - temp_straightBrakePressure > releaseLap_sensitivity)
                 {
-                    piston_Position = 2;//急制動重なり or 弛め重なり
+                    if (piston_Position_float > 2) piston_Position_float = 2;//急制動重なり or 弛め重なり
+                    else piston_Position_float += 0.4f;
                     //※本来は急制動重なりと弛め重なりは滑り弁の位置が異なる。
                 }
                 //非常部は独立給排気
-                if(piston_Position != 6)
+                if (piston_Position != 6)
                 {
                     if (EmerPressure - temp_straightBrakePressure > emer_release_sensitivity)
                     {
@@ -186,10 +192,24 @@ namespace frou01.RigidBodyTrain
                         A_straightDelta -= 0.01886639808f / 0.02f * temp_pressureDiff;
                     }
                 }
-
+                piston_Position = Mathf.FloorToInt(piston_Position_float);
                 if (EmerPressure - temp_straightBrakePressure > emer_sensitivity)
                 {
+                    Emer_piston_Position_Float += 0.4f;//deltatimeではなくフレーム単位
+                }
+                else
+                {
+                    Emer_piston_Position_Float = 0;
+                }
+
+                if (Emer_piston_Position_Float > 2)
+                {
+                    Emer_piston_Position_Float = 2;
                     piston_Position = 6;//非常
+                }
+                else if(Emer_piston_Position_Float < 0)
+                {
+                    Emer_piston_Position_Float = 0;
                 }
 
                 switch (piston_Position)
@@ -295,6 +315,12 @@ namespace frou01.RigidBodyTrain
             {
                 wheelBrakes[index][0] = 0;
             }
+        }
+
+        public override void OnDeserialization()
+        {
+            piston_Position_float = piston_Position;
+            Emer_piston_Position_Float = 1;
         }
     }
 }

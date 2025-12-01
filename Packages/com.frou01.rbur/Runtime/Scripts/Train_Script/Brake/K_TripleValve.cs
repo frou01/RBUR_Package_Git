@@ -20,6 +20,7 @@ namespace frou01.RigidBodyTrain
                                                                    //4: brake_lap,
                                                                    //5: brake,
                                                                    //6: emer,
+        protected float piston_Position_float;
         [SerializeField] protected float slowRefill_sensitivity = 0.1f;
         [SerializeField] protected float slowRelease_sensitivity = 0.06f;
         [SerializeField] protected float release_sensitivity = 0.005f;
@@ -105,36 +106,39 @@ namespace frou01.RigidBodyTrain
                 temp_straightBrakePressure = straightBrakePressure[0];
                 if (SupportPressure < temp_straightBrakePressure - slowRelease_sensitivity)
                 {
-                    piston_Position = 0;//減速弛め
+                    piston_Position_float = 0;//減速弛め
                 }
                 else
                 if (SupportPressure < temp_straightBrakePressure - release_sensitivity)
                 {
-                    piston_Position = 1;//弛め
+                    piston_Position_float = 1;//弛め
                 }
                 else
                 if (SupportPressure > temp_straightBrakePressure + emer_sensitivity)
                 {
-                    piston_Position = 6;//非常
+                    piston_Position_float = 6;//非常
                 }
                 else
                 if (SupportPressure > temp_straightBrakePressure + brake_sensitivity)
                 {
-                    piston_Position = 5;//全制動
+                    piston_Position_float += 0.4f;//全制動
+                    if (piston_Position_float > 5) piston_Position_float = 5;
                 }
                 else
                 if (piston_Position <= 3 && SupportPressure > temp_straightBrakePressure + immidiateBrake_sensitivity)
                 {
-                    piston_Position = 3;//急制動
+                    piston_Position_float += 0.6f;//急制動
+                    if (piston_Position_float > 3) piston_Position_float = 3;
                 }
                 else if (piston_Position == 3 && SupportPressure < temp_straightBrakePressure + immidiateBrake_lap_sensitivity)
                 {
-                    piston_Position = 2;//急制動重なり
+                    piston_Position_float = 2;//急制動重なり
                 }
                 else if (piston_Position == 5)
                 {
-                    piston_Position = 4;//全制動重なり
+                    piston_Position_float = 4;//全制動重なり
                 }
+                piston_Position = Mathf.FloorToInt(piston_Position_float);
                 switch (piston_Position)
                 {
                     case 0://減速弛め
@@ -182,18 +186,16 @@ namespace frou01.RigidBodyTrain
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, CylinderPressure);
                         k_cylinderDelta -= 0.00283585553f / CylinderSize * temp_pressureDiff;
                         temp_cof = temp_straightBrakePressure - SupportPressure;
-                        if (temp_cof > 0)
-                        {
-                            //全込め
-                            //列車管 <-> 補助空気溜
-                            //列車管の容積は0.02
-                            //断面積は1.76mm²
-                            //列車管側係数 = 0.00051882596/0.02 = 0.025941298
-                            //補助空気溜側係数 = 0.00051882596/SupportAirTankSize = 0.02034611607
-                            temp_pressureDiff = math_sqrt_2_q_Q_div_m(SupportPressure, straightBrakePressure[0]);
-                            k_straightDelta -= 0.025941298f * temp_pressureDiff;
-                            k_supportDelta += 0.00051882596f / SupportTankSize * temp_pressureDiff;
-                        }
+
+                        //全込め
+                        //列車管 <-> 補助空気溜
+                        //列車管の容積は0.02
+                        //断面積は1.76mm²
+                        //列車管側係数 = 0.00051882596/0.02 = 0.025941298
+                        //補助空気溜側係数 = 0.00051882596/SupportAirTankSize = 0.02034611607
+                        temp_pressureDiff = math_sqrt_2_q_Q_div_m(SupportPressure, straightBrakePressure[0]);
+                        k_straightDelta -= 0.025941298f * temp_pressureDiff;
+                        k_supportDelta += 0.00051882596f / SupportTankSize * temp_pressureDiff;
                         break;
                     case 2:
                         //急制動重なり
@@ -279,6 +281,11 @@ namespace frou01.RigidBodyTrain
             {
                 wheelBrakes[index][0] = 0;
             }
+        }
+
+        public override void OnDeserialization()
+        {
+            piston_Position_float = piston_Position;
         }
     }
 }
