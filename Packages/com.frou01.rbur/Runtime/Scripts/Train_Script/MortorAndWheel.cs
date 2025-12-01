@@ -76,7 +76,8 @@ namespace frou01.RigidBodyTrain
         }
         private void CheckWheelTransform()
         {
-            if (BrakeTransform.localPosition.y - WheelTransform.localPosition.y < wheelRadius)
+            if (BrakeTransform.localPosition.y - WheelTransform.localPosition.y < wheelRadius
+                || Vector3.Distance(WheelTransform.localPosition, wheelInitialPos) > wheelRadius)
             {
                 Debug.Log("Object penetration : " + this.name);
                 Debug.Log("WheelBody pos " + WheelTransform.localPosition);
