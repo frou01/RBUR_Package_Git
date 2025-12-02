@@ -146,7 +146,7 @@ namespace frou01.RigidBodyTrain
 
                 temp_straightBrakePressure = straightBrakePressure[0];
 
-                if (SupportPressure - temp_straightBrakePressure < -refill_sensitivity)
+                if (SupportPressure - temp_straightBrakePressure < -Mathf.Lerp(release_sensitivity,refill_sensitivity, (AdditionalPressure - temp_straightBrakePressure) * 10))
                 {
                     piston_Position_float = 0;//込め
                 } else if (piston_Position != 0 && SupportPressure - temp_straightBrakePressure < -release_sensitivity)
@@ -186,10 +186,11 @@ namespace frou01.RigidBodyTrain
                     }
                     else if (EmerPressure - temp_straightBrakePressure < -emer_refill_sensitivity)
                     {
+                        temp_cof = Mathf.Clamp01((temp_straightBrakePressure - EmerPressure - emer_refill_sensitivity) * 100);
                         //列車管  -> 急動空気溜       64mm²
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(EmerPressure, temp_straightBrakePressure);
-                        A_emerDelta += 0.01886639808f / EmerTankSize * temp_pressureDiff;
-                        A_straightDelta -= 0.01886639808f / 0.02f * temp_pressureDiff;
+                        A_emerDelta += temp_cof * 0.01886639808f / EmerTankSize * temp_pressureDiff;
+                        A_straightDelta -= temp_cof * 0.01886639808f / 0.02f * temp_pressureDiff;
                     }
                 }
                 piston_Position = Mathf.FloorToInt(piston_Position_float);
