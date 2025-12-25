@@ -2,6 +2,8 @@
 ## 概要
 RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可能な鉄道を敷くことを目的に開発さた、エディタスクリプト、U#スクリプト及びPrefabが含まれています。
 
+使用にはFBXExporterが必要となります。　https://docs.unity3d.com/ja/Packages/com.unity.formats.fbx@4.1/manual/index.html
+
 # 目次
 - [ビルドプロセス](#ビルドプロセス)
 - [コンポーネント](#コンポーネント)
@@ -64,7 +66,7 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     TilingRails|TilingStart->TilingEndの区間でレール生成を行います
     TilingRailAll|cinemachinePathの始点から終点までの区間でレール生成を行います
     Cancel|生成を強制停止します<br>GameObject削除は行われず、生成途中の物が残りますが、Meshはセーブされていないためこの状態で保存しても消えてしまいます。
-    SelectFolder|フォルダ選択画面を開きます。<br>新規フォルダ生成をこの先の画面で行うとUnityがフォルダを認識できず無限ループしてしまう不具合が報告されています。
+    SelectFolder|フォルダ選択画面を開きます。<br>新規フォルダ生成をこの先の画面で行うとUnityがフォルダを認識できず無限ループしてしまう不具合が報告されています。既存のフォルダを選択するようにしてください。
     Offset|Cinemachine一括オフセットを行います。
     </details>
 - railModelLocator
