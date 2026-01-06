@@ -37,7 +37,7 @@ namespace frou01.RigidBodyTrain
                                                                    //4: brake_lap
                                                                    //5: brake,
                                                                    //6: emer,
-        protected float piston_Position_float;
+        [SerializeField] protected float piston_Position_float;
         protected float Emer_piston_Position_Float;
         [SerializeField] protected float refill_sensitivity = 0.01f;
         [SerializeField] protected float release_sensitivity = 0.005f;
@@ -148,22 +148,23 @@ namespace frou01.RigidBodyTrain
 
                 if (SupportPressure - temp_straightBrakePressure < -Mathf.Lerp(release_sensitivity,refill_sensitivity, (AdditionalPressure - temp_straightBrakePressure) * 10))
                 {
-                    piston_Position_float = 0;//込め
+                    piston_Position_float -= 0.01f;//込め
+                    if (piston_Position_float < 0) piston_Position_float = 0;
                 } else if (piston_Position != 0 && SupportPressure - temp_straightBrakePressure < -release_sensitivity)
                 {
-                    if (piston_Position_float > 1) piston_Position_float = 1;//弛め
-                    else piston_Position_float += 0.2f;
+                    if (piston_Position_float > 1.1f) piston_Position_float -= 0.01f;//弛め
+                    else piston_Position_float += 0.1f;
                 }
                 else
                 if (SupportPressure - temp_straightBrakePressure > brake_sensitivity)
                 {
-                    piston_Position_float += 0.9f;
+                    piston_Position_float += 0.01f;
                     if (piston_Position_float > 5) piston_Position_float = 5;//全制動
                 }
                 else
                 if (piston_Position <= 3 && SupportPressure - temp_straightBrakePressure > immiBrake_sensitivity)
                 {
-                    piston_Position_float += 0.6f;
+                    piston_Position_float += 0.01f;
                     if (piston_Position_float > 3) piston_Position_float = 3;//急制動
                 }
                 else if (piston_Position == 5)
@@ -171,8 +172,8 @@ namespace frou01.RigidBodyTrain
                     piston_Position_float = 4;//全制動重なり
                 } else if ((piston_Position >= 2 && SupportPressure - temp_straightBrakePressure < immiBrakeLap_sensitivity) || SupportPressure - temp_straightBrakePressure > releaseLap_sensitivity)
                 {
+                    piston_Position_float += 0.01f;
                     if (piston_Position_float > 2) piston_Position_float = 2;//急制動重なり or 弛め重なり
-                    else piston_Position_float += 0.4f;
                     //※本来は急制動重なりと弛め重なりは滑り弁の位置が異なる。
                 }
                 //非常部は独立給排気
