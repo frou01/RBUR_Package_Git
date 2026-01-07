@@ -40,11 +40,11 @@ namespace frou01.RigidBodyTrain
             brakePressureParamaterID = Animator.StringToHash("BrakePressure");
             hasAnimator = indicateAnimator != null;
             isOwnerState = Networking.IsOwner(gameObject);
-
-            for (i = 0; i < past.Length; i++)
-            {
-                past[i] = Time.fixedDeltaTime;
-            }
+            DeltaTime = Time.fixedDeltaTime;
+            //for (i = 0; i < past.Length; i++)
+            //{
+            //    past[i] = Time.fixedDeltaTime;
+            //}
         }
 
         //抵抗は無視する。
@@ -78,7 +78,8 @@ namespace frou01.RigidBodyTrain
         //実際には流速が音速を下回る状況もある。その場合、以下の計算は甚だ不自然なものということになるが、今は考えないものとする。
         protected virtual void Update()
         {
-            DeltaTime = mam_lpf(Mathf.Min(Time.deltaTime, maxDeltatime));
+            DeltaTime = Mathf.Lerp(DeltaTime,Mathf.Min(Time.deltaTime,maxDeltatime),0.1f);
+            //DeltaTime = maxDeltatime;
             //Debug.Log("lowpassed deltaTime" + DeltaTime);
             if (isOwnerState)
             {
@@ -92,22 +93,22 @@ namespace frou01.RigidBodyTrain
         }
         //音速/60=5.7mほど。このプログラムは波を送るには早いくらいか
 
-        protected float[] past = new float[5];
-        protected int i = 1;
-        protected float mam_sum;
-        protected virtual float mam_lpf(float _in)//Moving Average Method lowpassfilter
-        {
-            mam_sum = 0;
-            for (i = 1; i < past.Length; i++)
-            {
-                past[i-1] = past[i];
-                mam_sum += past[i];
-            }
-            mam_sum += _in;
+        //protected float[] past = new float[5];
+        //protected int i = 1;
+        //protected float mam_sum;
+        //protected virtual float mam_lpf(float _in)//Moving Average Method lowpassfilter
+        //{
+        //    mam_sum = 0;
+        //    for (i = 1; i < past.Length; i++)
+        //    {
+        //        past[i-1] = past[i];
+        //        mam_sum += past[i];
+        //    }
+        //    mam_sum += _in;
             
-            past[i-1] = _in;
-            return mam_sum/past.Length;
-        }
+        //    past[i-1] = _in;
+        //    return mam_sum/past.Length;
+        //}
 
         protected virtual void LateUpdate()
         {
@@ -136,8 +137,7 @@ namespace frou01.RigidBodyTrain
                 connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
                 if (connectedPr_F < m_straightBrakePressure)
                 {
-                    pressure_delta_F = m_straightBrakePressure - connectedPr_F;
-                    pressure_delta_F = -1.5f * Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure);
+                    pressure_delta_F = Mathf.Lerp(pressure_delta_F , - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure), Time.fixedDeltaTime/DeltaTime);
                     //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
                     //Debug.Log("pressure_delta_F " + pressure_delta_F);
                 }
@@ -147,8 +147,7 @@ namespace frou01.RigidBodyTrain
                 connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
                 if (connectedPr_B < m_straightBrakePressure)
                 {
-                    pressure_delta_B = m_straightBrakePressure - connectedPr_B;
-                    pressure_delta_B = -1.5f * Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure);
+                    pressure_delta_B = Mathf.Lerp(pressure_delta_B ,  - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure), Time.fixedDeltaTime /DeltaTime);
                     //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
                     //Debug.Log("pressure_delta_B " + pressure_delta_B);
                 }
