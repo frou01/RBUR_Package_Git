@@ -737,7 +737,7 @@ MonoBehaviour:
   unLockSound: {fileID: 8300000, guid: 692a2436e853e924eb794d59b94c79a1, type: 3}
   CloseSound: {fileID: 8300000, guid: 55e7a2fb4a6299a4d8e836aad37edc96, type: 3}
   FrontOrBack: 0
-  disconnectForce: 1000
+  disconnectForce: 100
   connectedCoupler: {fileID: 0}
   knuckleModel: {fileID: 0}
   knuckleKey: {fileID: 0}
