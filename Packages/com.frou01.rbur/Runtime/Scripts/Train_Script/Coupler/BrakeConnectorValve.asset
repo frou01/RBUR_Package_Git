@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: BrakeConnectorValve
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: f95893e8c1788cb4c87763af9309fc5b,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: f95893e8c1788cb4c87763af9309fc5b, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 2349eff18157fc440849d373de71384e, type: 3}

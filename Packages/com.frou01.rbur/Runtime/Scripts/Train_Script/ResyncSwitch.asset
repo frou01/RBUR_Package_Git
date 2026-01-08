@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: ResyncSwitch
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: ec9b7f17a749721468749ccfa461d73a,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: ec9b7f17a749721468749ccfa461d73a, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: e9d2d71832f908c4d92b02d5879f1040, type: 3}

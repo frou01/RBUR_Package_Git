@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: TurnTable_Controller
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 4d8424cabd7298e44bf6221eabba4b87,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 4d8424cabd7298e44bf6221eabba4b87, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 5343cac3fb0f5cb4ca467e8bb075ae21, type: 3}
