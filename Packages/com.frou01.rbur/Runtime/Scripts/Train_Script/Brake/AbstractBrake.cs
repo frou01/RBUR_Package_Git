@@ -173,15 +173,25 @@ namespace frou01.RigidBodyTrain
                 {
                     if (F_B)
                     {
-                        if (connectedTrain != null) ConnectedBrakePressure_F = ((AbstractBrake)foundModule).straightBrakePressure;
-                        else ConnectedBrakePressure_F = null;
+                        ConnectedBrakePressure_F = ((AbstractBrake)foundModule).straightBrakePressure;
 
                     }
                     else
                     {
-                        if (connectedTrain != null) ConnectedBrakePressure_B = ((AbstractBrake)foundModule).straightBrakePressure;
-                        else ConnectedBrakePressure_B = null;
+                        ConnectedBrakePressure_B = ((AbstractBrake)foundModule).straightBrakePressure;
                     }
+                }
+            }
+            else
+            {
+                if (F_B)
+                {
+                    ConnectedBrakePressure_F = null;
+
+                }
+                else
+                {
+                    ConnectedBrakePressure_B = null;
                 }
             }
         }

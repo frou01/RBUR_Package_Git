@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: SoundDetector
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 5a14338a26aa7f34db48740a66370a16,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 5a14338a26aa7f34db48740a66370a16, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: ebc9013f2aa24404e9d4e42012b5459f, type: 3}

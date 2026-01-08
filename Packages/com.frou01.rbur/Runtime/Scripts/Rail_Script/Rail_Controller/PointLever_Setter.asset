@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: PointLever_Setter
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 8d40f9404bde2704ab1e7f3b6ddd0ac6,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 8d40f9404bde2704ab1e7f3b6ddd0ac6, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: be7d48dad438f8f4fba184e2f9100040, type: 3}

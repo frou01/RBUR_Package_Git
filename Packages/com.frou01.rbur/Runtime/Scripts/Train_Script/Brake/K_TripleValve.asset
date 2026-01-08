@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: K_TripleValve
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 714368c5e19df884d9d6b8252b7acc02,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 714368c5e19df884d9d6b8252b7acc02, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 81ffc9ed184d58740948a1fb06e02354, type: 3}
