@@ -121,13 +121,13 @@ namespace frou01.RigidBodyTrain
                 else
                 if (SupportPressure > temp_straightBrakePressure + brake_sensitivity)
                 {
-                    piston_Position_float += 0.4f;//全制動
+                    piston_Position_float += 0.02f;//全制動
                     if (piston_Position_float > 5) piston_Position_float = 5;
                 }
                 else
                 if (piston_Position <= 3 && SupportPressure > temp_straightBrakePressure + immidiateBrake_sensitivity)
                 {
-                    piston_Position_float += 0.6f;//急制動
+                    piston_Position_float += 0.03f;//急制動
                     if (piston_Position_float > 3) piston_Position_float = 3;
                 }
                 else if (piston_Position == 3 && SupportPressure < temp_straightBrakePressure + immidiateBrake_lap_sensitivity)

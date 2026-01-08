@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: CouplerMiscSoundPlayer
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: aa56730a1e6fb0a4e941671d2da23549,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: aa56730a1e6fb0a4e941671d2da23549, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 35bb105e1cb7b554fab5bdce49dab382, type: 3}

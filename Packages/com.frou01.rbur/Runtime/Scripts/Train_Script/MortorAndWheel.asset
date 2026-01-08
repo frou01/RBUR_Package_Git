@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: MortorAndWheel
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 70b04ac7e0e100c4bb8089cc0627c0a1,
-    type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 70b04ac7e0e100c4bb8089cc0627c0a1, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: bf041aa1427b8f648a6e8ce051894e28, type: 3}

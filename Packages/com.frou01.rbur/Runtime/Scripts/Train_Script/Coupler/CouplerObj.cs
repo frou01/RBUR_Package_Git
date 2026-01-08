@@ -69,7 +69,7 @@ namespace frou01.RigidBodyTrain
         float jointLinerLimit;
 
         [SerializeField][HideInInspector]public Transform chachedTransform;
-        Transform connectedTransform;
+        [SerializeField][HideInInspector] Transform connectedTransform;
         public void Initialize()//CallFromBuildProcess
         {
             //initialPos = transform.localPosition;
@@ -100,15 +100,12 @@ namespace frou01.RigidBodyTrain
         private void Update()
         {
             if (!started) return;
-            if ((this.state != 0 || (crashed && overCoolTime)) && connectedCoupler != null && Networking.IsOwner(gameObject))
+            if ((this.state != 0 || (crashed && overCoolTime)) && connectedCoupler != null && connectedTransform != null && Networking.IsOwner(gameObject))
             {
 
-                if (chachedTransform.InverseTransformVector(joint.currentForce).z * 100000 + connectedTransform.InverseTransformVector(connectedJoint.currentForce).z * 100000 > (crashed ? 0 : disconnectForce))
+                if (chachedTransform.InverseTransformVector(joint.currentForce).z + connectedTransform.InverseTransformVector(connectedJoint.currentForce).z > (crashed ? 0 : disconnectForce))
                 {
-                    if (this.state != 0 || crashed)
-                    {
-                        disConnect();
-                    }
+                    disConnect();
                 }
             }
             ;
