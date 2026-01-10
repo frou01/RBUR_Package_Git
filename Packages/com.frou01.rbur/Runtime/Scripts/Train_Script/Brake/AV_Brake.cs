@@ -301,10 +301,14 @@ namespace frou01.RigidBodyTrain
 
                         if(CylinderPressure < AdditionalPressure)
                         {
-                            temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, AdditionalPressure);
-                            A_cylinderDelta += 0.00092563265f / CylinderSize * temp_pressureDiff;
+                            temp_pressureDiff = math_sqrt_2_q_Q_div_m(SupportPressure, AdditionalPressure);
+                            A_supportDelta += 0.00092563265f / SupportTankSize * temp_pressureDiff;
                             A_additionalDelta -= 0.00092563265f / AdditionalTankSize * temp_pressureDiff;
                         }
+
+                        temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, SupportPressure);
+                        A_cylinderDelta += cylinder_brake_coefficient * temp_pressureDiff;
+                        A_supportDelta -= support_brake_coefficient * temp_pressureDiff;
                         break;
                 }
             }
