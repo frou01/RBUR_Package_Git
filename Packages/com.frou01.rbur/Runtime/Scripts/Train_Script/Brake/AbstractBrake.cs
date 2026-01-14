@@ -79,7 +79,6 @@ namespace frou01.RigidBodyTrain
         protected virtual void Update()
         {
             DeltaTime = Mathf.Lerp(DeltaTime,Mathf.Min(Time.deltaTime,maxDeltatime),0.1f);
-            //DeltaTime = maxDeltatime;
             //Debug.Log("lowpassed deltaTime" + DeltaTime);
             if (isOwnerState)
             {
@@ -137,7 +136,7 @@ namespace frou01.RigidBodyTrain
                 connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
                 if (connectedPr_F < m_straightBrakePressure)
                 {
-                    pressure_delta_F = Mathf.Lerp(pressure_delta_F , - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure), Time.fixedDeltaTime/DeltaTime);
+                    pressure_delta_F = Mathf.Lerp(pressure_delta_F , - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure), maxDeltatime / DeltaTime - 0.8f);
                     //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
                     //Debug.Log("pressure_delta_F " + pressure_delta_F);
                 }
@@ -147,11 +146,12 @@ namespace frou01.RigidBodyTrain
                 connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
                 if (connectedPr_B < m_straightBrakePressure)
                 {
-                    pressure_delta_B = Mathf.Lerp(pressure_delta_B ,  - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure), Time.fixedDeltaTime /DeltaTime);
+                    pressure_delta_B = Mathf.Lerp(pressure_delta_B ,  - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure), maxDeltatime / DeltaTime - 0.8f);
                     //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
                     //Debug.Log("pressure_delta_B " + pressure_delta_B);
                 }
             }
+            //低FPS時はオーバーシュートを減らして振動幅を引き下げる、こうしないとブレーキ弁が振動に反応してしまう
         }
 
         //math_sqrt_2_q_Q_div_mの結果に係数を掛けて用いる
