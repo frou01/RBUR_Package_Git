@@ -28,6 +28,7 @@ namespace frou01.RigidBodyTrain
         [UdonSynced] public bool BrakeOpenF;//1byte
         [UdonSynced] public bool BrakeOpenB;//1byte
 
+        [SerializeField] protected float maxOverShoot = 0.0075f;
         [SerializeField] protected Animator indicateAnimator;
         protected bool hasAnimator;
         protected int brakePressureParamaterID;
@@ -78,15 +79,14 @@ namespace frou01.RigidBodyTrain
         //実際には流速が音速を下回る状況もある。その場合、以下の計算は甚だ不自然なものということになるが、今は考えないものとする。
         protected virtual void Update()
         {
-            DeltaTime = Mathf.Lerp(DeltaTime,Mathf.Min(Time.deltaTime,maxDeltatime),0.1f);
             //Debug.Log("lowpassed deltaTime" + DeltaTime);
             if (isOwnerState)
             {
                 m_straightBrakePressure = straightBrakePressure[0];
-                m_straightBrakePressure += pressure_delta_F * DeltaTime;
-                if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F * DeltaTime;
-                m_straightBrakePressure += pressure_delta_B * DeltaTime;
-                if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B * DeltaTime;
+                m_straightBrakePressure += pressure_delta_F;
+                if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F;
+                m_straightBrakePressure += pressure_delta_B;
+                if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B;
             }
             straightBrakePressure[0] = m_straightBrakePressure;
         }
@@ -104,7 +104,7 @@ namespace frou01.RigidBodyTrain
         //        mam_sum += past[i];
         //    }
         //    mam_sum += _in;
-            
+
         //    past[i-1] = _in;
         //    return mam_sum/past.Length;
         //}
@@ -128,6 +128,7 @@ namespace frou01.RigidBodyTrain
         {
             m_straightBrakePressure = straightBrakePressure[0];//LateUpdateではm_straightBrakePressureは参照のみ
 
+            DeltaTime = Mathf.Lerp(DeltaTime, Mathf.Min(Time.deltaTime, maxDeltatime), 0.1f);
             pressure_delta_F = 0;
             pressure_delta_B = 0;
             //低い方へ流す（高圧からは受け入れだけする）
@@ -136,7 +137,7 @@ namespace frou01.RigidBodyTrain
                 connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
                 if (connectedPr_F < m_straightBrakePressure)
                 {
-                    pressure_delta_F = Mathf.Lerp(pressure_delta_F , - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure), maxDeltatime / DeltaTime - 0.8f);
+                    pressure_delta_F = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure) * DeltaTime;
                     //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
                     //Debug.Log("pressure_delta_F " + pressure_delta_F);
                 }
@@ -146,11 +147,15 @@ namespace frou01.RigidBodyTrain
                 connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
                 if (connectedPr_B < m_straightBrakePressure)
                 {
-                    pressure_delta_B = Mathf.Lerp(pressure_delta_B ,  - 1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure), maxDeltatime / DeltaTime - 0.8f);
+                    pressure_delta_B = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure) * DeltaTime;
                     //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
                     //Debug.Log("pressure_delta_B " + pressure_delta_B);
                 }
             }
+            pressure_delta_F = Mathf.Clamp(pressure_delta_F, -maxOverShoot - Mathf.Abs(connectedPr_F - m_straightBrakePressure) * DeltaTime, maxOverShoot);
+            //Debug.Log(pressure_delta_F + " , clamp to " + (-maxOverShoot - Mathf.Abs(connectedPr_F - m_straightBrakePressure) * DeltaTime));
+            pressure_delta_B = Mathf.Clamp(pressure_delta_B, -maxOverShoot - Mathf.Abs(connectedPr_B - m_straightBrakePressure) * DeltaTime, maxOverShoot);
+            //Debug.Log(pressure_delta_B + " , clamp to " + (-maxOverShoot - Mathf.Abs(connectedPr_B - m_straightBrakePressure) * DeltaTime));
             //低FPS時はオーバーシュートを減らして振動幅を引き下げる、こうしないとブレーキ弁が振動に反応してしまう
         }
 
