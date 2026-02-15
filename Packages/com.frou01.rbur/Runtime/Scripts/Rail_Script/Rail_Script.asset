@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: Rail_Script
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 469551f1055b61440a5555fa20bc0ef8, type: 2}
+  serializedUdonProgramAsset: {fileID: 11400000, guid: a5cffd96359cb154c9288556d2ba7e27, type: 2}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: b90e8cce5d6559e4584526185ecf0da0, type: 3}

@@ -80,14 +80,14 @@ namespace frou01.RigidBodyTrain
             if (isOwnerState)
                 for (int index = 0; index < wheelBrakes.Length; index++)
                 {
-                    brakeFactor[0] += wheelBrakes[index][0] = (CylinderPressure - 0.1f);
+                    brakeFactor[0] += wheelBrakes[index][0] = (CylinderPressure - 0.11f);
                     wheelBrakes[index][0] *= wheelMultiplier[index];
                     wheelBrakes[index][0] += Mathf.Lerp(StaticFriction, DynamicFriction, Mathf.Abs(wheelTreadSpeeds[index][0]) / DynamicFrictionSpeed);
                 }
             else
                 for (int index = 0; index < wheelBrakes.Length; index++)
                 {
-                    brakeFactor[0] += (CylinderPressure - 0.1f);
+                    brakeFactor[0] += (CylinderPressure - 0.11f);
                 }
         }
         //変化の係数は10³*S/(L*√m)
@@ -148,7 +148,7 @@ namespace frou01.RigidBodyTrain
                            // = 1000*1.77/1000000/(√11.5075252899)/CylinderSize
                            // = 0.00052177383/CylinderSize
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, CylinderPressure);
-                        k_cylinderDelta -= 0.00052177383f / CylinderSize * temp_pressureDiff;
+                        k_cylinderDelta -= 0.0015f / CylinderSize * temp_pressureDiff;
 
                         temp_cof = temp_straightBrakePressure - SupportPressure;
                         if (temp_cof > slowRefill_sensitivity)
@@ -184,7 +184,7 @@ namespace frou01.RigidBodyTrain
                            // = 10³*9.62/10⁶/√11.5075252899/CylinderSize
                            // = 0.00283585553/CylinderSize
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, CylinderPressure);
-                        k_cylinderDelta -= 0.00283585553f / CylinderSize * temp_pressureDiff;
+                        k_cylinderDelta -= 0.0015f / CylinderSize * temp_pressureDiff;
                         temp_cof = temp_straightBrakePressure - SupportPressure;
 
                         //全込め
