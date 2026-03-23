@@ -24,5 +24,16 @@ namespace frou01.RigidBodyTrain
         {
             brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.changeBrakeValve), coupler.FrontOrBack);
         }
+#if UNITY_EDITOR
+        void OnDrawGizmos()
+        {
+            if (coupler)
+            {
+                Gizmos.color = new Color(0.2f, 0.2f, 0.4f, 0.5f);
+                Gizmos.DrawSphere(transform.position, 0.1f);
+                Gizmos.DrawLine(transform.position, coupler.transform.position);
+            }
+        }
+#endif
     }
 }
