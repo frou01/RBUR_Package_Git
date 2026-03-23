@@ -15,6 +15,8 @@ namespace frou01.RigidBodyTrain
         [SerializeField] protected Train train;
         [SerializeField] public float[] straightBrakePressure = new float[1];
         [UdonSynced(UdonSyncMode.Linear)] protected float m_straightBrakePressure;//4byte,[MPa]
+
+        protected float[] MNG_DeltaTime;
         protected float DeltaTime;
 
         protected float pressure_delta_F;//流量の単位は[kg/s]
@@ -27,21 +29,21 @@ namespace frou01.RigidBodyTrain
 
         [UdonSynced] public bool BrakeOpenF;//1byte
         [UdonSynced] public bool BrakeOpenB;//1byte
-
-        [SerializeField] protected float maxOverShoot = 0.0075f;
+        protected float maxOverShoot;
         [SerializeField] protected Animator indicateAnimator;
         protected bool hasAnimator;
         protected int brakePressureParamaterID;
 
         [HideInInspector] public float[] brakeFactor = new float[1];
 
-        float maxDeltatime = 0.05f;//120fps-20fpsだと6倍になっちゃうが仕方ない　プチフリ対策
         protected virtual void Start()
         {
             brakePressureParamaterID = Animator.StringToHash("BrakePressure");
             hasAnimator = indicateAnimator != null;
             isOwnerState = Networking.IsOwner(gameObject);
-            DeltaTime = Time.fixedDeltaTime;
+            MNG_DeltaTime = train.trainManager.DeltaTime;
+            DeltaTime = MNG_DeltaTime[0];
+            maxOverShoot = train.trainManager.maxOverShoot;
             //for (i = 0; i < past.Length; i++)
             //{
             //    past[i] = Time.fixedDeltaTime;
@@ -128,7 +130,7 @@ namespace frou01.RigidBodyTrain
         {
             m_straightBrakePressure = straightBrakePressure[0];//LateUpdateではm_straightBrakePressureは参照のみ
 
-            DeltaTime = Mathf.Lerp(DeltaTime, Mathf.Min(Time.deltaTime, maxDeltatime), 0.1f);
+            DeltaTime = MNG_DeltaTime[0];
             pressure_delta_F = 0;
             pressure_delta_B = 0;
             //低い方へ流す（高圧からは受け入れだけする）
