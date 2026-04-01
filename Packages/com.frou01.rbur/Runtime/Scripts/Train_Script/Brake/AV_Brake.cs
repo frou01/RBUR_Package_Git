@@ -183,11 +183,11 @@ namespace frou01.RigidBodyTrain
                     {
                         //急動空気溜め -> 大気        ┌1.37mm²┐>（閉塞条件：急動空気溜 < 列車管 or 急動空気溜めが列車管より十分高圧）
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, EmerPressure);
-                        A_emerDelta -= 0.00040385883f / EmerTankSize * temp_pressureDiff;
+                        A_emerDelta -= Mathf.Clamp01((EmerPressure - temp_straightBrakePressure) / emer_release_sensitivity * 20) * 0.00040385883f / EmerTankSize * temp_pressureDiff;
                     }
                     else if (EmerPressure - temp_straightBrakePressure < -emer_refill_sensitivity)
                     {
-                        temp_cof = Mathf.Clamp01((temp_straightBrakePressure - EmerPressure - emer_refill_sensitivity) * 100);
+                        temp_cof = Mathf.Clamp01((temp_straightBrakePressure - EmerPressure - emer_refill_sensitivity) * 10);
                         //列車管  -> 急動空気溜       64mm²
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(EmerPressure, temp_straightBrakePressure);
                         A_emerDelta += temp_cof * 0.01886639808f / EmerTankSize * temp_pressureDiff;
