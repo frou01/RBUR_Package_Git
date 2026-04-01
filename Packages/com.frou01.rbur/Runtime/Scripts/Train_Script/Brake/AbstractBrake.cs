@@ -2,6 +2,7 @@
 using UnityEngine;
 using VRC.SDK3.UdonNetworkCalling;
 using VRC.SDKBase;
+using VRC.Udon;
 
 
 namespace frou01.RigidBodyTrain
@@ -27,10 +28,38 @@ namespace frou01.RigidBodyTrain
         protected float connectedPr_F;
         protected float connectedPr_B;
 
+        protected bool BrakeOpenF_GtSt
+        {
+            get
+            {
+                return BrakeOpenF;
+            }
+
+            set
+            {
+                BrakeOpenF = value;
+                if(indicateUdon) indicateUdon.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self,"BrakeVavleUpdated",true, BrakeOpenF);
+            }
+        }
+        protected bool BrakeOpenB_GtSt
+        {
+            get
+            {
+                return BrakeOpenB;
+            }
+
+            set
+            {
+                BrakeOpenB = value;
+                if (indicateUdon) indicateUdon.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", false, BrakeOpenB);
+            }
+        }
+
         [UdonSynced] public bool BrakeOpenF;//1byte
         [UdonSynced] public bool BrakeOpenB;//1byte
         protected float maxOverShoot;
         [SerializeField] protected Animator indicateAnimator;
+        [SerializeField] protected UdonBehaviour indicateUdon;
         protected bool hasAnimator;
         protected int brakePressureParamaterID;
 
@@ -134,7 +163,7 @@ namespace frou01.RigidBodyTrain
             pressure_delta_F = 0;
             pressure_delta_B = 0;
             //低い方へ流す（高圧からは受け入れだけする）
-            if (BrakeOpenF)
+            if (BrakeOpenF_GtSt)
             {
                 connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
                 if (connectedPr_F < m_straightBrakePressure)
@@ -144,7 +173,7 @@ namespace frou01.RigidBodyTrain
                     //Debug.Log("pressure_delta_F " + pressure_delta_F);
                 }
             }
-            if (BrakeOpenB)
+            if (BrakeOpenB_GtSt)
             {
                 connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
                 if (connectedPr_B < m_straightBrakePressure)
@@ -208,11 +237,11 @@ namespace frou01.RigidBodyTrain
         {
             if (F_B)
             {
-                BrakeOpenF = true;
+                BrakeOpenF_GtSt = true;
             }
             else
             {
-                BrakeOpenB = true;
+                BrakeOpenB_GtSt = true;
             }
 
             RequestSerialization();
@@ -222,11 +251,11 @@ namespace frou01.RigidBodyTrain
         {
             if (F_B)
             {
-                BrakeOpenF = false;
+                BrakeOpenF_GtSt = false;
             }
             else
             {
-                BrakeOpenB = false;
+                BrakeOpenB_GtSt = false;
             }
 
             RequestSerialization();
@@ -236,14 +265,20 @@ namespace frou01.RigidBodyTrain
         {
             if (F_B)
             {
-                BrakeOpenF = !BrakeOpenF;
+                BrakeOpenF_GtSt = !BrakeOpenF_GtSt;
             }
             else
             {
-                BrakeOpenB = !BrakeOpenB;
+                BrakeOpenB_GtSt = !BrakeOpenB_GtSt;
             }
 
             RequestSerialization();
+        }
+
+        public override void OnDeserialization()
+        {
+            BrakeOpenF_GtSt = BrakeOpenF_GtSt;
+            BrakeOpenB_GtSt = BrakeOpenB_GtSt;
         }
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {

@@ -325,6 +325,7 @@ namespace frou01.RigidBodyTrain
 
         public override void OnDeserialization()
         {
+            base.OnDeserialization();
             piston_Position_float = piston_Position;
             Emer_piston_Position_Float = 1;
         }
