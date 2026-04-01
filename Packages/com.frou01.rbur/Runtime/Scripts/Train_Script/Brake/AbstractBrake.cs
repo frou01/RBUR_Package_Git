@@ -77,8 +77,12 @@ namespace frou01.RigidBodyTrain
             MNG_DeltaTime = train.trainManager.DeltaTime;
             DeltaTime = MNG_DeltaTime[0];
             maxOverShoot = train.trainManager.maxOverShoot;
-            BrakeOpenF_GtSt = BrakeOpenF;
-            BrakeOpenB_GtSt = BrakeOpenB;
+            if(indicateUdons.Length > 0)
+                foreach (UdonBehaviour ub in indicateUdons)
+                {
+                    ub.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", true, BrakeOpenF_GtSt);
+                    ub.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", false, BrakeOpenB_GtSt);
+                }
             //for (i = 0; i < past.Length; i++)
             //{
             //    past[i] = Time.fixedDeltaTime;
