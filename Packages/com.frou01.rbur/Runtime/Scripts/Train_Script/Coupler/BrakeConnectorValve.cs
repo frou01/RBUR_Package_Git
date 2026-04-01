@@ -46,6 +46,15 @@ namespace frou01.RigidBodyTrain
                 Gizmos.DrawSphere(transform.position, 0.1f);
                 Gizmos.DrawLine(transform.position, coupler.transform.position);
             }
+            else
+            {
+                if (transform.parent.gameObject.GetComponent<CouplerObj>())
+                {
+                    Gizmos.color = new Color(0.2f, 0.2f, 0.4f, 0.5f);
+                    Gizmos.DrawSphere(transform.position, 0.1f);
+                    Gizmos.DrawLine(transform.position, transform.parent.gameObject.GetComponent<CouplerObj>().transform.position);
+                }
+            }
         }
 #endif
     }
