@@ -65,7 +65,7 @@ public class TrainManager_BuildProcess : IProcessSceneWithReport
 
             foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
             {
-                if(brakeConnectorValve.brakeModule == null) brakeConnectorValve.brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
+                brakeConnectorValve.Init(train);
             }
             id++;
         }

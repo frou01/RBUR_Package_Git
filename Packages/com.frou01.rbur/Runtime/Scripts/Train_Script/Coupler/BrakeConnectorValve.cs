@@ -8,23 +8,27 @@ namespace frou01.RigidBodyTrain
     [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
     public class BrakeConnectorValve : UdonSharpBehaviour
     {
-        [SerializeField] CouplerObj coupler;
-        [SerializeField] public AbstractBrake brakeModule;//Refered by BuildProcess
+        [Header("auto assign on buildprocess (no overwrite)")]
+        [SerializeField] protected CouplerObj coupler;
 
-        void Start()
+        [Header("auto assign on buildprocess (no overwrite)")]
+        [SerializeField] protected AbstractBrake brakeModule;//Refered by BuildProcess
+
+        public virtual void Init(Train train)
         {
 
             if (coupler == null)
             {
                 coupler = transform.parent.gameObject.GetComponent<CouplerObj>();
             }
+            if (brakeModule == null) brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
         }
 
-        public void OpenBrakeValve()
+        public virtual void OpenBrakeValve()
         {
             brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.openBrakeValve), coupler.FrontOrBack);
         }
-        public void CloseBrakeValve()
+        public virtual void CloseBrakeValve()
         {
             brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.closeBrakeValve), coupler.FrontOrBack);
         }
@@ -34,7 +38,7 @@ namespace frou01.RigidBodyTrain
             brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.changeBrakeValve), coupler.FrontOrBack);
         }
 #if UNITY_EDITOR
-        void OnDrawGizmos()
+        protected virtual void OnDrawGizmos()
         {
             if (coupler)
             {
