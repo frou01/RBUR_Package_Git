@@ -10,7 +10,7 @@ namespace frou01.RigidBodyTrain
     {
         //[SerializeField][HideInInspector] public Rigidbody couplerRigidBody;
 
-         public Train TrainScript;
+        [Tooltip("this object attached Train. auto assing by BuildProcess")]public Train TrainScript;
         [SerializeField][HideInInspector] Rigidbody MotherTrain_RigidBody;
         //[SerializeField][HideInInspector] Rigidbody ConnecTrain_RigidBody;
 
@@ -26,7 +26,8 @@ namespace frou01.RigidBodyTrain
         //private Quaternion initialRotation;
 
         [UdonSynced(UdonSyncMode.None)] public bool Knuckle_Closed = true;//falseでナックルが開
-        [UdonSynced(UdonSyncMode.None)] public byte state;//0:固定 1:閉じたら開かない 2:錠控え
+        [Tooltip("coupler state: 0.Closed, 1.Open(Connection waiting), 2.Unlock(Disconnection Waiting)")]
+        [UdonSynced(UdonSyncMode.None)] public byte state;
         [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public int ConnectedTrainID = -1;
         [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public bool ConnectedCouplerFB;
         [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public bool crashed;
@@ -41,8 +42,8 @@ namespace frou01.RigidBodyTrain
         [SerializeField] public AudioClip unLockSound;
         [SerializeField] public AudioClip CloseSound;
 
-        [SerializeField] public bool FrontOrBack;
-        [SerializeField] private float disconnectForce = 1000;
+        [Tooltip("is this front(+Z)?")][SerializeField] public bool FrontOrBack;
+        [Tooltip("disconnection threshold force")][SerializeField] private float disconnectForce = 1000;
 
 
         [SerializeField][HideInInspector] CouplerObj connectedCoupler;
@@ -303,7 +304,7 @@ namespace frou01.RigidBodyTrain
             }
         }
         bool prevKnuckle_Closed = true;//falseでナックルが開
-        byte prevstate = 0;//0:固定 1:閉じたら開かない 2:錠控え
+        byte prevstate = 0;
 
         public override void OnDeserialization()
         {
