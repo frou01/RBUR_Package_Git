@@ -16,8 +16,8 @@ namespace frou01.RigidBodyTrain
         public RailsManager railsManager;
 
         public float[] DeltaTime = new float[1];
-        [SerializeField] public float maxOverShoot = 0.005f;
-        [SerializeField] float maxDeltatime = 0.05f;//120fps-20fpsだと6倍になっちゃうが仕方ない　プチフリ対策
+        [SerializeField] public float maxOverShoot = 0.03f;
+        [SerializeField] float maxDeltatime = 0.03f;//120fps-20fpsだと6倍になっちゃうが仕方ない　プチフリ対策
 
 
         //private bool Started = false;
@@ -40,7 +40,7 @@ namespace frou01.RigidBodyTrain
         }
         private void Update()
         {
-            DeltaTime[0] = Mathf.Lerp(DeltaTime[0], Mathf.Min(Time.deltaTime, maxDeltatime), 0.1f);
+            DeltaTime[0] = Mathf.Lerp(DeltaTime[0], Mathf.Min(Time.deltaTime, maxDeltatime), 0.005f);
         }
 
         //public override void OnPreSerialization()
