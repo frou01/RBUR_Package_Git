@@ -28,7 +28,7 @@ namespace frou01.RigidBodyTrain
         protected float connectedPr_F;
         protected float connectedPr_B;
 
-        protected bool BrakeOpenF_GtSt
+        public bool BrakeOpenF_GtSt
         {
             get
             {
@@ -37,11 +37,13 @@ namespace frou01.RigidBodyTrain
 
             set
             {
+                if (BrakeOpenF != value && indicateUdons.Length > 0)
+                    foreach (UdonBehaviour ub in indicateUdons)
+                        ub.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", true, value);
                 BrakeOpenF = value;
-                if(indicateUdon) indicateUdon.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self,"BrakeVavleUpdated",true, BrakeOpenF);
             }
         }
-        protected bool BrakeOpenB_GtSt
+        public bool BrakeOpenB_GtSt
         {
             get
             {
@@ -50,16 +52,18 @@ namespace frou01.RigidBodyTrain
 
             set
             {
+                if (BrakeOpenB != value && indicateUdons.Length > 0)
+                    foreach (UdonBehaviour ub in indicateUdons)
+                        ub.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", false, value);
                 BrakeOpenB = value;
-                if (indicateUdon) indicateUdon.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", false, BrakeOpenB);
             }
         }
 
         [UdonSynced] public bool BrakeOpenF;//1byte
         [UdonSynced] public bool BrakeOpenB;//1byte
         protected float maxOverShoot;
-        [SerializeField] protected Animator indicateAnimator;
-        [SerializeField] protected UdonBehaviour indicateUdon;
+        [SerializeField] public Animator indicateAnimator;
+        [SerializeField] public UdonBehaviour[] indicateUdons;
         protected bool hasAnimator;
         protected int brakePressureParamaterID;
 
@@ -73,6 +77,8 @@ namespace frou01.RigidBodyTrain
             MNG_DeltaTime = train.trainManager.DeltaTime;
             DeltaTime = MNG_DeltaTime[0];
             maxOverShoot = train.trainManager.maxOverShoot;
+            BrakeOpenF_GtSt = BrakeOpenF;
+            BrakeOpenB_GtSt = BrakeOpenB;
             //for (i = 0; i < past.Length; i++)
             //{
             //    past[i] = Time.fixedDeltaTime;
@@ -277,8 +283,8 @@ namespace frou01.RigidBodyTrain
 
         public override void OnDeserialization()
         {
-            BrakeOpenF_GtSt = BrakeOpenF_GtSt;
-            BrakeOpenB_GtSt = BrakeOpenB_GtSt;
+            BrakeOpenF_GtSt = BrakeOpenF;
+            BrakeOpenB_GtSt = BrakeOpenB;
         }
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {

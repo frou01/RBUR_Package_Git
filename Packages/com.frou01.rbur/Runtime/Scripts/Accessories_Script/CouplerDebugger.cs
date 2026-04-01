@@ -34,9 +34,9 @@ namespace frou01.RigidBodyTrain
                     if (coupler.BrakeModule)
                     {
                         if (coupler.FrontOrBack)
-                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenF ? "開" : "閉");
+                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenF_GtSt ? "開" : "閉");
                         else
-                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenB ? "開" : "閉");
+                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenB_GtSt ? "開" : "閉");
                     }
                     display.text += "<br> debug_force" + (coupler.chachedTransform.InverseTransformVector(coupler.joint.currentForce)).ToString("000000.00");
                 }
