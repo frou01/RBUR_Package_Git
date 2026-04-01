@@ -204,6 +204,34 @@ namespace frou01.RigidBodyTrain
         }
         protected bool isOwnerState;
         [NetworkCallable]
+        public void openBrakeValve(bool F_B)//空制弁開放/閉鎖
+        {
+            if (F_B)
+            {
+                BrakeOpenF = true;
+            }
+            else
+            {
+                BrakeOpenB = true;
+            }
+
+            RequestSerialization();
+        }
+        [NetworkCallable]
+        public void closeBrakeValve(bool F_B)//空制弁開放/閉鎖
+        {
+            if (F_B)
+            {
+                BrakeOpenF = false;
+            }
+            else
+            {
+                BrakeOpenB = false;
+            }
+
+            RequestSerialization();
+        }
+        [NetworkCallable]
         public void changeBrakeValve(bool F_B)//空制弁開放/閉鎖
         {
             if (F_B)

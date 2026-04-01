@@ -20,6 +20,15 @@ namespace frou01.RigidBodyTrain
             }
         }
 
+        public void OpenBrakeValve()
+        {
+            brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.openBrakeValve), coupler.FrontOrBack);
+        }
+        public void CloseBrakeValve()
+        {
+            brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.closeBrakeValve), coupler.FrontOrBack);
+        }
+
         public override void Interact()
         {
             brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.changeBrakeValve), coupler.FrontOrBack);
