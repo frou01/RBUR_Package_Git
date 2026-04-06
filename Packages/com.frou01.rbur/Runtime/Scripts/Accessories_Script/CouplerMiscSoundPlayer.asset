@@ -61,7 +61,7 @@ MonoBehaviour:
       Data: 3|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: AutoDisableSoundPlayer, Frou01UtilAssembly.Runtime
+      Data: frou01.util.AutoDisableSoundPlayer, Frou01UtilAssembly.Runtime
     - Name: 
       Entry: 8
       Data: 
