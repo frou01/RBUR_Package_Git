@@ -38,13 +38,13 @@ public class CouplerMiscSoundPlayer : UdonSharpBehaviour
         coupler = this.gameObject.GetComponent<CouplerObj>();
         joint = coupler.TrainScript.GetComponents<ConfigurableJoint>()[coupler.FrontOrBack ? 0 : 1];
     }
-
-    private void FixedUpdate()
+    float force, DeltaForce;
+    private void Update()
     {
         if (isOwner)
         {
-            float force = chachedTransform.InverseTransformVector(joint.currentForce).z;
-            float DeltaForce = (force - prevForce) / chachedDeltaTime;
+            force = chachedTransform.InverseTransformVector(joint.currentForce).z;
+            DeltaForce = (force - prevForce) / chachedDeltaTime;
             if (cnt < 0)
             {
                 if (prevForce < shockThreshold && force > shockThreshold && DeltaForce > pullThreshold)
