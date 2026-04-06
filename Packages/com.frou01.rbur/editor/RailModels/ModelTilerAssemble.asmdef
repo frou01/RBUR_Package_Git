@@ -1,6 +1,6 @@
 {
     "name": "ModelTilerAssemble",
-    "rootNamespace": "",
+    "rootNamespace": "frou01.RBUR.editor.modelTiler",
     "references": [
         "GUID:4307f53044263cf4b835bd812fc161a4",
         "GUID:ba8c092d026123a418fb4bfb797a7bd8",

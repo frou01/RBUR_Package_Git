@@ -1,11 +1,10 @@
 ﻿
 #if (UNITY_EDITOR)
-using System.Collections;
 using System.Collections.Generic;
 using UdonSharpEditor;
-using UnityEditor;
 using UnityEngine;
 using System.Linq;
+using frou01.util;
 
 public class pathModelCullerSetup : MonoBehaviour
 {
