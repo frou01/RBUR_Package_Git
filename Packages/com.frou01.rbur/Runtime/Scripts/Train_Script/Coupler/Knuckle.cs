@@ -20,7 +20,7 @@ namespace frou01.RigidBodyTrain
             else if (coupler.state == 2) coupler.SendCustomNetworkEvent(NetworkEventTarget.All, "reLockCoupler");
             else coupler.SendCustomNetworkEvent(NetworkEventTarget.All, "knuckleOpen");
         }
-#if UNITY_EDITOR
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
             if (coupler)

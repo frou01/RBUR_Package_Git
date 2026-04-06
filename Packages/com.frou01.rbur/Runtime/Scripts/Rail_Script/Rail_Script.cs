@@ -1,11 +1,6 @@
 ﻿using Cinemachine;
-using System;
 using UdonSharp;
-using UnityEditor;
 using UnityEngine;
-using VRC.SDKBase;
-using VRC.Udon;
-using VRC.Udon.Common.Interfaces;
 using static Cinemachine.CinemachinePathBase;
 
 namespace frou01.RigidBodyTrain
@@ -126,6 +121,7 @@ namespace frou01.RigidBodyTrain
             return cinemachinePath.FindClosestPoint(Point, 0, -1, 10);
 
         }
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
             if (cinemachinePath)
@@ -189,5 +185,6 @@ namespace frou01.RigidBodyTrain
             IndicatePos = targetPath.EvaluatePosition(NativeValueOffsetOnDistance(targetPath, contactPoint, offset)) + new Vector3(0, 1, 0);
             edgeDist = Vector3.Distance(IndicateBasePos, targetPath.EvaluatePosition(contactPoint));
         }
+#endif
     }
 }

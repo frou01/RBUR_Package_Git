@@ -84,6 +84,7 @@ namespace frou01.RigidBodyTrain
             }
         }
 
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         Vector3 offset = new Vector3(0, 1, 0);
         void OnDrawGizmos()
         {
@@ -205,5 +206,6 @@ namespace frou01.RigidBodyTrain
                 }
             }
         }
+#endif
     }
 }

@@ -37,7 +37,7 @@ namespace frou01.RigidBodyTrain
         {
             brakeModule.SendCustomNetworkEvent(NetworkEventTarget.Owner, nameof(brakeModule.changeBrakeValve), coupler.FrontOrBack);
         }
-#if UNITY_EDITOR
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         protected virtual void OnDrawGizmos()
         {
             if (coupler)

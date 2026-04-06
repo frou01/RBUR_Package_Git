@@ -19,7 +19,7 @@ namespace frou01.RigidBodyTrain
             coupler.couplerUnlock();
             coupler.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "couplerUnlock");
         }
-#if UNITY_EDITOR
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
             if (coupler)

@@ -4,8 +4,6 @@ using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
-using VRC.Udon;
-using VRC.Udon.Common.Interfaces;
 
 namespace frou01.RigidBodyTrain
 {
@@ -823,7 +821,7 @@ namespace frou01.RigidBodyTrain
             rigidbody_.velocity = Vector3.zero;
         }
 
-#if UNITY_EDITOR
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
             Gizmos.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
