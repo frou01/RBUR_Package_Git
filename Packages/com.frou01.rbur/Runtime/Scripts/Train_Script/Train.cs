@@ -466,6 +466,7 @@ namespace frou01.RigidBodyTrain
 
         private bool isDirty;
 
+        private Vector3 chachedZero = Vector3.zero;
         private Vector3 tempVector;
         private bool orProxy;
         public void BogieCalculateNextPos()
@@ -557,7 +558,7 @@ namespace frou01.RigidBodyTrain
                 tempVector = onRailPosition_F - positionBogie_F;
                 BogieToWheelPosLength_F = tempVector.sqrMagnitude;
                 tooLongDiffF = BogieToWheelPosLength_F > distanceErrorThreshold*5;
-                prevpositionBogieF = onRailPosition_F;
+                prevpositionBogieF = onRailPosition_F + chachedZero;
             }
             else
             {
@@ -566,7 +567,7 @@ namespace frou01.RigidBodyTrain
                 tempVector = onRailPosition_B - positionBogie_B;
                 BogieToWheelPosLength_B = tempVector.sqrMagnitude;
                 tooLongDiffB = BogieToWheelPosLength_B > distanceErrorThreshold*5;
-                prevpositionBogieB = onRailPosition_B;
+                prevpositionBogieB = onRailPosition_B + chachedZero;
             }
         }
 
