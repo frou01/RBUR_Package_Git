@@ -638,6 +638,9 @@ MonoBehaviour:
   brake: {fileID: 1520616387377411247}
   WheelPressure:
   - 110250
+  RBTorqueBrakeStartSpeed: 5
+  RBTorqueBrakeFullSpeed: 10
+  RBTorqueBrakePressShoeForce: 100
 --- !u!114 &1205068948058727780
 MonoBehaviour:
   m_ObjectHideFlags: 0
