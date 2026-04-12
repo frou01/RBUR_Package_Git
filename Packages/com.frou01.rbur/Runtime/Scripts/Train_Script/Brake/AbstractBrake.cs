@@ -37,10 +37,11 @@ namespace frou01.RigidBodyTrain
 
             set
             {
-                if (BrakeOpenF != value && indicateUdons.Length > 0)
+                if (LocalBrakeOpenF != value && indicateUdons.Length > 0)
                     foreach (UdonBehaviour ub in indicateUdons)
                         ub.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", true, value);
                 BrakeOpenF = value;
+                LocalBrakeOpenF = value;
             }
         }
         public bool BrakeOpenB_GtSt
@@ -52,13 +53,16 @@ namespace frou01.RigidBodyTrain
 
             set
             {
-                if (BrakeOpenB != value && indicateUdons.Length > 0)
+                if (LocalBrakeOpenB != value && indicateUdons.Length > 0)
                     foreach (UdonBehaviour ub in indicateUdons)
                         ub.SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Self, "BrakeVavleUpdated", false, value);
                 BrakeOpenB = value;
+                LocalBrakeOpenB = value;
             }
         }
 
+        bool LocalBrakeOpenF;//1byte
+        bool LocalBrakeOpenB;//1byte
         [UdonSynced] public bool BrakeOpenF;//1byte
         [UdonSynced] public bool BrakeOpenB;//1byte
         protected float maxOverShoot;
