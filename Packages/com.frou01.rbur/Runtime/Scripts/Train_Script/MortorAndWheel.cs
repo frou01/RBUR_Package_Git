@@ -22,6 +22,9 @@ namespace frou01.RigidBodyTrain
         PhysicMaterial wheelMaterial;
         [SerializeField] Rigidbody brake;
         [SerializeField] float[] WheelPressure = new float[1];
+        [SerializeField] float RBTorqueBrakeStartSpeed = 5;
+        [SerializeField] float RBTorqueBrakeFullSpeed = 10;
+        [SerializeField] float RBTorqueBrakePressShoeForce = 100;
         float wheelRadius = 0;
         float brakeFriction = 1;
         Transform WheelTransform;
@@ -42,18 +45,58 @@ namespace frou01.RigidBodyTrain
             BrakeTransform = brake.transform;
             wheelInitialPos = WheelTransform.localPosition;
             BrakeInitialPos = BrakeTransform.localPosition;
+
+            brakeTorque_transitionRange = RBTorqueBrakeFullSpeed - RBTorqueBrakeStartSpeed;
         }
 
         Vector3 tempForceVector;
+        float treadSpeed = 0;
+        float brakeTorque_transitionRange;
+        float brakeTorque_interpolation;
+        float MortorBrakeTorque;
+        float ShoeBrakeTorque;
         private void FixedUpdate()
         {
-            WheelTreadSpeed[index] = trainTransform.InverseTransformVector(wheel.angularVelocity).x * wheelRadius;
+            treadSpeed = WheelTreadSpeed[index] = trainTransform.InverseTransformVector(wheel.angularVelocity).x * wheelRadius;
 
             tempForceVector = trainTransform.up;
+            if(BrakeForce[0] > RBTorqueBrakePressShoeForce)
+            {
+                if (treadSpeed > RBTorqueBrakeStartSpeed)
+                {
+                    brakeTorque_interpolation = (treadSpeed - RBTorqueBrakeStartSpeed) / brakeTorque_transitionRange;
 
-            wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
-            wheel.AddRelativeTorque(MortorForce[0] * wheelRadius, 0, 0, ForceMode.Force);
-            brake.AddForce(-tempForceVector * BrakeForce[0]/ brakeFriction * wheelRadius, ForceMode.Force);
+                    MortorBrakeTorque = Mathf.Lerp(0 , BrakeForce[0] - RBTorqueBrakePressShoeForce, brakeTorque_interpolation);
+                    ShoeBrakeTorque = (BrakeForce[0] - MortorBrakeTorque) / brakeFriction * wheelRadius;
+
+                    brake.AddForce(-tempForceVector * ShoeBrakeTorque / brakeFriction * wheelRadius, ForceMode.Force);
+                    wheel.AddRelativeTorque(-MortorBrakeTorque, 0, 0, ForceMode.Force);
+                    wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
+
+                }
+                else if (treadSpeed < -RBTorqueBrakeStartSpeed)
+                {
+                    brakeTorque_interpolation = (-treadSpeed - RBTorqueBrakeStartSpeed) / brakeTorque_transitionRange;
+
+                    MortorBrakeTorque = Mathf.Lerp(0, BrakeForce[0] - RBTorqueBrakePressShoeForce, brakeTorque_interpolation);
+                    ShoeBrakeTorque = (BrakeForce[0] - MortorBrakeTorque) / brakeFriction * wheelRadius;
+
+                    brake.AddForce(-tempForceVector * ShoeBrakeTorque , ForceMode.Force);
+                    wheel.AddRelativeTorque(MortorBrakeTorque, 0, 0, ForceMode.Force);
+                    wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
+                }
+                else
+                {
+                    brake.AddForce(-tempForceVector * BrakeForce[0] / brakeFriction * wheelRadius, ForceMode.Force);
+                    wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
+                }
+            }
+            else
+            {
+                brake.AddForce(-tempForceVector * BrakeForce[0] / brakeFriction * wheelRadius, ForceMode.Force);
+                wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
+            }
+            if (MortorForce[0] != 0) wheel.AddRelativeTorque(MortorForce[0] * wheelRadius, 0, 0, ForceMode.Force);
 
             if (overrideFriction)
             {
@@ -62,12 +105,17 @@ namespace frou01.RigidBodyTrain
             }
         }
 
+        private static void BrakeTorque_Interpolation()
+        {
+            
+        }
+
         int checkInterval;
         int checkCounter;
         private void Update()
         {
             checkCounter += 1;
-            if(checkCounter < checkInterval)
+            if(checkCounter > checkInterval) // fix https://github.com/frou01/RBUR_Package_Git/issues/42#issuecomment-4231819970
             {
                 CheckWheelTransform();
                 checkCounter = 0;
@@ -77,7 +125,8 @@ namespace frou01.RigidBodyTrain
         private void CheckWheelTransform()
         {
             if (BrakeTransform.localPosition.y - WheelTransform.localPosition.y < wheelRadius
-                || Vector3.Distance(WheelTransform.localPosition, wheelInitialPos) > wheelRadius)
+                || Vector3.Distance(WheelTransform.localPosition, wheelInitialPos) > wheelRadius
+                || BrakeInitialPos.y - BrakeTransform.localPosition.y > wheelRadius/ 10 /*from: https://github.com/frou01/RBUR_Package_Git/issues/42#issuecomment-4071492894 */)
             {
                 Debug.Log("Object penetration : " + this.name);
                 Debug.Log("WheelBody pos " + WheelTransform.localPosition);
