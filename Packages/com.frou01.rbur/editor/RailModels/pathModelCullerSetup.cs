@@ -54,6 +54,9 @@ public class pathModelCullerSetup : MonoBehaviour
 
             go.transform.position = cullerCenters[i];
             go.transform.parent = root;
+            SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
+            sphereCollider.radius = 1500;
+            sphereCollider.isTrigger = true;
             ColliderGameObjectCuller ClRC = go.AddUdonSharpComponent<ColliderGameObjectCuller>();
             ClRC.objects = ClusteredGo[i];
             ClRC.isStaticMode = isStatic;
@@ -62,9 +65,6 @@ public class pathModelCullerSetup : MonoBehaviour
                 {
                     go2.transform.parent = go.transform;
                 }
-            SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
-            sphereCollider.radius = 1500;
-            sphereCollider.isTrigger = true;
         }
     }
 }
