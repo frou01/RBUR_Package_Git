@@ -1,4 +1,5 @@
 ﻿
+using frou01.util;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
@@ -53,8 +54,11 @@ namespace frou01.RigidBodyTrain
         //Rigidbody rigidbody_;
         //Vector3 InertiaTensor;
         [SerializeField] GameObject knuckleModel;
+        [SerializeField] SyncedObjectToggle ObjectToggle_Knuckle;
         [SerializeField] GameObject knuckleKey;
+        [SerializeField] SyncedObjectSwitch ObjectSwitch_Key;
 
+        [Tooltip("Auto Assign by BuildProcess")]
         public AbstractBrake BrakeModule;
         public void Start()
         {
@@ -92,6 +96,7 @@ namespace frou01.RigidBodyTrain
             anchorBody.transform.localPosition = Vector3.zero;
             chachedTransform = transform;
             trainManager = TrainScript.trainManager;
+            UpdateKnuckleModel();
 
             //rigidbody_ = GetComponent<Rigidbody>();
             //InertiaTensor = rigidbody_.inertiaTensor;
@@ -166,14 +171,25 @@ namespace frou01.RigidBodyTrain
 
         public void UpdateKnuckleModel()
         {
-            if (knuckleModel == null) return;
-            if (!Knuckle_Closed)
+            if (knuckleModel)
             {
-                knuckleModel.transform.localRotation = Quaternion.Euler(0, 75, 0);
+
+                if (!Knuckle_Closed)
+                {
+                    knuckleModel.transform.localRotation = Quaternion.Euler(0, 75, 0);
+                }
+                else
+                {
+                    knuckleModel.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                }
             }
-            else
+            if(ObjectToggle_Knuckle)
             {
-                knuckleModel.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                ObjectToggle_Knuckle.setState(Knuckle_Closed);
+            }
+            if (ObjectSwitch_Key)
+            {
+                ObjectSwitch_Key.setState(state);
             }
         }
 
@@ -236,7 +252,7 @@ namespace frou01.RigidBodyTrain
 
             //連結したら連結した連結器の"車両ID,連結器前後"を取る。nullは-1
             //マスターの場合のみ上記を同期
-            Debug.Log(crashed);
+            //Debug.Log(crashed);
             miss = crashed;
             this.connectedCoupler = connectingCoupler;
             if (connectingCoupler != null)
