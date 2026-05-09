@@ -847,13 +847,13 @@ namespace frou01.RigidBodyTrain
             Gizmos.color = new Color(0f, 0f, 1f, 1f);
             if (connectedTrain_B != null) drawKnucle(connectedTrain_B,CouplerB);
         }
-        private Vector3 drawingPos;
-        private Quaternion drawingRot;
-        private Vector3 drawingStart;
-        private Vector3 drawingEnd;
 
         void drawKnucle(Train connectedTrain, CouplerObj ConnectingCoupler)
         {
+            Vector3 drawingPos;
+            Quaternion drawingRot;
+            Vector3 drawingStart;
+            Vector3 drawingEnd;
             Transform ConnectingCouplerTransform = ConnectingCoupler.transform;
             CouplerObj connectCoupler = searchKnucle(connectedTrain);
             Transform connectCouplerTransform = connectCoupler.transform;
