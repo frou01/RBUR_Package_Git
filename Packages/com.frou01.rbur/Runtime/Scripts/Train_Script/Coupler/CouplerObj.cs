@@ -1,8 +1,9 @@
 ﻿
-using frou01.util;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
+using VRC.Udon;
+using VRC.Udon.Common.Interfaces;
 
 namespace frou01.RigidBodyTrain
 {
@@ -54,9 +55,8 @@ namespace frou01.RigidBodyTrain
         //Rigidbody rigidbody_;
         //Vector3 InertiaTensor;
         [SerializeField] GameObject knuckleModel;
-        [SerializeField] SyncedObjectToggle ObjectToggle_Knuckle;
         [SerializeField] GameObject knuckleKey;
-        [SerializeField] SyncedObjectSwitch ObjectSwitch_Key;
+        [SerializeField] UdonBehaviour CouplerStateIndicator;
 
         [Tooltip("Auto Assign by BuildProcess")]
         public AbstractBrake BrakeModule;
@@ -183,13 +183,10 @@ namespace frou01.RigidBodyTrain
                     knuckleModel.transform.localRotation = Quaternion.Euler(0, 0, 0);
                 }
             }
-            if(ObjectToggle_Knuckle)
+            if(CouplerStateIndicator)
             {
-                ObjectToggle_Knuckle.setState(Knuckle_Closed);
-            }
-            if (ObjectSwitch_Key)
-            {
-                ObjectSwitch_Key.setState(state);
+                CouplerStateIndicator.SendCustomNetworkEvent(NetworkEventTarget.Self, "setKnucleState", Knuckle_Closed);
+                CouplerStateIndicator.SendCustomNetworkEvent(NetworkEventTarget.Self, "setKeyState", state);
             }
         }
 
