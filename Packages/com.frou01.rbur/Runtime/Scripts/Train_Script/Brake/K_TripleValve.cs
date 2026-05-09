@@ -211,7 +211,7 @@ namespace frou01.RigidBodyTrain
                         if (CylinderPressure < straightBrakePressure[0])
                         {
                             temp_cof = SupportPressure - temp_straightBrakePressure;
-                            temp_cof2 = Mathf.Min(temp_cof - immidiateBrake_lap_sensitivity, brake_sensitivity - temp_cof) / (brake_sensitivity - immidiateBrake_lap_sensitivity) * 2;
+                            temp_cof2 = Mathf.Clamp01(Mathf.Min(temp_cof - immidiateBrake_lap_sensitivity, brake_sensitivity - temp_cof) / (brake_sensitivity - immidiateBrake_lap_sensitivity)) * 2;
                             temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, straightBrakePressure[0]);
                             k_straightDelta -= temp_cof2 * 0.04539727154f * temp_pressureDiff;
                             k_cylinderDelta += temp_cof2 * 0.00090794543f / CylinderSize * temp_pressureDiff;
@@ -222,7 +222,7 @@ namespace frou01.RigidBodyTrain
                         //9.62mm²
                         //補助空気溜側係数 = 0.00283585553/SupportAirTankSize = 10³*9.62/10⁶/√11.5075252899/SupportAirTankSize
                         //制動筒側係数 = 0.00283585553/CylinderSize = 10³*9.62/10⁶/√11.5075252899/CylinderSize
-                        temp_cof2 = Mathf.Min((brake_sensitivity - temp_cof) / (brake_sensitivity - immidiateBrake_sensitivity), 1);
+                        temp_cof2 = Mathf.Clamp01((brake_sensitivity - temp_cof) / (brake_sensitivity - immidiateBrake_sensitivity));
 
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, SupportPressure);
                         k_supportDelta -= temp_cof2 * 0.00283585553f / SupportTankSize * temp_pressureDiff;
@@ -251,7 +251,7 @@ namespace frou01.RigidBodyTrain
                         temp_cof = SupportPressure - temp_straightBrakePressure;
                         if (CylinderPressure < straightBrakePressure[0])
                         {
-                            temp_cof2 = 1 - Mathf.Max(emer_sensitivity_2 - temp_cof, 0) / (emer_sensitivity_2 - emer_sensitivity);
+                            temp_cof2 = 1 - Mathf.Clamp01((emer_sensitivity_2 - temp_cof) / (emer_sensitivity_2 - emer_sensitivity));
 
                             temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, straightBrakePressure[0]);
                             k_straightDelta -= temp_cof2 * 0.70748994622f * temp_pressureDiff;
