@@ -21,14 +21,14 @@ namespace frou01.RigidBodyTrain
                                                                    //5: brake,
                                                                    //6: emer,
         protected float piston_Position_float;
-        [SerializeField] protected float slowRefill_sensitivity = 0.1f;
-        [SerializeField] protected float slowRelease_sensitivity = 0.06f;
-        [SerializeField] protected float release_sensitivity = 0.005f;
-        [SerializeField] protected float immidiateBrake_lap_sensitivity = 0.00f;
-        [SerializeField] protected float immidiateBrake_sensitivity = 0.015f;
-        [SerializeField] protected float brake_sensitivity = 0.02f;
-        [SerializeField] protected float emer_sensitivity = 0.025f;
-        [SerializeField] protected float emer_sensitivity_2 = 0.1f;
+        [SerializeField] protected float slowRefill_sensitivity = 0.045f;
+        [SerializeField] protected float slowRelease_sensitivity = 0.03f;
+        [SerializeField] protected float release_sensitivity = 0.01f;
+        [SerializeField] protected float immidiateBrake_lap_sensitivity = 0.005f;
+        [SerializeField] protected float immidiateBrake_sensitivity = 0.01f;
+        [SerializeField] protected float brake_sensitivity = 0.03f;
+        [SerializeField] protected float emer_sensitivity = 0.1f;
+        [SerializeField] protected float emer_sensitivity_2 = 0.12f;
 
         [SerializeField] protected float StaticFriction = 1020f;
         [SerializeField] protected float DynamicFriction = 61f;
