@@ -56,7 +56,7 @@ namespace frou01.RigidBodyTrain
         //Vector3 InertiaTensor;
         [SerializeField] GameObject knuckleModel;
         [SerializeField] GameObject knuckleKey;
-        [SerializeField] UdonBehaviour CouplerStateIndicator;
+        [SerializeField] UdonBehaviour CouplerEventListener;
 
         [Tooltip("Auto Assign by BuildProcess")]
         public AbstractBrake BrakeModule;
@@ -139,13 +139,22 @@ namespace frou01.RigidBodyTrain
             if (connectedCoupler == null)
             {
                 if (state == 2) state = 1;
-                if (Knuckle_Closed) if(CouplerAudioSource) CouplerAudioSource.PlayOneShot(OpenSound);
-                else if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
+                if (Knuckle_Closed)
+                {
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(OpenSound);
+                    CouplerEventListener.SendCustomEvent("OnOpening");
+                }
+                else
+                {
+                    if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
+                    CouplerEventListener.SendCustomEvent("OnOpened");
+                }
                 Knuckle_Closed = false;
             }
             else
             {
                 if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
+                CouplerEventListener.SendCustomEvent("OnUnlocking");
             }
             if (Networking.IsOwner(gameObject)) RequestSerialization();
             UpdateKnuckleModel();
@@ -153,7 +162,11 @@ namespace frou01.RigidBodyTrain
         public void knuckleClose()
         {
             state = 0;
-            if (!Knuckle_Closed) if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(CloseSound);
+            if (!Knuckle_Closed)
+            {
+                if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(CloseSound);
+                CouplerEventListener.SendCustomEvent("OnKnuckleClosing");
+            }
             Knuckle_Closed = true;
             if (Networking.IsOwner(gameObject)) RequestSerialization();
             UpdateKnuckleModel();
@@ -183,10 +196,10 @@ namespace frou01.RigidBodyTrain
                     knuckleModel.transform.localRotation = Quaternion.Euler(0, 0, 0);
                 }
             }
-            if(CouplerStateIndicator)
+            if(CouplerEventListener)
             {
-                CouplerStateIndicator.SendCustomNetworkEvent(NetworkEventTarget.Self, "setKnucleState", Knuckle_Closed);
-                CouplerStateIndicator.SendCustomNetworkEvent(NetworkEventTarget.Self, "setKeyState", state);
+                CouplerEventListener.SendCustomNetworkEvent(NetworkEventTarget.Self, "setKnucleState", Knuckle_Closed);
+                CouplerEventListener.SendCustomNetworkEvent(NetworkEventTarget.Self, "setKeyState", state);
             }
         }
 
@@ -287,15 +300,18 @@ namespace frou01.RigidBodyTrain
                 if(miss)
                 {
                     if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(missConnectSound);
+                    CouplerEventListener.SendCustomEvent("OnCouplerCrashing");
                 }
                 else
                 if (ConnectedTrainID == -1)
                 {
                     if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unCoupleSound);
+                    CouplerEventListener.SendCustomEvent("OnDecoupling");
                 }
                 else
                 {
                     if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(connectSound);
+                    CouplerEventListener.SendCustomEvent("OnCoupling");
                 }
             }
             prevID = ConnectedTrainID;
@@ -326,15 +342,18 @@ namespace frou01.RigidBodyTrain
                 if(state == 2)
                 {
                     if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(unLockSound);
+                    CouplerEventListener.SendCustomEvent("OnUnlocking");
                 }
                 else if(state == 1 && prevstate == 0)
                 {
                     if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(OpenSound);
+                    CouplerEventListener.SendCustomEvent("OnOpening");
                 }
             }
             if(prevKnuckle_Closed && !Knuckle_Closed)
             {
                 if (CouplerAudioSource) CouplerAudioSource.PlayOneShot(CloseSound);
+                CouplerEventListener.SendCustomEvent("OnKnuckleClosing");
             }
             //Debug.Log(ConnectedTrainID);
             if (ConnectedTrainID != -1)
