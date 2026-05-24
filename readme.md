@@ -466,14 +466,26 @@ CouplerAudioSource|音源再生に用いるAudioSource。
 カプラ音源|対応イベント時にCouplerAudioSourceで再生されるAudioClip。
 FrontOrBack|連結器方向。 +Z=Front
 disconnectForce|連結器開放に必要な力
-connectedCoupler|連結している連結器
-knuckleModel|ナックルのモデルオブジェクト。閉y=0,開y=90に回転されます。
-knuckleKey|予約済みフィールド（未使用）
+knuckleModel|[非推奨]ナックルのモデルオブジェクト。閉y=0,開y=90に回転されます。
+knuckleKey|[非推奨]予約済みフィールド（未使用）
+CouplerEventListners|下記したイベントを受けるUdon。
 
 |機能|概要|
 |---:|:---|
 Editor上での連結|Editor上でconnectedCouplerを指定しておくことで連結状態を設定しておくことが出来ます。
 突放貨車向けの調整|disconnectForceを大きめにすることで、動き出し衝動で外れるのをある程度防止できます
+
+|イベント|概要|
+|---:|:---|
+setKnuckleState|ナックルの状態変化で呼び出されるイベント
+setKeyState|錠の状態変化で呼び出されるイベント
+OnOpening|固定状態から解放状態に移行した際のイベント
+OnOpened|解放状態から更に解放しようとした際に呼び出されるイベント
+OnUnlocking|固定状態から錠控えに移行した際に呼び出されるイベント
+OnKnuckleClosing|開放状態からナックルを閉じた際に呼び出されるイベント
+OnCouplerCrashing|固定状態の連結器同士が接触した際に呼び出されるイベント
+OnDecoupling|連結が解放された際に呼び出されるイベント
+OnCoupling|連結された際に呼び出されるイベント
 
 </details>
 
