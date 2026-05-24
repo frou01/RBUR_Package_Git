@@ -30,7 +30,7 @@ namespace frou01.RigidBodyTrain
 
         [UdonSynced(UdonSyncMode.None)] public bool Knuckle_Closed = true;//falseでナックルが開
         [Tooltip("coupler state: 0.Closed, 1.Open(Connection waiting), 2.Unlock(Disconnection Waiting)")]
-        [UdonSynced(UdonSyncMode.None)] public byte state;
+        [UdonSynced(UdonSyncMode.None)] public int state;
         [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public int ConnectedTrainID = -1;
         [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public bool ConnectedCouplerFB;
         [SerializeField][HideInInspector] [UdonSynced(UdonSyncMode.None)] public bool crashed;
@@ -62,7 +62,6 @@ namespace frou01.RigidBodyTrain
         [SerializeField] UdonBehaviour[] CouplerEventListeners;
 
         [Obsolete]
-        [Tooltip("Auto Assign by BuildProcess")]
         public AbstractBrake BrakeModule;
         public void Start()
         {
@@ -202,6 +201,7 @@ namespace frou01.RigidBodyTrain
 
         public void UpdateKnuckleModel()
         {
+#pragma warning disable CS0612 // 型またはメンバーが旧型式です
             if (knuckleModel)
             {
                 if (!Knuckle_Closed)
@@ -213,6 +213,7 @@ namespace frou01.RigidBodyTrain
                     knuckleModel.transform.localRotation = Quaternion.Euler(0, 0, 0);
                 }
             }
+#pragma warning restore CS0612 // 型またはメンバーが旧型式です
             if (CouplerEventListeners.Length > 0)
             {
                 foreach (UdonBehaviour eventListener in CouplerEventListeners)
