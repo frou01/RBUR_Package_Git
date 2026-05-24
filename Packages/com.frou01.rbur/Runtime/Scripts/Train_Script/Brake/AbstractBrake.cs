@@ -204,9 +204,16 @@ namespace frou01.RigidBodyTrain
                 {
                     ConnectedBrakePressure_B = newPointer;
                 }
+                if(UseLegacyPipeState)changeLegacyState();
                 return true;
             }
             return false;
+        }
+
+        private void changeLegacyState()
+        {
+            BrakeOpenF = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? false : true) : true;
+            BrakeOpenB = ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? false : true) : true;
         }
         protected bool isOwnerState;
 
@@ -222,7 +229,7 @@ namespace frou01.RigidBodyTrain
                 $"<br>BP: ";
             if (F_B)
             {
-                val= ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? "Closed" : "Connected") : "Fail";
+                val = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? "Closed" : "Connected") : "Fail";
             }
             else
             {
