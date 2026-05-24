@@ -46,7 +46,7 @@ namespace frou01.RigidBodyTrain
 
         public void SetUpOnBuildProcess(Train train)
         {
-            if(train == null) this.train = train;
+            if(this.train == null) this.train = train;
         }
         public bool NeedReadOpenState()
         {
