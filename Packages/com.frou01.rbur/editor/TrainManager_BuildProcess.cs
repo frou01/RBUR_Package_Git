@@ -69,18 +69,20 @@ namespace frou01.RBUR.editor
                     {
                         train.connectionRecievers = train.connectionRecievers.AddItem(connectionReciever).ToArray();
                     }
-                    if (trainSubObjects.Contains(connectionReciever.gameObject)) trainSubObjects.Add(connectionReciever.gameObject);
                 }
 
                 foreach (AbstractBrake brakeModule in train.GetComponentsInChildren<AbstractBrake>(true))
                 {
                     brakeModule.SetUpOnBuildProcess(train);
+                    if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
                 }
 
                 foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
                 {
                     brakeConnectorValve.SetUpOnBuildProcess(train);
+                    if (!trainSubObjects.Contains(brakeConnectorValve.gameObject)) trainSubObjects.Add(brakeConnectorValve.gameObject);
                 }
+                train.subObjects = trainSubObjects.ToArray();
 
 
                 id++;
@@ -92,7 +94,21 @@ namespace frou01.RBUR.editor
                 //Setup Connection
                 setUpConnectedCoupler(train, train.CouplerF, train.connectedTrain_F);
                 setUpConnectedCoupler(train, train.CouplerB, train.connectedTrain_B);
-                id++;
+            }
+
+            foreach (Train train in Trains_List)
+            {
+                //Post Process
+
+                foreach (AbstractBrake brakeModule in train.GetComponentsInChildren<AbstractBrake>(true))
+                {
+                    brakeModule.PostProcessOnBuildProcess();
+                }
+
+                foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
+                {
+                    brakeConnectorValve.PostProcessOnBuildProcess();
+                }
             }
             trainManager.Trains = Trains_List.ToArray();
             //foreach (Train train in trainManager.Trains)

@@ -44,9 +44,12 @@ namespace frou01.RigidBodyTrain
 
         [HideInInspector] public float[] brakeFactor = new float[1];
 
-        public void SetUpOnBuildProcess(Train train)
+        public virtual void SetUpOnBuildProcess(Train train)
         {
             if(this.train == null) this.train = train;
+        }
+        public virtual void PostProcessOnBuildProcess()
+        {
         }
         public bool NeedReadOpenState()
         {
@@ -204,16 +207,22 @@ namespace frou01.RigidBodyTrain
                 {
                     ConnectedBrakePressure_B = newPointer;
                 }
-                if(UseLegacyPipeState)changeLegacyState();
+                if(UseLegacyPipeState)changeLegacyState(F_B);
                 return true;
             }
             return false;
         }
 
-        private void changeLegacyState()
+        private void changeLegacyState(bool F_B)
         {
-            BrakeOpenF = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? false : true) : true;
-            BrakeOpenB = ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? false : true) : true;
+            if (F_B)
+            {
+                BrakeOpenF = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? false : true) : true;
+            }
+            else
+            {
+                BrakeOpenB = ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? false : true) : true;
+            }
         }
         protected bool isOwnerState;
 
@@ -229,11 +238,11 @@ namespace frou01.RigidBodyTrain
                 $"<br>BP: ";
             if (F_B)
             {
-                val = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? "Closed" : "Connected") : "Fail";
+                val += ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? "Closed" : "Connected") : "Fail";
             }
             else
             {
-                val= ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? "Closed" : "Connected") : "Fail";
+                val += ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? "Closed" : "Connected") : "Fail";
             }
             val += $"Pressure: {straightBrakePressure[0]}";
             return val;

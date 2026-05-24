@@ -27,12 +27,8 @@ namespace frou01.RigidBodyTrain
                 F_B = coupler.FrontOrBack;
             }
             if (brakeModule == null) brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
-            onUpdateConnectState();
-        }
 
-        private void Start()
-        {
-            if (Networking.IsOwner(this.gameObject) && brakeModule.NeedReadOpenState())
+            if (brakeModule.NeedReadOpenState())
             {
 #pragma warning disable CS0612 // 型またはメンバーが旧型式です
                 OpenState = F_B ? brakeModule.BrakeOpenF : brakeModule.BrakeOpenB;
@@ -40,6 +36,17 @@ namespace frou01.RigidBodyTrain
                 onUpdateConnectState();
                 RequestSerialization();
             }
+
+            onUpdateConnectState();
+        }
+
+        public virtual void PostProcessOnBuildProcess()
+        {
+
+        }
+
+        private void Start()
+        {
         }
 
 
