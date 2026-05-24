@@ -27,7 +27,8 @@ namespace frou01.RigidBodyTrain
 
         [SerializeField] Animator controllerAnimator;
 
-        [SerializeField] TrainConnectionReciever[] connectionRecievers;
+        [SerializeField] public TrainConnectionReciever[] connectionRecievers;
+        [SerializeField] public GameObject[] subObjects;
         public TrainConnectionReciever GetConnectionRecieverByTag(string targetTag)
         {
             foreach (TrainConnectionReciever connection in connectionRecievers)
@@ -307,11 +308,14 @@ namespace frou01.RigidBodyTrain
 
             if (Networking.LocalPlayer == player)
             {
-                Debug.Log("transfering subObject owner " + GetHierarchyPath(transform));
                 isDiscontinuitySync = true;
-
+                Debug.Log("transfering subObject owner " + GetHierarchyPath(transform));
                 Networking.SetOwner(player, CouplerF.gameObject);
                 Networking.SetOwner(player, CouplerB.gameObject);
+                foreach (GameObject subobject in subObjects)
+                {
+                    Networking.SetOwner(player, subobject);
+                }
                 if (connectedTrain_F != null)
                     Networking.SetOwner(player, connectedTrain_F.gameObject);
                 if (connectedTrain_B != null)
