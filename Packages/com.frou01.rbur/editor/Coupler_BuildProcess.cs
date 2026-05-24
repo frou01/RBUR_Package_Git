@@ -20,6 +20,7 @@ namespace frou01.RBUR.editor
             }
             foreach (CouplerObj coupler in Trains_List)
             {
+                coupler.onBuildProcess = true;
                 coupler.Initialize();//preRuntime initialize
             }
         }

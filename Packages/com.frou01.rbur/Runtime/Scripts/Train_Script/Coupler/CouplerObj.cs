@@ -23,8 +23,6 @@ namespace frou01.RigidBodyTrain
         [SerializeField][HideInInspector] public ConfigurableJoint joint;
         [SerializeField][HideInInspector] public ConfigurableJoint connectedJoint;
 
-
-
         //private Vector3 initialPos;
         //private Quaternion initialRotation;
 
@@ -53,6 +51,8 @@ namespace frou01.RigidBodyTrain
 
         bool started = false;
 
+        [NonSerialized] public bool onBuildProcess = false;//Prevent Call NetworkEvent;
+
         //Rigidbody rigidbody_;
         //Vector3 InertiaTensor;
         [Obsolete]
@@ -74,6 +74,7 @@ namespace frou01.RigidBodyTrain
 #pragma warning disable CS0612 // 型またはメンバーが旧型式です
             if (foundModule) BrakeModule = ((AbstractBrake)foundModule);
 #pragma warning restore CS0612 // 型またはメンバーが旧型式です
+            SendEvents();
         }
 
         float jointLinerLimit;
@@ -101,7 +102,7 @@ namespace frou01.RigidBodyTrain
             anchorBody.transform.localPosition = Vector3.zero;
             chachedTransform = transform;
             trainManager = TrainScript.trainManager;
-            UpdateKnuckleModel();
+            SendEvents();
 
             //rigidbody_ = GetComponent<Rigidbody>();
             //InertiaTensor = rigidbody_.inertiaTensor;
@@ -171,7 +172,7 @@ namespace frou01.RigidBodyTrain
                 }
             }
             if (Networking.IsOwner(gameObject)) RequestSerialization();
-            UpdateKnuckleModel();
+            SendEvents();
         }
         public void knuckleClose()
         {
@@ -186,7 +187,7 @@ namespace frou01.RigidBodyTrain
             }
             Knuckle_Closed = true;
             if (Networking.IsOwner(gameObject)) RequestSerialization();
-            UpdateKnuckleModel();
+            SendEvents();
         }
         public void reLockCoupler()
         {
@@ -196,10 +197,10 @@ namespace frou01.RigidBodyTrain
                 Knuckle_Closed = true;
                 if (Networking.IsOwner(gameObject)) RequestSerialization();
             }
-            UpdateKnuckleModel();
+            SendEvents();
         }
 
-        public void UpdateKnuckleModel()
+        public void SendEvents()
         {
 #pragma warning disable CS0612 // 型またはメンバーが旧型式です
             if (knuckleModel)
@@ -214,7 +215,7 @@ namespace frou01.RigidBodyTrain
                 }
             }
 #pragma warning restore CS0612 // 型またはメンバーが旧型式です
-            if (CouplerEventListeners.Length > 0)
+            if (!onBuildProcess && CouplerEventListeners.Length > 0)
             {
                 foreach (UdonBehaviour eventListener in CouplerEventListeners)
                 {
@@ -408,7 +409,7 @@ namespace frou01.RigidBodyTrain
             {
                 setConnectedCoupler(null);
             }
-            UpdateKnuckleModel();
+            SendEvents();
         }
 
     }
