@@ -215,6 +215,7 @@ namespace frou01.RigidBodyTrain
 
         private void changeLegacyState(bool F_B)
         {
+#pragma warning disable CS0612 // 型またはメンバーが旧型式です
             if (F_B)
             {
                 BrakeOpenF = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? false : true) : true;
@@ -223,6 +224,7 @@ namespace frou01.RigidBodyTrain
             {
                 BrakeOpenB = ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? false : true) : true;
             }
+#pragma warning restore CS0612 // 型またはメンバーが旧型式です
         }
         protected bool isOwnerState;
 
@@ -244,7 +246,7 @@ namespace frou01.RigidBodyTrain
             {
                 val += ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? "Closed" : "Connected") : "Fail";
             }
-            val += $"Pressure: {straightBrakePressure[0]}";
+            val += $" Pressure: {straightBrakePressure[0]}";
             return val;
         }
     }
