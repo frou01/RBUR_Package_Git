@@ -6,7 +6,7 @@
   "description": "RigidBody Based Railway scripts and prefab for VRChat",
   "vpmDependencies": {
     "com.frou01.utils": ">=8.0.0",
-    "com.vrchat.worlds": ">=3.8.1"
+    "com.vrchat.worlds": ">=3.9.0"
   },
   "documentationUrl": "https://github.com/frou01/RBUR_Package_Git.git",
   "author": {
