@@ -1,4 +1,5 @@
-﻿using UdonSharp;
+﻿using System;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 
@@ -42,13 +43,16 @@ namespace frou01.RigidBodyTrain
         [SerializeField] protected float refill_sensitivity = 0.01f;
         [SerializeField] protected float release_sensitivity = 0.005f;
         [SerializeField] protected float releaseLap_sensitivity = 0.005f;
+        [Obsolete]
         [SerializeField] protected float immiBrakeLap_sensitivity = 0.01f;
+        [Obsolete]
         [SerializeField] protected float immiBrake_sensitivity = 0.02f;
+        [SerializeField] protected float immeBrakeLap_sensitivity = 0.01f;
+        [SerializeField] protected float immeBrake_sensitivity = 0.02f;
         [SerializeField] protected float brake_sensitivity = 0.025f;
         [SerializeField] protected float emer_refill_sensitivity = 0.005f;
         [SerializeField] protected float emer_release_sensitivity = 0.005f;
         [SerializeField] protected float emer_sensitivity = 0.010f;
-        [SerializeField] protected float emer_sensitivity_2 = 0.1f;
 
         [SerializeField] protected float StaticFriction = 1020f;
         [SerializeField] protected float DynamicFriction = 61f;
@@ -71,9 +75,24 @@ namespace frou01.RigidBodyTrain
         [HideInInspector][SerializeField] protected float[][] wheelTreadSpeeds = new float[0][];
         [SerializeField] protected float[] wheelMultiplier = new float[0];
 
+        private void obsoleteField_Proxy()
+        {
+
+#pragma warning disable CS0612 // 型またはメンバーが旧型式です
+            if (immiBrakeLap_sensitivity != 0.01f)
+            {
+                immeBrakeLap_sensitivity = immiBrakeLap_sensitivity;
+            }
+            if (immiBrake_sensitivity != 0.01f)
+            {
+                immeBrake_sensitivity = immiBrake_sensitivity;
+            }
+#pragma warning restore CS0612 // 型またはメンバーが旧型式です
+        }
         protected override void Start()
         {
             base.Start();
+            obsoleteField_Proxy();
             wheelBrakes = new float[controlledWheel.Length][];
             wheelTreadSpeeds = new float[controlledWheel.Length][];
             for (int index = 0; index < wheelBrakes.Length; index++)
@@ -82,7 +101,7 @@ namespace frou01.RigidBodyTrain
                 wheelTreadSpeeds[index] = controlledWheel[index].WheelTreadSpeed;
             }
 
-            cylinder_release_coefficient    = release_constriction  * 0.00029478747f / CylinderSize;
+            cylinder_release_coefficient = release_constriction  * 0.00029478747f / CylinderSize;
             additional_refill_coefficient   = refill_constriction   * 0.00029478747f / AdditionalTankSize;
             support_refill_coefficient      = refill_constriction   * 0.00029478747f / SupportTankSize;
             cylinder_brake_coefficient      = brake_constriction    * 0.00029478747f / CylinderSize;
@@ -162,7 +181,7 @@ namespace frou01.RigidBodyTrain
                     if (piston_Position_float > 5) piston_Position_float = 5;//全制動
                 }
                 else
-                if (piston_Position <= 3 && SupportPressure - temp_straightBrakePressure > immiBrake_sensitivity)
+                if (piston_Position <= 3 && SupportPressure - temp_straightBrakePressure > immeBrake_sensitivity)
                 {
                     piston_Position_float += 0.1f;
                     if (piston_Position_float > 3) piston_Position_float = 3;//急制動
@@ -170,7 +189,7 @@ namespace frou01.RigidBodyTrain
                 else if (piston_Position == 5)
                 {
                     piston_Position_float = 4;//全制動重なり
-                } else if ((piston_Position >= 2 && SupportPressure - temp_straightBrakePressure < immiBrakeLap_sensitivity) || SupportPressure - temp_straightBrakePressure > releaseLap_sensitivity)
+                } else if ((piston_Position >= 2 && SupportPressure - temp_straightBrakePressure < immeBrakeLap_sensitivity) || SupportPressure - temp_straightBrakePressure > releaseLap_sensitivity)
                 {
                     piston_Position_float += 0.1f;
                     if (piston_Position_float > 2) piston_Position_float = 2;//急制動重なり or 弛め重なり
@@ -245,12 +264,12 @@ namespace frou01.RigidBodyTrain
                         //弛め
                         //シリンダ -> 大気        8.0mm²   ┐
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(0.1f, CylinderPressure);
-                        A_cylinderDelta -= 0.00235829976f / CylinderSize * temp_pressureDiff;
+                        A_cylinderDelta -= cylinder_release_coefficient * temp_pressureDiff;
 
                         //補助空気溜 <-> 付加空気溜   5.0mm²   ┐
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(AdditionalPressure, SupportPressure);
-                        A_additionalDelta += 0.00147393735f / AdditionalTankSize * temp_pressureDiff;
-                        A_supportDelta -= 0.00147393735f / SupportTankSize * temp_pressureDiff;
+                        A_additionalDelta += additional_refill_coefficient * temp_pressureDiff;
+                        A_supportDelta -= support_refill_coefficient * temp_pressureDiff;
                         break;
                     case 2:
                     case 4:
@@ -263,7 +282,7 @@ namespace frou01.RigidBodyTrain
                         //補助空気溜め -> 制動筒        /8.04mm²-
                         //ずらすのは判定面倒だし再現した所でQ現象の元なのでやめとこう
                         temp_cof = SupportPressure - temp_straightBrakePressure;
-                        temp_cof2 = Mathf.Clamp01(Mathf.Min(temp_cof - immiBrake_sensitivity, brake_sensitivity - temp_cof) / (brake_sensitivity - immiBrake_sensitivity));
+                        temp_cof2 = Mathf.Clamp01(Mathf.Min(temp_cof - immeBrake_sensitivity, brake_sensitivity - temp_cof) / (brake_sensitivity - immeBrake_sensitivity));
 
                         if(temp_straightBrakePressure > CylinderPressure)
                         {
@@ -272,7 +291,7 @@ namespace frou01.RigidBodyTrain
                             A_straightDelta -= temp_cof2 * 0.00209299103f / 0.02f * temp_pressureDiff;
                         }
 
-                        temp_cof2 = Mathf.Clamp01((temp_cof - immiBrake_sensitivity) / (brake_sensitivity - immiBrake_sensitivity) * 3);
+                        temp_cof2 = Mathf.Clamp01((temp_cof - immeBrake_sensitivity) / (brake_sensitivity - immeBrake_sensitivity) * 3);
                         temp_pressureDiff = math_sqrt_2_q_Q_div_m(CylinderPressure, SupportPressure);
                         A_cylinderDelta += temp_cof2 * cylinder_brake_coefficient * temp_pressureDiff;
                         A_supportDelta -= temp_cof2 * support_brake_coefficient * temp_pressureDiff;
@@ -325,6 +344,7 @@ namespace frou01.RigidBodyTrain
 
         public override void OnDeserialization()
         {
+            base.OnDeserialization();
             piston_Position_float = piston_Position;
             Emer_piston_Position_Float = 1;
         }

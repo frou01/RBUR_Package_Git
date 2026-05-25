@@ -1,7 +1,10 @@
-﻿using UdonSharp;
+﻿using JetBrains.Annotations;
+using System;
+using UdonSharp;
 using UnityEngine;
 using VRC.SDK3.UdonNetworkCalling;
 using VRC.SDKBase;
+using VRC.Udon;
 
 
 namespace frou01.RigidBodyTrain
@@ -12,9 +15,11 @@ namespace frou01.RigidBodyTrain
         //ブレーキ系の標準
         //前後接続、圧力配送
         //手ブレーキ受け入れは拡張クラスでやるのが良さそう
+        [Tooltip("this object attached Train. auto assing parent by BuildProcess (no overwrite)")]
         [SerializeField] protected Train train;
         [SerializeField] public float[] straightBrakePressure = new float[1];
         [UdonSynced(UdonSyncMode.Linear)] protected float m_straightBrakePressure;//4byte,[MPa]
+        //[SerializeField] protected BrakePipeCocks BPCocks;
 
         protected float[] MNG_DeltaTime;
         protected float DeltaTime;
@@ -27,15 +32,29 @@ namespace frou01.RigidBodyTrain
         protected float connectedPr_F;
         protected float connectedPr_B;
 
-        [UdonSynced] public bool BrakeOpenF;//1byte
-        [UdonSynced] public bool BrakeOpenB;//1byte
+        [SerializeField] private bool UseLegacyPipeState = true;
+        [Obsolete]
+        public bool BrakeOpenF;//1byte
+        [Obsolete]
+        public bool BrakeOpenB;//1byte
         protected float maxOverShoot;
-        [SerializeField] protected Animator indicateAnimator;
+        [SerializeField] public Animator indicateAnimator;
         protected bool hasAnimator;
         protected int brakePressureParamaterID;
 
         [HideInInspector] public float[] brakeFactor = new float[1];
 
+        public virtual void SetUpOnBuildProcess(Train train)
+        {
+            if(this.train == null) this.train = train;
+        }
+        public virtual void PostProcessOnBuildProcess()
+        {
+        }
+        public bool NeedReadOpenState()
+        {
+            return UseLegacyPipeState;
+        }
         protected virtual void Start()
         {
             brakePressureParamaterID = Animator.StringToHash("BrakePressure");
@@ -48,6 +67,7 @@ namespace frou01.RigidBodyTrain
             //{
             //    past[i] = Time.fixedDeltaTime;
             //}
+
         }
 
         //抵抗は無視する。
@@ -86,7 +106,7 @@ namespace frou01.RigidBodyTrain
             {
                 m_straightBrakePressure = straightBrakePressure[0];
                 m_straightBrakePressure += pressure_delta_F;
-                if (ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F;
+                if(ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F;
                 m_straightBrakePressure += pressure_delta_B;
                 if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B;
             }
@@ -134,25 +154,21 @@ namespace frou01.RigidBodyTrain
             pressure_delta_F = 0;
             pressure_delta_B = 0;
             //低い方へ流す（高圧からは受け入れだけする）
-            if (BrakeOpenF)
+
+            connectedPr_F = ConnectedBrakePressure_F == null ? 0.10f : ConnectedBrakePressure_F[0];
+            if (connectedPr_F < m_straightBrakePressure)
             {
-                connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
-                if (connectedPr_F < m_straightBrakePressure)
-                {
-                    pressure_delta_F = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure) * DeltaTime;
-                    //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
-                    //Debug.Log("pressure_delta_F " + pressure_delta_F);
-                }
+                pressure_delta_F = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure) * DeltaTime;
+                //pressure_delta_F = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_F * m_straightBrakePressure), -pressure_delta_F, pressure_delta_F);
+                //Debug.Log("pressure_delta_F " + pressure_delta_F);
             }
-            if (BrakeOpenB)
+
+            connectedPr_B = ConnectedBrakePressure_B == null ? 0.10f : ConnectedBrakePressure_B[0];
+            if (connectedPr_B < m_straightBrakePressure)
             {
-                connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
-                if (connectedPr_B < m_straightBrakePressure)
-                {
-                    pressure_delta_B = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure) * DeltaTime;
-                    //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
-                    //Debug.Log("pressure_delta_B " + pressure_delta_B);
-                }
+                pressure_delta_B = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure) * DeltaTime;
+                //pressure_delta_B = -1.5f * Mathf.Clamp(Mathf.Sqrt(2 * pressure_delta_B * m_straightBrakePressure),-pressure_delta_B, pressure_delta_B);
+                //Debug.Log("pressure_delta_B " + pressure_delta_B);
             }
             pressure_delta_F = Mathf.Clamp(pressure_delta_F, -maxOverShoot - Mathf.Abs(connectedPr_F - m_straightBrakePressure) * DeltaTime, maxOverShoot);
             //Debug.Log(pressure_delta_F + " , clamp to " + (-maxOverShoot - Mathf.Abs(connectedPr_F - m_straightBrakePressure) * DeltaTime));
@@ -171,55 +187,67 @@ namespace frou01.RigidBodyTrain
             return Mathf.Sqrt(2 * Mathf.Abs(from - to) * Mathf.Max(to, from)) * (from > to ? 1 : -1);
         }
 
-        public override void TrainConnectionUpdate(Train connectedTrain, bool F_B)
+        public virtual float[] getStraightPressurePointer(string name)
         {
-            if (connectedTrain != null)
+            if(name == "BP")
             {
-                TrainConnectionReciever foundModule = connectedTrain.GetConnectionRecieverByTag("Brake");
-                if (foundModule)
-                {
-                    if (F_B)
-                    {
-                        ConnectedBrakePressure_F = ((AbstractBrake)foundModule).straightBrakePressure;
-
-                    }
-                    else
-                    {
-                        ConnectedBrakePressure_B = ((AbstractBrake)foundModule).straightBrakePressure;
-                    }
-                }
+                return straightBrakePressure;
             }
-            else
+            return null;
+        }
+        public virtual bool setConnectedPressurePointer(string name, float[] newPointer, bool F_B)
+        {
+            if (name == "BP")
             {
                 if (F_B)
                 {
-                    ConnectedBrakePressure_F = null;
-
+                    ConnectedBrakePressure_F = newPointer;
                 }
                 else
                 {
-                    ConnectedBrakePressure_B = null;
+                    ConnectedBrakePressure_B = newPointer;
                 }
+                if(UseLegacyPipeState)changeLegacyState(F_B);
+                return true;
             }
+            return false;
         }
-        protected bool isOwnerState;
-        [NetworkCallable]
-        public void changeBrakeValve(bool F_B)//空制弁開放/閉鎖
+
+        private void changeLegacyState(bool F_B)
         {
+#pragma warning disable CS0612 // 型またはメンバーが旧型式です
             if (F_B)
             {
-                BrakeOpenF = !BrakeOpenF;
+                BrakeOpenF = ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? false : true) : true;
             }
             else
             {
-                BrakeOpenB = !BrakeOpenB;
+                BrakeOpenB = ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? false : true) : true;
             }
-
-            RequestSerialization();
+#pragma warning restore CS0612 // 型またはメンバーが旧型式です
         }
+        protected bool isOwnerState;
+
         public override void OnOwnershipTransferred(VRC.SDKBase.VRCPlayerApi player)
         {
             isOwnerState = player == Networking.LocalPlayer;
+        }
+
+        [PublicAPI]
+        public virtual string ConnectionDebug(bool F_B)
+        {
+            string val = $"Brake isOwnerState:{isOwnerState} , acctualOwner:{Networking.IsOwner(this.gameObject)}, trainOwner:{Networking.IsOwner(train.gameObject)}" +
+                $"<br>BP: ";
+            if (F_B)
+            {
+                val += ConnectedBrakePressure_F != null ? (ConnectedBrakePressure_F == straightBrakePressure ? "Closed" : "Connected") : "Fail";
+            }
+            else
+            {
+                val += ConnectedBrakePressure_B != null ? (ConnectedBrakePressure_B == straightBrakePressure ? "Closed" : "Connected") : "Fail";
+            }
+            val += $" Pressure: {straightBrakePressure[0]}";
+            return val;
         }
     }
 }

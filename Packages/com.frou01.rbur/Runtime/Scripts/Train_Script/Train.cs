@@ -4,8 +4,6 @@ using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
-using VRC.Udon;
-using VRC.Udon.Common.Interfaces;
 
 namespace frou01.RigidBodyTrain
 {
@@ -29,7 +27,8 @@ namespace frou01.RigidBodyTrain
 
         [SerializeField] Animator controllerAnimator;
 
-        [SerializeField] TrainConnectionReciever[] connectionRecievers;
+        [SerializeField] public TrainConnectionReciever[] connectionRecievers;
+        [SerializeField] public GameObject[] subObjects;
         public TrainConnectionReciever GetConnectionRecieverByTag(string targetTag)
         {
             foreach (TrainConnectionReciever connection in connectionRecievers)
@@ -309,11 +308,14 @@ namespace frou01.RigidBodyTrain
 
             if (Networking.LocalPlayer == player)
             {
-                Debug.Log("transfering subObject owner " + GetHierarchyPath(transform));
                 isDiscontinuitySync = true;
-
+                Debug.Log("transfering subObject owner " + GetHierarchyPath(transform));
                 Networking.SetOwner(player, CouplerF.gameObject);
                 Networking.SetOwner(player, CouplerB.gameObject);
+                foreach (GameObject subobject in subObjects)
+                {
+                    Networking.SetOwner(player, subobject);
+                }
                 if (connectedTrain_F != null)
                     Networking.SetOwner(player, connectedTrain_F.gameObject);
                 if (connectedTrain_B != null)
@@ -823,7 +825,7 @@ namespace frou01.RigidBodyTrain
             rigidbody_.velocity = Vector3.zero;
         }
 
-#if UNITY_EDITOR
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
             Gizmos.color = new Color(0.2f, 0.2f, 0.2f, 0.5f);
@@ -849,13 +851,13 @@ namespace frou01.RigidBodyTrain
             Gizmos.color = new Color(0f, 0f, 1f, 1f);
             if (connectedTrain_B != null) drawKnucle(connectedTrain_B,CouplerB);
         }
-        private Vector3 drawingPos;
-        private Quaternion drawingRot;
-        private Vector3 drawingStart;
-        private Vector3 drawingEnd;
 
         void drawKnucle(Train connectedTrain, CouplerObj ConnectingCoupler)
         {
+            Vector3 drawingPos;
+            Quaternion drawingRot;
+            Vector3 drawingStart;
+            Vector3 drawingEnd;
             Transform ConnectingCouplerTransform = ConnectingCoupler.transform;
             CouplerObj connectCoupler = searchKnucle(connectedTrain);
             Transform connectCouplerTransform = connectCoupler.transform;
