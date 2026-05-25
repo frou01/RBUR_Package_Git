@@ -233,34 +233,21 @@ Active|動作状態。同期に使用
 
 |設定値|概要|
 |---:|:---|
-TrainID|車両識別番号（ビルド時自動設定）
-TrainManager|車両管理スクリプト（ビルド時自動設定）
-RailsManager|レール管理スクリプト（ビルド時自動設定）
-Started|初期化フラグ(False必須)
-BrakeMultiplier|ブレーキ力係数 max=BrakeMultiplier[N]
-BrakeFactor|実効ブレーキ力。実行時debug用
-useLegacyBrakeForce|RigidBodyWheelを用いず旧来のブレーキ処理を用いるか（デフォルト true）
-baseBrakePressure|ブレーキ圧の参照値　この値を下回るとブレーキが掛かります。<br>baseBrakePressure*0.72で最大ブレーキ力。
-friction|摩擦力。動静通して掛かる。[N]<br>brakeUpdateBypass=falseでは無効です。
-static_friction|静止時摩擦力。[N]<br>brakeUpdateBypass=falseでは無効です。
 CenterOfMass|重心位置設定
-BrakeOpenF|+Z側のブレーキ開放状態。連結時ブレーキ圧の伝達を受けるかどうか
-BrakeOpenB|-Z側のブレーキ解放状態。連結時ブレーキ圧の伝達を受けるかどうか
 CouplerF|+Z側連結器。オーナー同期に用います。
 CouplerB|-Z側連結器
 controllerAnimator|設定の入出力Animator。
 connectionRecievers|連結関係の情報を受け取るUdon
-Rigidbody_Speed_LocalZ|外部制御スクリプトで車速を利用する際に用いる長さ1配列。
+SubObjects|オーナーを同一としたいObject
+(API) Rigidbody_Speed_LocalZ|外部制御スクリプトで車速を利用する際に用いる長さ1配列。
 connectedTrain_F|+Z側連結車両
 connectedTrain_B|-Z側連結車両
+BogieRail_F|+Z側台車が載っているレール
+BogieRail_B|-Z側台車が載っているレール
 Bogie_F|+Z側台車中心
 BogieWheel_F|+Z側台車オブジェクト
-RailID_F|+Z側台車が載っているレールの識別子。実行時debug用
-BogieRail_F|+Z側台車が載っているレール
 Bogie_B|-Z側台車中心
 BogieWheel_B|-Z側台車オブジェクト
-RailID_B|-Z側台車が載っているレールの識別子。実行時debug用
-BogieRail_B|-Z側台車が載っているレール
 InitsyncRecieveMode|初期化同期受信モード(True必須)
 
 
