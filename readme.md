@@ -251,7 +251,7 @@ CouplerB|-Z側連結器
 controllerAnimator|設定の入出力Animator。
 connectionRecievers|連結関係の情報を受け取るUdon
 Rigidbody_Speed_LocalZ|外部制御スクリプトで車速を利用する際に用いる長さ1配列。
-connectedTrain_F|+Z側連結車両(初期化時自動設定)
+connectedTrain_F|+Z側連結車両
 connectedTrain_B|-Z側連結車両
 Bogie_F|+Z側台車中心
 BogieWheel_F|+Z側台車オブジェクト
@@ -268,6 +268,7 @@ InitsyncRecieveMode|初期化同期受信モード(True必須)
 |---:|:---|
 controllerAnimatorについて|必須パラメータと機能を示します。<br>inはTrainへの入力、outはTrainからの出力を表します
 out)RigidBodySpeed|車両の速度です。+Z方向を正、単位は[m/s]/100です。(motionTimeでの扱いを想定しているため)
+シーン上での連結|connectedTrain_F/Bに各方向の連結したい車両を設定する事で、ビルド時に各種参照が自動設定されます。Gizmoが追加されています。
 ----------|---------
 連結器処理の仕様|連結が行われると、Train.csをアタッチしたオブジェクトのConfigurable Jointに自分の連結器位置と連結対象車両の連結器位置を用いて自動でAnchorの設定が行われ、またOwnerが移行されます。
 ----------|---------
@@ -463,7 +464,7 @@ TrainScript|自身を装備している車両本体のスクリプト
 Knuckle_Closed|ナックル開閉状態
 state|連結器状態 0=lock, 1=unlock, 2=open
 CouplerAudioSource|音源再生に用いるAudioSource。
-カプラ音源|対応イベント時にCouplerAudioSourceで再生されるAudioClip。
+--Sound|対応イベント時にCouplerAudioSourceで再生されるAudioClip。
 FrontOrBack|連結器方向。 +Z=Front
 disconnectForce|連結器開放に必要な力
 knuckleModel|[非推奨]ナックルのモデルオブジェクト。閉y=0,開y=90に回転されます。
@@ -472,7 +473,6 @@ CouplerEventListners|下記したイベントを受けるUdon。
 
 |機能|概要|
 |---:|:---|
-Editor上での連結|Editor上でconnectedCouplerを指定しておくことで連結状態を設定しておくことが出来ます。
 突放貨車向けの調整|disconnectForceを大きめにすることで、動き出し衝動で外れるのをある程度防止できます
 
 |イベント|概要|
@@ -607,7 +607,7 @@ TrainManager|実際の同期処理を行う管理スクリプト
 3. シーン上オブジェクトを参照する
     1. [Train.u#]のBogieRail_F/Bにそれぞれシーン上のレールを設定
     2. アニメーション制御の場合はcontrollerAnimatorに任意のAnimatorを設定
-    3. 他車と連結する場合、CouplerF/B[CouplerObj.u#]のconnectedCouplerに対応する他車Coupler[CouplerObj.u#]を設定。
+    3. 他車と連結する場合、Train[Train.u#]のconnectedTrain_F/Bに前後それぞれの連結したい車両を設定
 
 </details>
 
