@@ -155,7 +155,7 @@ namespace frou01.RigidBodyTrain
             pressure_delta_B = 0;
             //低い方へ流す（高圧からは受け入れだけする）
 
-            connectedPr_F = ConnectedBrakePressure_F == null ? 0f : ConnectedBrakePressure_F[0];
+            connectedPr_F = ConnectedBrakePressure_F == null ? 0.10f : ConnectedBrakePressure_F[0];
             if (connectedPr_F < m_straightBrakePressure)
             {
                 pressure_delta_F = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_F) * m_straightBrakePressure) * DeltaTime;
@@ -163,7 +163,7 @@ namespace frou01.RigidBodyTrain
                 //Debug.Log("pressure_delta_F " + pressure_delta_F);
             }
 
-            connectedPr_B = ConnectedBrakePressure_B == null ? 0f : ConnectedBrakePressure_B[0];
+            connectedPr_B = ConnectedBrakePressure_B == null ? 0.10f : ConnectedBrakePressure_B[0];
             if (connectedPr_B < m_straightBrakePressure)
             {
                 pressure_delta_B = -1.5f * Mathf.Sqrt(2 * (m_straightBrakePressure - connectedPr_B) * m_straightBrakePressure) * DeltaTime;
