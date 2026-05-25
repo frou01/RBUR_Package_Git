@@ -51,7 +51,7 @@ namespace frou01.RigidBodyTrain
 
         bool started = false;
 
-        [NonSerialized] public bool onBuildProcess = false;//Prevent Call NetworkEvent;
+        bool onBuildProcess = false;//Prevent Call NetworkEvent;
 
         //Rigidbody rigidbody_;
         //Vector3 InertiaTensor;
@@ -65,8 +65,7 @@ namespace frou01.RigidBodyTrain
         public AbstractBrake BrakeModule;
         public void Start()
         {
-            Initialize();
-
+            onBuildProcess = false;
             //couplerRigidBody.isKinematic = false;
             started = true;
 
@@ -102,12 +101,12 @@ namespace frou01.RigidBodyTrain
             anchorBody.transform.localPosition = Vector3.zero;
             chachedTransform = transform;
             trainManager = TrainScript.trainManager;
-            SendEvents();
 
             //rigidbody_ = GetComponent<Rigidbody>();
             //InertiaTensor = rigidbody_.inertiaTensor;
             //GetComponent<Collider>().isTrigger = true;
             //rigidbody_.inertiaTensor = InertiaTensor;
+            onBuildProcess = true;
         }
         private void Update()
         {
