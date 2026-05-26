@@ -92,8 +92,15 @@ namespace frou01.RBUR.editor
             foreach (Train train in Trains_List)
             {
                 //Setup Connection
-                setUpConnectedCoupler(train, train.CouplerF, train.connectedTrain_F);
-                setUpConnectedCoupler(train, train.CouplerB, train.connectedTrain_B);
+                try
+                {
+                    setUpConnectedCoupler(train, train.CouplerF, train.connectedTrain_F);
+                    setUpConnectedCoupler(train, train.CouplerB, train.connectedTrain_B);
+                }catch(NullReferenceException e)
+                {
+                    Debug.LogError("Train Connection Setup Failed", train);
+                    throw;
+                }
             }
 
             foreach (Train train in Trains_List)

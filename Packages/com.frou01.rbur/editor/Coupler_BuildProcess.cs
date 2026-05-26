@@ -13,15 +13,19 @@ namespace frou01.RBUR.editor
         public int callbackOrder => callOrder;
         public void OnProcessScene(Scene scene, BuildReport report)
         {
-            List<CouplerObj> Trains_List = new List<CouplerObj>();
+            List<CouplerObj> Coupler_List = new List<CouplerObj>();
+            TrainManager trainManager = null;
             foreach (GameObject obj in scene.GetRootGameObjects())
             {
-                Trains_List.AddRange(obj.GetComponentsInChildren<CouplerObj>(true));//collect all couplers
+                Coupler_List.AddRange(obj.GetComponentsInChildren<CouplerObj>(true));//collect all couplers
+                if (obj.GetComponentInChildren<TrainManager>(true))
+                {
+                    trainManager = obj.GetComponent<TrainManager>();
+                }
             }
-            foreach (CouplerObj coupler in Trains_List)
+            foreach (CouplerObj coupler in Coupler_List)
             {
-                coupler.onBuildProcess = true;
-                coupler.Initialize();//preRuntime initialize
+                coupler.Initialize(trainManager);//preRuntime initialize
             }
         }
     }
