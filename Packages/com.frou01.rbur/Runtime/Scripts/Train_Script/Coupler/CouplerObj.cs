@@ -80,7 +80,7 @@ namespace frou01.RigidBodyTrain
 
         [SerializeField][HideInInspector]public Transform chachedTransform;
         [SerializeField][HideInInspector] Transform connectedTransform;
-        public void Initialize()//CallFromBuildProcess
+        public void Initialize(TrainManager trainManager)//CallFromBuildProcess
         {
             //initialPos = transform.localPosition;
             //initialRotation = transform.localRotation;
@@ -89,7 +89,11 @@ namespace frou01.RigidBodyTrain
             {
                 TrainScript = transform.parent.gameObject.GetComponent<Train>();
             }
-            if (trainManager == null) trainManager = TrainScript.trainManager;
+
+            if (this.trainManager == null)
+            {
+                this.trainManager = trainManager;
+            }
 
             MotherTrain_RigidBody = TrainScript.GetComponent<Rigidbody>();
 
@@ -100,7 +104,6 @@ namespace frou01.RigidBodyTrain
             anchorBody = transform.Find("anchorBody").gameObject.GetComponent<Rigidbody>();
             anchorBody.transform.localPosition = Vector3.zero;
             chachedTransform = transform;
-            trainManager = TrainScript.trainManager;
 
             //rigidbody_ = GetComponent<Rigidbody>();
             //InertiaTensor = rigidbody_.inertiaTensor;
