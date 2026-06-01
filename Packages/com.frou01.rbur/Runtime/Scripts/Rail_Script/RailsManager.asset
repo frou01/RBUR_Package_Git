@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: RailsManager
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 6850e4e0c4c018246a124662d1be894b, type: 2}
+  serializedUdonProgramAsset: {fileID: 0}
   udonAssembly: 
   assemblyError: 
   sourceCsScript: {fileID: 11500000, guid: 5563ca1e2fed0d44299821caf8ec7712, type: 3}
