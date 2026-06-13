@@ -70,6 +70,12 @@ namespace frou01.RBUR.editor
                         train.connectionRecievers = train.connectionRecievers.AddItem(connectionReciever).ToArray();
                     }
                 }
+                List<TrainConnectionReciever> connectionRecievers = new List<TrainConnectionReciever>();
+                foreach (TrainConnectionReciever connectionReciever in train.connectionRecievers)
+                {
+                    if(connectionReciever) connectionRecievers.Add(connectionReciever);
+                }
+                train.connectionRecievers = connectionRecievers.ToArray();
 
                 foreach (AbstractBrake brakeModule in train.GetComponentsInChildren<AbstractBrake>(true))
                 {
