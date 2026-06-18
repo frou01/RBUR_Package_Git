@@ -376,6 +376,9 @@ public class railModelTiler : MonoBehaviour
                     go.transform.position = ClusteredGo[i][clusterSegmentLength / 2].transform.position;
                 }
                 go.transform.parent = root;
+                SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
+                sphereCollider.radius = 1500;
+                sphereCollider.isTrigger = true;
                 ColliderGameObjectCuller ClRC = go.AddUdonSharpComponent<ColliderGameObjectCuller>();
                 ClRC.objects = ClusteredGo[i];
                 ClRC.isStaticMode = isStatic;
@@ -384,9 +387,6 @@ public class railModelTiler : MonoBehaviour
                 {
                     go2.transform.parent = go.transform;
                 }
-                SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
-                sphereCollider.radius = 1500;
-                sphereCollider.isTrigger = true;
             }
         }
     }

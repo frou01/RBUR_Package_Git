@@ -1,4 +1,6 @@
 ﻿using frou01.RigidBodyTrain;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Build;
@@ -45,7 +47,7 @@ namespace frou01.RBUR.editor
                 {
                     if (!brake.connectionTags.Contains("Brake"))
                     {
-                        Debug.Log("setting brake tag " + brake.name);
+                        //Debug.Log("setting brake tag " + brake.name);
                         brake.connectionTags = brake.connectionTags.Append("Brake").ToArray();
                     }
                 }
@@ -54,25 +56,93 @@ namespace frou01.RBUR.editor
             int id = 0;
             foreach (Train train in Trains_List)
             {
+                //Setup Reference
                 train.trainManager = trainManager;
                 train.railsManager = trainManager.railsManager;
                 train.InitsyncRecieveMode = true;
                 train.TrainID = id;
+                List<GameObject> trainSubObjects = train.subObjects.ToList();
 
-                setUpConnectedCoupler(train, train.CouplerF, train.connectedTrain_F);
-                setUpConnectedCoupler(train, train.CouplerB, train.connectedTrain_B);
+                foreach (TrainConnectionReciever connectionReciever in train.GetComponentsInChildren<TrainConnectionReciever>(true))
+                {
+                    if (!train.connectionRecievers.Contains(connectionReciever))
+                    {
+                        train.connectionRecievers = train.connectionRecievers.AddItem(connectionReciever).ToArray();
+                    }
+                }
+
+
+                List<TrainConnectionReciever> connectionRecievers = new List<TrainConnectionReciever>();
+                foreach (TrainConnectionReciever connectionReciever in train.connectionRecievers)
+                {
+                    if(connectionReciever) connectionRecievers.Add(connectionReciever);
+                }
+                train.connectionRecievers = connectionRecievers.ToArray();
+
+                if (!train.GetConnectionRecieverByTag("Brake"))
+                {
+                    foreach (AbstractBrake brakeModule in train.transform.parent.GetComponentsInChildren<AbstractBrake>(true))
+                    {
+                        if (!train.connectionRecievers.Contains(brakeModule))
+                        {
+                            train.connectionRecievers = train.connectionRecievers.AddItem(brakeModule).ToArray();
+                            Debug.LogWarning("Prefab format is now obsolete. BrakeModule must under the Train.cs", brakeModule.gameObject);
+                        }
+                    }
+                }
+
+                {
+                    AbstractBrake brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
+                    brakeModule.SetUpOnBuildProcess(train);
+                    if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
+                }
 
                 foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
                 {
-                    brakeConnectorValve.Init(train);
+                    brakeConnectorValve.SetUpOnBuildProcess(train);
+                    if (!trainSubObjects.Contains(brakeConnectorValve.gameObject)) trainSubObjects.Add(brakeConnectorValve.gameObject);
                 }
+                train.subObjects = trainSubObjects.ToArray();
+
+
                 id++;
+            }
+
+            id = 0;
+            foreach (Train train in Trains_List)
+            {
+                //Setup Connection
+                try
+                {
+                    setUpConnectedCoupler(train, train.CouplerF, train.connectedTrain_F);
+                    setUpConnectedCoupler(train, train.CouplerB, train.connectedTrain_B);
+                }catch(NullReferenceException e)
+                {
+                    Debug.LogError("Train Connection Setup Failed", train);
+                    throw;
+                }
+            }
+
+            foreach (Train train in Trains_List)
+            {
+                //Post Process
+
+                foreach (AbstractBrake brakeModule in train.GetComponentsInChildren<AbstractBrake>(true))
+                {
+                    brakeModule.PostProcessOnBuildProcess();
+                }
+
+                foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
+                {
+                    brakeConnectorValve.PostProcessOnBuildProcess();
+                }
             }
             trainManager.Trains = Trains_List.ToArray();
             //foreach (Train train in trainManager.Trains)
             //{
             //    Debug.Log(train.transform.parent.name);
             //}
+
         }
 
         static void setUpConnectedCoupler(Train ConnectingTrain, CouplerObj ConnectingCoupler, Train connectedTrain)

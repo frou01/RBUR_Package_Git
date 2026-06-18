@@ -9,32 +9,32 @@ namespace frou01.RigidBodyTrain
     {
         [SerializeField]CouplerObj coupler;
         [SerializeField] TMP_Text display;
+        AbstractBrake Brake;
         private void Update()
         {
-            display.text = "<color=white>肘 : " + (coupler.Knuckle_Closed ? "閉" : "開") + "<br>錠 : ";
+            display.text = "<color=white>Knuckle : " + (coupler.Knuckle_Closed ? "Close" : "Open") + "<br>Key : ";
             {
                 switch (coupler.state)
                 {
                     case 0:
-                        display.text += "錠掛け";
+                        display.text += "Lock";
                         break;
                     case 1:
-                        display.text += "錠揚げ";
+                        display.text += "Open";
                         break;
                     case 2:
-                        display.text += "錠控え";
+                        display.text += "Unlock";
                         break;
                 }
             }
             {
                 if (coupler.TrainScript != null)
                 {
-                    if (coupler.BrakeModule)
+                    if(!Brake) Brake = (AbstractBrake)coupler.TrainScript.GetConnectionRecieverByTag("Brake");
+
+                    if (Brake)
                     {
-                        if (coupler.FrontOrBack)
-                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenF_GtSt ? "開" : "閉");
-                        else
-                            display.text += "<br>空制弁 : " + (coupler.BrakeModule.BrakeOpenB_GtSt ? "開" : "閉");
+                        display.text += "<br> brake <br>" + Brake.ConnectionDebug(coupler.FrontOrBack);
                     }
                     display.text += "<br> debug_force" + (coupler.chachedTransform.InverseTransformVector(coupler.joint.currentForce)).ToString("000000.00");
                 }

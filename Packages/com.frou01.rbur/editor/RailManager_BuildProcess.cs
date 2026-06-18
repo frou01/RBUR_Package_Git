@@ -59,7 +59,7 @@ namespace frou01.RBUR.editor
             List<Task> Tasks = new List<Task>();//終了待機用タスク（走り切る前に他に移られちゃ困る）
             foreach (Rail_Script rail in railsManager.Rails)
             {
-                Debug.Log("ColliderGeneration" + rail.name);
+                //Debug.Log("ColliderGeneration" + rail.name);
                 //直列でやるの現実的じゃないのでスレッドを立てる
 
                 float pathLength = rail.cinemachinePath.PathLength;

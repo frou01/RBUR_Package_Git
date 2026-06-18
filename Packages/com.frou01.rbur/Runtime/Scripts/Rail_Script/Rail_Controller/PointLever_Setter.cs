@@ -85,7 +85,6 @@ namespace frou01.RigidBodyTrain
         }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
-        Vector3 offset = new Vector3(0, 1, 0);
         void OnDrawGizmos()
         {
             DrawGizmo(0.1f,true, true);
@@ -97,6 +96,7 @@ namespace frou01.RigidBodyTrain
 
         public void DrawGizmo(float alpha,bool drawTo1,bool drawTo2)
         {
+            Vector3 offset = new Vector3(0, 1, 0);
             if (from1 != null)
             {
                 CinemachinePathBase fromPath = from1.cinemachinePath;
