@@ -71,8 +71,28 @@ namespace frou01.RBUR.editor
                     }
                 }
 
-                foreach (AbstractBrake brakeModule in train.GetComponentsInChildren<AbstractBrake>(true))
+
+                List<TrainConnectionReciever> connectionRecievers = new List<TrainConnectionReciever>();
+                foreach (TrainConnectionReciever connectionReciever in train.connectionRecievers)
                 {
+                    if(connectionReciever) connectionRecievers.Add(connectionReciever);
+                }
+                train.connectionRecievers = connectionRecievers.ToArray();
+
+                if (!train.GetConnectionRecieverByTag("Brake"))
+                {
+                    foreach (AbstractBrake brakeModule in train.transform.parent.GetComponentsInChildren<AbstractBrake>(true))
+                    {
+                        if (!train.connectionRecievers.Contains(brakeModule))
+                        {
+                            train.connectionRecievers = train.connectionRecievers.AddItem(brakeModule).ToArray();
+                            Debug.LogWarning("Prefab format is now obsolete. BrakeModule must under the Train.cs", brakeModule.gameObject);
+                        }
+                    }
+                }
+
+                {
+                    AbstractBrake brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
                     brakeModule.SetUpOnBuildProcess(train);
                     if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
                 }
