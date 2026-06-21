@@ -70,7 +70,7 @@ namespace frou01.RigidBodyTrain
                     ShoeBrakeTorque = (BrakeForce[0] - MortorBrakeTorque) / brakeFriction * wheelRadius;
 
                     brake.AddForce(-tempForceVector * ShoeBrakeTorque / brakeFriction * wheelRadius, ForceMode.Force);
-                    wheel.AddRelativeTorque(-MortorBrakeTorque, 0, 0, ForceMode.Force);
+                    wheel.AddRelativeTorque(-MortorBrakeTorque * wheelRadius, 0, 0, ForceMode.Force);
                     wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
 
                 }
@@ -82,7 +82,7 @@ namespace frou01.RigidBodyTrain
                     ShoeBrakeTorque = (BrakeForce[0] - MortorBrakeTorque) / brakeFriction * wheelRadius;
 
                     brake.AddForce(-tempForceVector * ShoeBrakeTorque , ForceMode.Force);
-                    wheel.AddRelativeTorque(MortorBrakeTorque, 0, 0, ForceMode.Force);
+                    wheel.AddRelativeTorque(MortorBrakeTorque * wheelRadius, 0, 0, ForceMode.Force);
                     wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
                 }
                 else
