@@ -24,6 +24,7 @@ namespace frou01.RigidBodyTrain
         public void setConnectedJumpCable(AbstractWire_Jump connectedJumpWire)
         {
             this.ConnectedJumpWire = connectedJumpWire;
+            ParentWire_OnTrain.onChangeConnection();
         }
 
         public AbstractWire_OnTrain getParentWire()
