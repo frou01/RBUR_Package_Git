@@ -1,15 +1,16 @@
 ﻿
 using Cinemachine;
-using System.IO;
+using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.Udon.Common;
 using static Cinemachine.CinemachinePathBase;
 
 namespace frou01.RigidBodyTrain
 {
-    public class PointLever_Setter : UdonSharpBehaviour
+    public class PointLever_Setter : AbstractPointSetter
     {
         public Rail_Script from1;
         public Rail_Script from2;
@@ -17,14 +18,9 @@ namespace frou01.RigidBodyTrain
         public bool changeType2;//true:next  false:prev
         public Rail_Script to1;
         public Rail_Script to2;
-        public UdonSharpBehaviour[] callbackUdons = new UdonSharpBehaviour[0]; 
 
         [UdonSynced] public bool state;
 
-        void Start()
-        {
-            applyChange();
-        }
 
         public void SetRoute1()
         {
@@ -50,12 +46,7 @@ namespace frou01.RigidBodyTrain
             RequestSerialization();
         }
 
-        public override void OnDeserialization()
-        {
-            applyChange();
-        }
-
-        private void applyChange()
+        protected override void applyChange()
         {
             Rail_Script target;
             if (!state)
@@ -78,23 +69,129 @@ namespace frou01.RigidBodyTrain
                 if (changeType2) from2.next = target;
                 else from2.prev = target;
             }
-            foreach (UdonSharpBehaviour udon in callbackUdons)
-            {
-                udon.SendCustomEvent("PointUpdate");
-            }
+            base.applyChange();
+        }
+
+        public override Rail_Script[] getRoutes()
+        {
+            return new Rail_Script[] { to1, to2 };
+        }
+        public override int get_current_To_Index()
+        {
+            return state ? 1 : -1;
         }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
-            DrawGizmo(0.1f,true, true);
+            Gizmos.color = new Color(0f, 1f, 0f, 0.1f);
+            DrawGizmo_From();
+            Gizmos.color = new Color(0f, 1f, 1f, 0.1f);
+            DrawGizmo_To(to1);
+            Gizmos.color = new Color(0f, 1f, 1f, 0.1f);
+            DrawGizmo_To(to2);
         }
         void OnDrawGizmosSelected()
         {
-            DrawGizmo(1f,true,true);
+            Gizmos.color = new Color(0f, 1f, 0f, 1f);
+            DrawGizmo_From();
+            Gizmos.color = new Color(0f, 1f, 1f, 1f);
+            DrawGizmo_To(to1);
+            Gizmos.color = new Color(1f, 1f, 0f, 1f);
+            DrawGizmo_To(to2);
+        }
+        public override void DrawGizmo_From()
+        {
+            Vector3 offset = new Vector3(0, 1, 0);
+            if (from1 != null)
+            {
+                Vector3 changeLinePoint;
+                Vector3 changeLineStart;
+                getEdgePoint(from1, changeType1, out changeLinePoint, out changeLineStart);
+                Gizmos.DrawLine(changeLineStart + offset * 2, changeLinePoint);
+            }
+            if (from2 != null)
+            {
+                Vector3 changeLinePoint;
+                Vector3 changeLineStart;
+                getEdgePoint(from2, changeType2, out changeLinePoint, out changeLineStart);
+                Gizmos.DrawLine(changeLineStart + offset * 2, changeLinePoint);
+            }
+        }
+        public override void DrawGizmo_To(Rail_Script targetRail)
+        {
+            Vector3 offset = new Vector3(0, 1, 0);
+            if (from1 != null)
+            {
+
+                Vector3 changeLinePoint;
+                Vector3 changeLineStart;
+                getEdgePoint(from1, changeType1, out changeLinePoint, out changeLineStart);
+
+                CinemachinePathBase toPath;
+                Vector3 toClosestPoint;
+                float nextClosestUnit;
+                if (targetRail)
+                {
+                    toPath = targetRail.cinemachinePath;
+                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
+                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                    else nextClosestUnit += 10;
+                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                }
+            }
+            if (from2 != null)
+            {
+                Vector3 changeLinePoint;
+                Vector3 changeLineStart;
+                getEdgePoint(from1, changeType1, out changeLinePoint, out changeLineStart);
+
+                CinemachinePathBase toPath;
+                Vector3 toClosestPoint;
+                float nextClosestUnit;
+                if (targetRail)
+                {
+                    toPath = targetRail.cinemachinePath;
+                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
+                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                    else nextClosestUnit += 10;
+                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
+                }
+            }
+        }
+        public static void getEdgePoint(Rail_Script targetRail, bool GetNextEdge, out Vector3 changeLinePoint, out Vector3 changeLineStart)
+        {
+            CinemachinePathBase fromPath = targetRail.cinemachinePath;
+
+            float fromChangeUnit;
+            float fromChangeLineStart;
+            if (GetNextEdge)
+            {
+                fromChangeUnit = fromPath.MaxPos;
+                fromChangeLineStart = fromPath.FromPathNativeUnits(fromChangeUnit, PositionUnits.Distance);
+                fromChangeLineStart -= 10;
+                fromChangeLineStart = fromPath.ToNativePathUnits(fromChangeLineStart, PositionUnits.Distance);
+            }
+            else
+            {
+                fromChangeUnit = fromPath.MinPos;
+                fromChangeLineStart = fromPath.FromPathNativeUnits(fromChangeUnit, PositionUnits.Distance);
+                fromChangeLineStart += 10;
+                fromChangeLineStart = fromPath.ToNativePathUnits(fromChangeLineStart, PositionUnits.Distance);
+            }
+
+            changeLinePoint = fromPath.EvaluatePosition(fromChangeUnit);
+            changeLineStart = fromPath.EvaluatePosition(fromChangeLineStart);
         }
 
-        public void DrawGizmo(float alpha,bool drawTo1,bool drawTo2)
+        [Obsolete]
+        public void DrawGizmo(float alpha, bool drawTo1, bool drawTo2)
         {
             Vector3 offset = new Vector3(0, 1, 0);
             if (from1 != null)
