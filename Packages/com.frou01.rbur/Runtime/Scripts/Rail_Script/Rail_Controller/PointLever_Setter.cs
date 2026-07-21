@@ -78,7 +78,7 @@ namespace frou01.RigidBodyTrain
         }
         public override int get_current_To_Index()
         {
-            return state ? 1 : -1;
+            return state ? 1 : 0;
         }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
