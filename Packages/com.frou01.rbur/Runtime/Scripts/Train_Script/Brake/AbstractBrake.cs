@@ -212,6 +212,10 @@ namespace frou01.RigidBodyTrain
             }
             return false;
         }
+        [Obsolete]
+        public override void TrainConnectionUpdate(Train connectedTrain, bool F_B)
+        {
+        }
 
         private void changeLegacyState(bool F_B)
         {
