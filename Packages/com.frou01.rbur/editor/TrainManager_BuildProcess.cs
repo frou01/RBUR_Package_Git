@@ -93,8 +93,11 @@ namespace frou01.RBUR.editor
 
                 {
                     AbstractBrake brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
-                    brakeModule.SetUpOnBuildProcess(train);
-                    if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
+                    if (brakeModule)
+                    {
+                        brakeModule.SetUpOnBuildProcess(train);
+                        if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
+                    }
                 }
 
                 foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
@@ -119,7 +122,7 @@ namespace frou01.RBUR.editor
                 }catch(NullReferenceException e)
                 {
                     Debug.LogError("Train Connection Setup Failed", train);
-                    throw;
+                    throw e;
                 }
             }
 
