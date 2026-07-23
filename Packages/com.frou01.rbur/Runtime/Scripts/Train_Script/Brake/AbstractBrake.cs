@@ -27,6 +27,8 @@ namespace frou01.RigidBodyTrain
         protected float pressure_delta_F;//流量の単位は[kg/s]
         protected float pressure_delta_B;
 
+        protected bool HasConnectedBP_F;
+        protected bool HasConnectedBP_B;
         protected float[] ConnectedBrakePressure_F;
         protected float[] ConnectedBrakePressure_B;
         protected float connectedPr_F;
@@ -106,9 +108,9 @@ namespace frou01.RigidBodyTrain
             {
                 m_straightBrakePressure = straightBrakePressure[0];
                 m_straightBrakePressure += pressure_delta_F;
-                if(ConnectedBrakePressure_F != null) ConnectedBrakePressure_F[0] -= pressure_delta_F;
+                if (HasConnectedBP_F) ConnectedBrakePressure_F[0] -= pressure_delta_F;
                 m_straightBrakePressure += pressure_delta_B;
-                if (ConnectedBrakePressure_B != null) ConnectedBrakePressure_B[0] -= pressure_delta_B;
+                if (HasConnectedBP_B) ConnectedBrakePressure_B[0] -= pressure_delta_B;
             }
             straightBrakePressure[0] = m_straightBrakePressure;
         }
@@ -202,10 +204,12 @@ namespace frou01.RigidBodyTrain
                 if (F_B)
                 {
                     ConnectedBrakePressure_F = newPointer;
+                    HasConnectedBP_F = ConnectedBrakePressure_F != null;
                 }
                 else
                 {
                     ConnectedBrakePressure_B = newPointer;
+                    HasConnectedBP_B = ConnectedBrakePressure_B != null;
                 }
                 if(UseLegacyPipeState)changeLegacyState(F_B);
                 return true;
