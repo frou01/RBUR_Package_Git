@@ -19,37 +19,55 @@ namespace frou01.RigidBodyTrain
         public Rail_Script to1;
         public Rail_Script to2;
 
+        [Tooltip("Need owner check and sync")][SerializeField]bool OwnerSlaveMode = false;
         [UdonSynced] public bool state;
-
+        [UdonSynced] public bool inprgrs;
 
         public void SetRoute1()
         {
-            if (Networking.IsOwner(gameObject)) owner_SetRoute1();
+            if (!OwnerSlaveMode || Networking.IsOwner(gameObject)) owner_SetRoute1();
         }
         public void SetRoute2()
         {
-            if (Networking.IsOwner(gameObject)) owner_SetRoute2();
+            if (!OwnerSlaveMode || Networking.IsOwner(gameObject)) owner_SetRoute2();
+        }
+        public void SetInprogress()
+        {
+            if (!OwnerSlaveMode || Networking.IsOwner(gameObject)) owner_SetInprogress();
         }
 
         private void owner_SetRoute1()
         {
             //Debug.Log("debug1 " + to1.name);
             state = false;
+            inprgrs = false;
             applyChange();
-            RequestSerialization();
+            if(OwnerSlaveMode) RequestSerialization();
         }
         private void owner_SetRoute2()
         {
             //Debug.Log("debug2 " + to2.name);
             state = true;
+            inprgrs = false;
             applyChange();
-            RequestSerialization();
+            if (OwnerSlaveMode) RequestSerialization();
+        }
+        private void owner_SetInprogress()
+        {
+            //Debug.Log("debug2 " + to2.name);
+            inprgrs = true;
+            applyChange();
+            if (OwnerSlaveMode) RequestSerialization();
         }
 
         protected override void applyChange()
         {
             Rail_Script target;
-            if (!state)
+            if (inprgrs)
+            {
+                target = null;
+            }
+            else if (!state)
             {
                 //Debug.Log("debug1 " + to1.name);
                 target = to1;
@@ -72,13 +90,34 @@ namespace frou01.RigidBodyTrain
             base.applyChange();
         }
 
+        public override void OnDeserialization()
+        {
+            if(OwnerSlaveMode)applyChange();
+        }
+
+        public override void set_route_To(int routeIndex)
+        {
+            if (routeIndex == 0)
+            {
+                SetRoute1();
+            }
+            else if (routeIndex == 1)
+            {
+                SetRoute2();
+            }
+            else if (routeIndex == -1)
+            {
+                SetInprogress();
+            }
+            return;
+        }
         public override Rail_Script[] getRoutes()
         {
             return new Rail_Script[] { to1, to2 };
         }
         public override int get_current_To_Index()
         {
-            return state ? 1 : 0;
+            return inprgrs? -1 : (state ? 1 : 0);
         }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
