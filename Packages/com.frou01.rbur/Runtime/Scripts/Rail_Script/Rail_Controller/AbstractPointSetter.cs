@@ -1,9 +1,15 @@
 ﻿using UdonSharp;
+using UnityEngine;
 using VRC.Udon.Common;
 
 namespace frou01.RigidBodyTrain
 {
-    public class AbstractPointSetter : UdonSharpBehaviour
+    public
+
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+        abstract
+#endif
+        class AbstractPointSetter : UdonSharpBehaviour
     {
         public UdonSharpBehaviour[] callbackUdons = new UdonSharpBehaviour[0];
         void Start()
@@ -74,6 +80,7 @@ namespace frou01.RigidBodyTrain
         {
 
         }
+        public abstract void Gizmo_LineTarget(Rail_Script targetRail,out Vector3 lineStart,out Vector3 lineEnd);
 #endif
     }
 }

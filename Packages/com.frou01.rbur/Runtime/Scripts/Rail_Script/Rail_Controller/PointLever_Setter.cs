@@ -144,89 +144,48 @@ namespace frou01.RigidBodyTrain
             Vector3 offset = new Vector3(0, 1, 0);
             if (from1 != null)
             {
-                Vector3 changeLinePoint;
                 Vector3 changeLineStart;
-                getEdgePoint(from1, changeType1, out changeLinePoint, out changeLineStart);
-                Gizmos.DrawLine(changeLineStart + offset * 2, changeLinePoint);
+                Vector3 changeLineEnd;
+                Gizmo_LineTarget(from1, out changeLineStart, out changeLineEnd);
+                Gizmos.DrawLine(changeLineStart, changeLineEnd);
             }
             if (from2 != null)
             {
-                Vector3 changeLinePoint;
                 Vector3 changeLineStart;
-                getEdgePoint(from2, changeType2, out changeLinePoint, out changeLineStart);
-                Gizmos.DrawLine(changeLineStart + offset * 2, changeLinePoint);
+                Vector3 changeLineEnd;
+                Gizmo_LineTarget(from2, out changeLineStart, out changeLineEnd);
+                Gizmos.DrawLine(changeLineStart, changeLineEnd);
             }
         }
         public override void DrawGizmo_To(Rail_Script targetRail)
         {
+            if (targetRail == null) return;
             Vector3 offset = new Vector3(0, 1, 0);
-            if (from1 != null)
+            if (to1 == targetRail || to2 == targetRail)
             {
 
-                Vector3 changeLinePoint;
-                Vector3 changeLineStart;
-                getEdgePoint(from1, changeType1, out changeLinePoint, out changeLineStart);
-
-                CinemachinePathBase toPath;
-                Vector3 toClosestPoint;
-                float nextClosestUnit;
-                if (targetRail)
-                {
-                    toPath = targetRail.cinemachinePath;
-                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
-                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
-                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
-                    else nextClosestUnit += 10;
-                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
-                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
-                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
-                }
-            }
-            if (from2 != null)
-            {
-                Vector3 changeLinePoint;
-                Vector3 changeLineStart;
-                getEdgePoint(from1, changeType1, out changeLinePoint, out changeLineStart);
-
-                CinemachinePathBase toPath;
-                Vector3 toClosestPoint;
-                float nextClosestUnit;
-                if (targetRail)
-                {
-                    toPath = targetRail.cinemachinePath;
-                    nextClosestUnit = toPath.FindClosestPoint(changeLinePoint, 0, -1, 10);
-                    nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
-                    if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
-                    else nextClosestUnit += 10;
-                    nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
-                    toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
-                    Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
-                }
+                Vector3 lineStart;
+                Vector3 lineEnd;
+                Gizmo_LineTarget(targetRail, out lineStart, out lineEnd);
+                Gizmos.DrawLine(lineStart, lineEnd + offset);
             }
         }
-        public static void getEdgePoint(Rail_Script targetRail, bool GetNextEdge, out Vector3 changeLinePoint, out Vector3 changeLineStart)
+
+        public Vector3 getFromPoint()
         {
-            CinemachinePathBase fromPath = targetRail.cinemachinePath;
-
-            float fromChangeUnit;
-            float fromChangeLineStart;
-            if (GetNextEdge)
+            Vector3 fromPoint = Vector3.zero;
+            float cnt = 0;
+            if (from1)
             {
-                fromChangeUnit = fromPath.MaxPos;
-                fromChangeLineStart = fromPath.FromPathNativeUnits(fromChangeUnit, PositionUnits.Distance);
-                fromChangeLineStart -= 10;
-                fromChangeLineStart = fromPath.ToNativePathUnits(fromChangeLineStart, PositionUnits.Distance);
+                fromPoint += changeType1 ? from1.GetEndPoint() : from1.GetStartPoint();
+                cnt++;
             }
-            else
+            if (from2)
             {
-                fromChangeUnit = fromPath.MinPos;
-                fromChangeLineStart = fromPath.FromPathNativeUnits(fromChangeUnit, PositionUnits.Distance);
-                fromChangeLineStart += 10;
-                fromChangeLineStart = fromPath.ToNativePathUnits(fromChangeLineStart, PositionUnits.Distance);
+                fromPoint += changeType2 ? from2.GetEndPoint() : from2.GetStartPoint();
+                cnt++;
             }
-
-            changeLinePoint = fromPath.EvaluatePosition(fromChangeUnit);
-            changeLineStart = fromPath.EvaluatePosition(fromChangeLineStart);
+            return fromPoint / cnt;
         }
 
         [Obsolete]
@@ -341,6 +300,35 @@ namespace frou01.RigidBodyTrain
                     Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
                 }
             }
+        }
+
+        public override void Gizmo_LineTarget(Rail_Script targetRail, out Vector3 lineStart, out Vector3 lineEnd)
+        {
+            if (targetRail == null)
+            {
+                lineEnd = lineStart = transform.position;
+                return;
+            }
+            Vector3 offset = new Vector3(0, 1, 0);
+            if (to1 == targetRail || to2 == targetRail || from1 == targetRail || from2 == targetRail)
+            {
+                lineStart = getFromPoint();
+
+                CinemachinePathBase toPath;
+                Vector3 toClosestPoint;
+                float nextClosestUnit;
+                toPath = targetRail.cinemachinePath;
+                nextClosestUnit = toPath.FindClosestPoint(lineStart, 0, -1, 10);
+                nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                else nextClosestUnit += 10;
+                nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                lineEnd = toClosestPoint + offset;
+                return;
+            }
+            lineEnd = lineStart = transform.position;
+            return;
         }
 #endif
     }
