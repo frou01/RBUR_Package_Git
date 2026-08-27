@@ -120,7 +120,7 @@ public class railModelTiler : MonoBehaviour
     {
         float generatingDistance = this.generatingDistance + (isZinverted ? +modelLength : 0);
         copied = (GameObject)PrefabUtility.InstantiatePrefab(meshrendererObjectPrefab);
-        copied.transform.SetParent(this.transform);
+        copied.transform.SetParent(this.root != null ? this.root : cinemachinePath.transform);
         float t = cinemachinePath.ToNativePathUnits(generatingDistance, PositionUnits.Distance);//z座標を元にレール座標を取得
         copied.transform.position = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits);
         if (generatingDistance > cinemachinePath.PathLength)
@@ -304,7 +304,7 @@ public class railModelTiler : MonoBehaviour
 
         if (this.generatingDistance >= TilingEnd)
         {
-            if(UseColliderBaseCuller) SetUpColliderBaseCuller(modelLength,gened, cinemachinePath.transform,true,true);
+            if(UseColliderBaseCuller) SetUpColliderBaseCuller(modelLength,gened, this.root != null ? this.root : cinemachinePath.transform, true,true);
 
             if (copies.Count > 0)
             {

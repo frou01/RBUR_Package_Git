@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5432253545930693057}
   - component: {fileID: 2338560973623077308}
   - component: {fileID: 2338560973623077311}
+  - component: {fileID: 401512058053460499}
   m_Layer: 0
   m_Name: RailPrefab_SmoothPath
   m_TagString: Untagged
@@ -104,4 +105,35 @@ MonoBehaviour:
     inactivePathColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     width: 0
   m_Looped: 0
-  m_Waypoints: []
+  m_Waypoints:
+  - position: {x: 0, y: 0, z: 0}
+    roll: 0
+  - position: {x: 0, y: 0, z: 0}
+    roll: 0
+--- !u!114 &401512058053460499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2338560973623077249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d44a57508b2951e49904f4e8c5c9124c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cinemachinePath: {fileID: 2338560973623077311}
+  meshrendererObjectPrefab: {fileID: 0}
+  modelLength: 25
+  TilingStart: 0
+  TilingEnd: 0
+  isZinverted: 0
+  ignoreRoll: 0
+  ignorePitch: 0
+  UseColliderBaseCuller: 1
+  disbaleInstancedThreshold: 0.05
+  saveFolder: Assets/frou01/Rails/AkebonomatsuRailway_clonedModel
+  veticesTransformSteps: 20000
+  started: 0
+  root: {fileID: 2338560973623077310}
+  offset: {x: 0, y: 0, z: 0}
