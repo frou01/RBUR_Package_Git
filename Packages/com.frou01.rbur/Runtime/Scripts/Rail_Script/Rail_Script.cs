@@ -135,7 +135,7 @@ namespace frou01.RigidBodyTrain
                     mathIndicatePoint(nextPath, GetEndPoint(), out nextIndicatePoint, out edgeDist);
                     Gizmos.color = new Color(1f, 0, 0f, 0.3f + edgeDist);
                     Gizmos.DrawLine(GetEndPoint(), nextIndicatePoint);
-                    Gizmos.DrawSphere(GetEndPoint(), edgeDist);
+                    Gizmos.DrawSphere(GetEndPoint(), Mathf.Min(edgeDist,5));
                 }
                 else
                 {
@@ -152,7 +152,7 @@ namespace frou01.RigidBodyTrain
                     mathIndicatePoint(prevPath, GetStartPoint(), out prevIndicatePoint, out edgeDist);
                     Gizmos.color = new Color(0, 0, 1f, 0.3f + edgeDist);
                     Gizmos.DrawLine(GetStartPoint(), prevIndicatePoint);
-                    Gizmos.DrawSphere(GetStartPoint(), edgeDist);
+                    Gizmos.DrawSphere(GetStartPoint(), Mathf.Min(edgeDist, 5));
                 }
                 else
                 {
@@ -160,6 +160,11 @@ namespace frou01.RigidBodyTrain
                     Gizmos.DrawLine(GetStartPoint(), GetStartPoint() + GetStartTangent());
                     Gizmos.DrawSphere(GetStartPoint() + GetStartTangent(), 0.3f);
                 }
+            }
+            else
+            {
+                Gizmos.color = new Color(1f, 0, 0f, 1f);
+                Gizmos.DrawSphere(this.transform.position, 5f);
             }
         }
 
