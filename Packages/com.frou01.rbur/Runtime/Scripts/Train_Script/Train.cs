@@ -25,7 +25,12 @@ namespace frou01.RigidBodyTrain
 
         //public Vector3 gravity = new Vector3(0, -9.8f, 0);
 
+
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+        [SerializeField] public Animator controllerAnimator;
+#else
         [SerializeField] Animator controllerAnimator;
+#endif
 
         [SerializeField] public TrainConnectionReciever[] connectionRecievers;
         [SerializeField] public GameObject[] subObjects;
@@ -84,8 +89,13 @@ namespace frou01.RigidBodyTrain
             }
         }
 
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+        [SerializeField] public Rail_Script BogieRail_F;
+        [SerializeField] public Rail_Script BogieRail_B;
+#else
         [SerializeField] private Rail_Script BogieRail_F;
         [SerializeField] private Rail_Script BogieRail_B;
+#endif
         [SerializeField] private Transform Bogie_F;
         [SerializeField] private Rigidbody BogieWheel_F;
         [SerializeField] private Transform Bogie_B;

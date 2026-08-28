@@ -45,9 +45,11 @@ namespace frou01.RigidBodyTrain
 
         [Tooltip("is this front(+Z)?")][SerializeField] public bool FrontOrBack;
         [Tooltip("disconnection threshold force")][SerializeField] private float disconnectForce = 1000;
-
-
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+        [SerializeField][HideInInspector] public CouplerObj connectedCoupler;
+#else
         [SerializeField][HideInInspector] CouplerObj connectedCoupler;
+#endif
 
         bool started = false;
 
