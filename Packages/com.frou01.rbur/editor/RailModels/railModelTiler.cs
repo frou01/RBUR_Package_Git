@@ -68,6 +68,12 @@ public class railModelTiler : MonoBehaviour
         saveFolder = EditorUtility.OpenFolderPanel("Save Folder", Application.dataPath, string.Empty);
         saveFolder = saveFolder.Remove(0, Application.dataPath.Length-6);
     }
+
+    public void setEndFromPath()
+    {
+
+        TilingEnd = cinemachinePath.PathLength;
+    }
     public void startTiling()
     {
         generatingDistance = TilingStart;
@@ -77,7 +83,7 @@ public class railModelTiler : MonoBehaviour
 
         if (TilingEnd == 0)
         {
-            TilingEnd = cinemachinePath.PathLength;
+            setEndFromPath();
         }
 
         gameObjID = 0;

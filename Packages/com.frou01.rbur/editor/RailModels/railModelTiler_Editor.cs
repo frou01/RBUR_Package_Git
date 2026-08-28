@@ -18,6 +18,11 @@ public class railModelTiler_Editor : Editor
             Debug.Log("TilingStart");
             tiler.startTiling();
         }
+        if (GUILayout.Button("SetEndFromPath"))
+        {
+            Debug.Log("SetEndFromPath");
+            tiler.setEndFromPath();
+        }
         if (GUILayout.Button("TilingRailAll"))
         {
             Debug.Log("TilingStartAll");
