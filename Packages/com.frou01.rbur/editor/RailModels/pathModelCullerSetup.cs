@@ -11,36 +11,41 @@ public class pathModelCullerSetup : MonoBehaviour
     public Cinemachine.CinemachinePathBase cinemachinePath;
     [SerializeField] GameObject[] objects;
     public float oneCullerLength;
-    public float cullerSize;
     public Transform rootTransform;
 
     public void perform()
     {
         List<GameObject> objectsList = new List<GameObject>();
         objectsList.AddRange(objects);
+        Vector3[] cullerCenters;
         List<GameObject[]> ClusteredGoList = new List<GameObject[]>();
 
+        ObjectClustering(cinemachinePath, oneCullerLength, objectsList,out cullerCenters,ref ClusteredGoList);
+        SetUpColliderBaseCuller(ClusteredGoList, cullerCenters, rootTransform ? rootTransform : this.transform, true, false);
+    }
+
+    public static void ObjectClustering(Cinemachine.CinemachinePathBase cinemachinePath, float CullerLength, List<GameObject> objectsList,out Vector3[] cullerCenters, ref List<GameObject[]> ClusteredGoList)
+    {
         float pathLength = cinemachinePath.PathLength;
-        Vector3[] cullerCenters = new Vector3[(int)(pathLength / oneCullerLength) + 1];
+        cullerCenters = new Vector3[(int)(pathLength / CullerLength) + 1];
         int currentSegment = 0;
-        for (float current = 0;current <= pathLength; current += oneCullerLength)
+        for (float current = 0; current <= pathLength; current += CullerLength)
         {
             List<GameObject> oneClusterList = new List<GameObject>();
             Vector3 currentPathPos = cinemachinePath.EvaluatePositionAtUnit(current, Cinemachine.CinemachinePathBase.PositionUnits.Distance);
             foreach (GameObject go in objectsList)
             {
-                if(Vector3.Distance(go.transform.position, currentPathPos) < oneCullerLength)
+                if (Vector3.Distance(go.transform.position, currentPathPos) < CullerLength)
                 {
-                    Debug.Log(go.name);
+                    //Debug.Log(go.name);
                     oneClusterList.Add(go);
                 }
             }
             objectsList = objectsList.Except(oneClusterList).ToList();
             ClusteredGoList.Add(oneClusterList.ToArray());
-            cullerCenters[currentSegment] = cinemachinePath.EvaluatePositionAtUnit(current + oneCullerLength/2, Cinemachine.CinemachinePathBase.PositionUnits.Distance);
+            cullerCenters[currentSegment] = cinemachinePath.EvaluatePositionAtUnit(current + CullerLength / 2, Cinemachine.CinemachinePathBase.PositionUnits.Distance);
             currentSegment += 1;
         }
-        SetUpColliderBaseCuller(ClusteredGoList, cullerCenters, rootTransform, true, false);
     }
     public static void SetUpColliderBaseCuller(List<GameObject[]> ClusteredGoList,Vector3[] cullerCenters, Transform root, bool changeRoot, bool isStatic)
     {
