@@ -132,8 +132,10 @@ MonoBehaviour:
   ignorePitch: 0
   UseColliderBaseCuller: 1
   disbaleInstancedThreshold: 0.05
+  cutterOffset: -0.001
   saveFolder: Assets/frou01/Rails/AkebonomatsuRailway_clonedModel
   veticesTransformSteps: 20000
+  cutStep: 1
   started: 0
   root: {fileID: 2338560973623077310}
-  offset: {x: 0, y: 0, z: 0}
+  generationOffset: {x: 0, y: 0, z: 0}
