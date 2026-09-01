@@ -162,13 +162,19 @@ public class railModelTiler : MonoBehaviour
     {
         copied = (GameObject)PrefabUtility.InstantiatePrefab(meshrendererObjectPrefab);
 
-        float generatingDistance = this.genObjectDistance + (isZinverted ? +modelLength : 0);
-        float genPathUnit = cinemachinePath.ToNativePathUnits(generatingDistance, PositionUnits.Distance);
+        float ObjectDistance = this.genObjectDistance + (isZinverted ? +modelLength : 0);
+        float remainLength = TilingEnd - ObjectDistance;
+        if(remainLength < disbaleInstancedThreshold)
+        {
+            this.genObjectDistance = TilingEnd;
+            return;
+        }
+        float genPathUnit = cinemachinePath.ToNativePathUnits(ObjectDistance, PositionUnits.Distance);
 
         Quaternion rotation;
         getRotationOnT(genPathUnit, out rotation, Quaternion.identity);
         copied.transform.rotation = rotation;
-        copied.transform.position = GetGlobalPathPositionOnPath_FromPathUnit(generatingDistance, genPathUnit) + rotation * this.generationOffset;
+        copied.transform.position = GetGlobalPathPositionOnPath_FromPathUnit(ObjectDistance, genPathUnit) + rotation * this.generationOffset;
         copied.transform.SetParent(this.root != null ? this.root : cinemachinePath.transform);
 
         instancedMesh = Instantiate(copied.GetComponent<MeshFilter>().sharedMesh);
@@ -179,9 +185,9 @@ public class railModelTiler : MonoBehaviour
         transformedNormals = new Vector3[instancedMesh.vertices.Length];
 
         objectAlignScaling = 1;
-        if (generatingDistance + modelLength > TilingEnd + disbaleInstancedThreshold)
+        if (ObjectDistance + modelLength > TilingEnd + disbaleInstancedThreshold)
         {
-            float remainLength = TilingEnd - generatingDistance;
+            
             if (cutStep > 0)
             {
                 //Debug.Log("rem " + remainLength);
