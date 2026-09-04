@@ -164,11 +164,6 @@ public class railModelTiler : MonoBehaviour
 
         float ObjectDistance = this.genObjectDistance + (isZinverted ? +modelLength : 0);
         float remainLength = TilingEnd - ObjectDistance;
-        if(remainLength < disbaleInstancedThreshold)
-        {
-            this.genObjectDistance = TilingEnd;
-            return;
-        }
         float genPathUnit = cinemachinePath.ToNativePathUnits(ObjectDistance, PositionUnits.Distance);
 
         Quaternion rotation;
@@ -185,15 +180,15 @@ public class railModelTiler : MonoBehaviour
         transformedNormals = new Vector3[instancedMesh.vertices.Length];
 
         objectAlignScaling = 1;
-        if (ObjectDistance + modelLength > TilingEnd + disbaleInstancedThreshold)
+        if (ObjectDistance + modelLength >= TilingEnd)
         {
-            
+
             if (cutStep > 0)
             {
                 //Debug.Log("rem " + remainLength);
                 //Debug.Log("round " + (Mathf.Round(remainLength / cutStep) * cutStep));
                 objectAlignScaling = remainLength / Mathf.Round(remainLength / cutStep) * cutStep;
-                //Debug.Log("scale " + objectAlignScaling);
+                Debug.Log("scale " + objectAlignScaling);
                 Vector3 scaler = new Vector3(1, 1, objectAlignScaling);
                 originVertices = originVertices.Select(
                     vertex => {
@@ -208,6 +203,12 @@ public class railModelTiler : MonoBehaviour
             {
                 ReplaceMesh = true;
             }
+        }
+        if (objectAlignScaling <= 0)
+        {
+            this.genObjectDistance = TilingEnd;
+            Destroy(copied);
+            return;
         }
         needNewObject = false;
         transforming = true;
@@ -318,24 +319,17 @@ public class railModelTiler : MonoBehaviour
             getRotationOnT(t, out rotation, Quaternion.identity);
             if (isZinverted)
             {
-                copied.transform.forward = copied.transform.position - (cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.generationOffset);
+                copied.transform.forward = copied.transform.position - (GetGlobalPathPositionOnPath_FromPathUnit(genObjectDistance + (isZinverted ? 0 : +modelLength), t) + rotation * this.generationOffset);
             }
             else
             {
-                copied.transform.forward = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.generationOffset - copied.transform.position;
+                copied.transform.forward = GetGlobalPathPositionOnPath_FromPathUnit(genObjectDistance + (isZinverted ? 0 : +modelLength), t) + rotation * this.generationOffset - copied.transform.position;
             }
-            if (isZinverted)
-            {
-                Vector3 fitScale = copied.transform.localScale;
-                fitScale.z = (copied.transform.position - (cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.generationOffset)).magnitude /modelLength;
-                copied.transform.localScale = fitScale;
-            }
-            else
-            {
-                Vector3 fitScale = copied.transform.localScale;
-                fitScale.z = (cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits) + rotation * this.generationOffset - copied.transform.position).magnitude / modelLength;
-                copied.transform.localScale = fitScale;
-            }
+
+            Vector3 fitScale = copied.transform.localScale;
+            fitScale.z = (GetGlobalPathPositionOnPath_FromPathUnit(genObjectDistance + (isZinverted ? 0 : +modelLength), t) + rotation * this.generationOffset - copied.transform.position).magnitude / modelLength;
+            copied.transform.localScale = fitScale;
+
             copied.name += "instanced";
         }
         gened.Add(copied);
@@ -551,7 +545,7 @@ public class railModelTiler : MonoBehaviour
             PositionAtT + OrientationAtT * (Vector3.up + this.generationOffset));
         Gizmos.color = new Color(1f, 0, 0f, 1f);
         t = cinemachinePath.ToNativePathUnits(TilingEnd, PositionUnits.Distance);
-        PositionAtT = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits);
+        PositionAtT = GetGlobalPathPositionOnPath_FromPathUnit(TilingEnd, t);
         OrientationAtT = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized;
         Gizmos.DrawLine(
             PositionAtT + OrientationAtT * (-Vector3.right + this.generationOffset),
@@ -566,7 +560,7 @@ public class railModelTiler : MonoBehaviour
             {
                 t = cinemachinePath.ToNativePathUnits(genDist, PositionUnits.Distance);
                 Gizmos.color = new Color(1f, 1f, 0f, 1f);
-                PositionAtT = cinemachinePath.EvaluatePositionAtUnit(t, PositionUnits.PathUnits);
+                PositionAtT = GetGlobalPathPositionOnPath_FromPathUnit(genDist,t);
                 OrientationAtT = cinemachinePath.EvaluateOrientationAtUnit(t, PositionUnits.PathUnits).normalized;
                 Gizmos.DrawLine(
                     PositionAtT + OrientationAtT * (-Vector3.right + this.generationOffset),
