@@ -1,10 +1,10 @@
 ﻿
 #if (UNITY_EDITOR)
 using System.Collections.Generic;
-using UdonSharpEditor;
 using UnityEngine;
 using System.Linq;
-using frou01.util;
+using frou01.util.editor;
+using frou01.util.placeholder;
 
 public class pathModelCullerSetup : MonoBehaviour
 {
@@ -62,7 +62,7 @@ public class pathModelCullerSetup : MonoBehaviour
             SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
             sphereCollider.radius = 1500;
             sphereCollider.isTrigger = true;
-            ColliderGameObjectCuller ClRC = go.AddUdonSharpComponent<ColliderGameObjectCuller>();
+            ColliderGameObjectCuller ClRC = go.AddComponent<ColliderGameObjectCuller>();
             ClRC.objects = ClusteredGo[i];
             ClRC.isStaticMode = isStatic;
 
