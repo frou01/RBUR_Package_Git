@@ -187,7 +187,9 @@ public class railModelTiler : MonoBehaviour
             {
                 //Debug.Log("rem " + remainLength);
                 //Debug.Log("round " + (Mathf.Round(remainLength / cutStep) * cutStep));
-                objectAlignScaling = remainLength / Mathf.Round(remainLength / cutStep) * cutStep;
+                int step = (int)Mathf.Round(remainLength / cutStep);
+                if (step <= 0) step = 1;
+                objectAlignScaling = remainLength / step / cutStep;
                 Debug.Log("scale " + objectAlignScaling);
                 Vector3 scaler = new Vector3(1, 1, objectAlignScaling);
                 originVertices = originVertices.Select(
