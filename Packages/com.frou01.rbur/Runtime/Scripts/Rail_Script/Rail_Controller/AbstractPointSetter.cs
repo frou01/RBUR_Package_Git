@@ -23,18 +23,6 @@ namespace frou01.RigidBodyTrain
                 udon.SendCustomEvent("PointUpdate");
             }
         }
-        public void SyncEvent()
-        {
-            RequestSerialization();
-        }
-
-        public override void OnPostSerialization(SerializationResult result)
-        {
-            if (!result.success)
-            {
-                SendCustomEventDelayedSeconds(nameof(SyncEvent), UnityEngine.Random.Range(1, 4f));
-            }
-        }
         public virtual void set_route_To(Rail_Script setRoute)
         {
             if (!setRoute)

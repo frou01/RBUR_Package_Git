@@ -94,6 +94,19 @@ namespace frou01.RigidBodyTrain
             base.applyChange();
         }
 
+        public void SyncEvent()
+        {
+            RequestSerialization();
+        }
+
+        public override void OnPostSerialization(SerializationResult result)
+        {
+            if (!result.success)
+            {
+                SendCustomEventDelayedSeconds(nameof(SyncEvent), UnityEngine.Random.Range(1, 4f));
+            }
+        }
+
         public override void OnDeserialization()
         {
             if(OwnerSlaveMode)applyChange();
