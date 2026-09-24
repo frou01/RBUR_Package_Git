@@ -19,7 +19,11 @@ namespace frou01.RigidBodyTrain
         public Rail_Script to1;
         public Rail_Script to2;
 
-        [Tooltip("Need owner check and sync")][SerializeField]bool OwnerSlaveMode = false;
+        [HideInInspector][SerializeField] bool OwnerSlaveMode = false;
+        public void SetOwnerSlaveMode(bool OwnerSlaveMode)
+        {
+            this.OwnerSlaveMode = OwnerSlaveMode;
+        }
         [UdonSynced] public bool state;
         [UdonSynced] public bool inprgrs;
 

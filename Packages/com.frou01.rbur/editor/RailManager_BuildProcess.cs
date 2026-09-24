@@ -3,6 +3,7 @@ using frou01.RigidBodyTrain;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UdonSharpEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -34,10 +35,17 @@ namespace frou01.RBUR.editor
                 Debug.LogError("No RailsManager on Scene root");
                 return;
             }
+            List<PointLever_Setter> Point_Setter_List = new List<PointLever_Setter>();
             List<Rail_Script> Rails_List = new List<Rail_Script>();
             foreach (GameObject obj in scene.GetRootGameObjects())
             {
+                Point_Setter_List.AddRange(obj.GetComponentsInChildren<PointLever_Setter>(true));
                 Rails_List.AddRange(obj.GetComponentsInChildren<Rail_Script>(true));
+            }
+
+            foreach (PointLever_Setter point in Point_Setter_List)
+            {
+                point.SetOwnerSlaveMode(UdonSharpEditorUtility.GetBackingUdonBehaviour(point).SyncMethod != VRC.SDKBase.Networking.SyncType.None);
             }
 
 
