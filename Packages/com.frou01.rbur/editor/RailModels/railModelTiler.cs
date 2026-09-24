@@ -60,10 +60,13 @@ public class railModelTiler : MonoBehaviour
 
     private void OnValidate()
     {
-        if(meshrendererObjectPrefab != null && PrefabUtility.GetPrefabAssetType(meshrendererObjectPrefab) == PrefabAssetType.NotAPrefab)
+        EditorApplication.delayCall += () =>
         {
-            meshrendererObjectPrefab = null;
-        }
+            if (meshrendererObjectPrefab != null && PrefabUtility.GetPrefabAssetType(meshrendererObjectPrefab) == PrefabAssetType.NotAPrefab)
+            {
+                meshrendererObjectPrefab = null;
+            }
+        };
     }
 
     int gameObjID = 0;

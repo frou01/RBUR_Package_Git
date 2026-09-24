@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2338560973623077308}
   - component: {fileID: 2338560973623077311}
   - component: {fileID: 401512058053460499}
+  - component: {fileID: 8776874845278757009}
   m_Layer: 0
   m_Name: RailPrefab_SmoothPath
   m_TagString: Untagged
@@ -139,3 +140,17 @@ MonoBehaviour:
   started: 0
   root: {fileID: 2338560973623077310}
   generationOffset: {x: 0, y: 0, z: 0}
+--- !u!114 &8776874845278757009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2338560973623077249}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2803252807400ae418635d538ae3fc0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 0}
+  forceProceed: 0
