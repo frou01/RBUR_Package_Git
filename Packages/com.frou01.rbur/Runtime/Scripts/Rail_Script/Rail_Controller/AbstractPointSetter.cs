@@ -12,7 +12,7 @@ namespace frou01.RigidBodyTrain
         class AbstractPointSetter : UdonSharpBehaviour
     {
         public UdonSharpBehaviour[] callbackUdons = new UdonSharpBehaviour[0];
-        void Start()
+        protected virtual void Start()
         {
             applyChange();
         }
@@ -35,10 +35,6 @@ namespace frou01.RigidBodyTrain
                 SendCustomEventDelayedSeconds(nameof(SyncEvent), UnityEngine.Random.Range(1, 4f));
             }
         }
-        public virtual void set_route_To(int routeIndex)
-        {
-            return;
-        }
         public virtual void set_route_To(Rail_Script setRoute)
         {
             if (!setRoute)
@@ -58,21 +54,12 @@ namespace frou01.RigidBodyTrain
             }
             return;
         }
-        public virtual Rail_Script get_current_To()
-        {
-            return null;
-        }
-
-        public virtual Rail_Script[] getRoutes()
-        {
-            return null;
-        }
-        public virtual int get_current_To_Index()
-        {
-            return -1;//-1 means null
-        }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
+        public abstract void set_route_To(int routeIndex);
+        public abstract Rail_Script[] getRoutes();
+        public abstract int get_current_To_Index();
+
         public virtual void DrawGizmo_From()
         {
         }
@@ -81,6 +68,19 @@ namespace frou01.RigidBodyTrain
 
         }
         public abstract void Gizmo_LineTarget(Rail_Script targetRail,out Vector3 lineStart,out Vector3 lineEnd);
+#else
+        public virtual void set_route_To(int routeIndex)
+        {
+            return;
+        }
+        public virtual Rail_Script[] getRoutes()
+        {
+            return null;
+        }
+        public virtual int get_current_To_Index()
+        {
+            return -1;//-1 means null
+        }
 #endif
     }
 }
