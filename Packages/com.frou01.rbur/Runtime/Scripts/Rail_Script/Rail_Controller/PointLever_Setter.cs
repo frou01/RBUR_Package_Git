@@ -1,15 +1,16 @@
 ﻿
 using Cinemachine;
-using System.IO;
+using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRC.Udon;
+using VRC.Udon.Common;
 using static Cinemachine.CinemachinePathBase;
 
 namespace frou01.RigidBodyTrain
 {
-    public class PointLever_Setter : UdonSharpBehaviour
+    public class PointLever_Setter : AbstractPointSetter
     {
         public Rail_Script from1;
         public Rail_Script from2;
@@ -17,48 +18,60 @@ namespace frou01.RigidBodyTrain
         public bool changeType2;//true:next  false:prev
         public Rail_Script to1;
         public Rail_Script to2;
-        public UdonSharpBehaviour[] callbackUdons = new UdonSharpBehaviour[0]; 
 
-        [UdonSynced] public bool state;
-
-        void Start()
+        [HideInInspector][SerializeField] bool OwnerSlaveMode = false;
+        public void SetOwnerSlaveMode(bool OwnerSlaveMode)
         {
-            applyChange();
+            this.OwnerSlaveMode = OwnerSlaveMode;
         }
+        [UdonSynced] public bool state;
+        [UdonSynced] public bool inprgrs;
 
         public void SetRoute1()
         {
-            if (Networking.IsOwner(gameObject)) owner_SetRoute1();
+            if (!OwnerSlaveMode || Networking.IsOwner(gameObject)) owner_SetRoute1();
         }
         public void SetRoute2()
         {
-            if (Networking.IsOwner(gameObject)) owner_SetRoute2();
+            if (!OwnerSlaveMode || Networking.IsOwner(gameObject)) owner_SetRoute2();
+        }
+        public void SetInprogress()
+        {
+            if (!OwnerSlaveMode || Networking.IsOwner(gameObject)) owner_SetInprogress();
         }
 
         private void owner_SetRoute1()
         {
             //Debug.Log("debug1 " + to1.name);
             state = false;
+            inprgrs = false;
             applyChange();
-            RequestSerialization();
+            if(OwnerSlaveMode) RequestSerialization();
         }
         private void owner_SetRoute2()
         {
             //Debug.Log("debug2 " + to2.name);
             state = true;
+            inprgrs = false;
             applyChange();
-            RequestSerialization();
+            if (OwnerSlaveMode) RequestSerialization();
         }
-
-        public override void OnDeserialization()
+        private void owner_SetInprogress()
         {
+            //Debug.Log("debug2 " + to2.name);
+            inprgrs = true;
             applyChange();
+            if (OwnerSlaveMode) RequestSerialization();
         }
 
-        private void applyChange()
+        protected override void applyChange()
         {
             Rail_Script target;
-            if (!state)
+            if (inprgrs)
+            {
+                target = null;
+            }
+            else if (!state)
             {
                 //Debug.Log("debug1 " + to1.name);
                 target = to1;
@@ -78,23 +91,122 @@ namespace frou01.RigidBodyTrain
                 if (changeType2) from2.next = target;
                 else from2.prev = target;
             }
-            foreach (UdonSharpBehaviour udon in callbackUdons)
+            base.applyChange();
+        }
+
+        public void SyncEvent()
+        {
+            RequestSerialization();
+        }
+
+        public override void OnPostSerialization(SerializationResult result)
+        {
+            if (!result.success)
             {
-                udon.SendCustomEvent("PointUpdate");
+                SendCustomEventDelayedSeconds(nameof(SyncEvent), UnityEngine.Random.Range(1, 4f));
             }
+        }
+
+        public override void OnDeserialization()
+        {
+            if(OwnerSlaveMode)applyChange();
+        }
+
+        public override void set_route_To(int routeIndex)
+        {
+            if (routeIndex == 0)
+            {
+                SetRoute1();
+            }
+            else if (routeIndex == 1)
+            {
+                SetRoute2();
+            }
+            else if (routeIndex == -1)
+            {
+                SetInprogress();
+            }
+            return;
+        }
+        public override Rail_Script[] getRoutes()
+        {
+            return new Rail_Script[] { to1, to2 };
+        }
+        public override int get_current_To_Index()
+        {
+            return inprgrs? -1 : (state ? 1 : 0);
         }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
         void OnDrawGizmos()
         {
-            DrawGizmo(0.1f,true, true);
+            Gizmos.color = new Color(0f, 1f, 0f, 0.1f);
+            DrawGizmo_From();
+            Gizmos.color = new Color(0f, 1f, 1f, 0.1f);
+            DrawGizmo_To(to1);
+            Gizmos.color = new Color(0f, 1f, 1f, 0.1f);
+            DrawGizmo_To(to2);
         }
         void OnDrawGizmosSelected()
         {
-            DrawGizmo(1f,true,true);
+            Gizmos.color = new Color(0f, 1f, 0f, 1f);
+            DrawGizmo_From();
+            Gizmos.color = new Color(0f, 1f, 1f, 1f);
+            DrawGizmo_To(to1);
+            Gizmos.color = new Color(1f, 1f, 0f, 1f);
+            DrawGizmo_To(to2);
+        }
+        public override void DrawGizmo_From()
+        {
+            Vector3 offset = new Vector3(0, 1, 0);
+            if (from1 != null)
+            {
+                Vector3 changeLineStart;
+                Vector3 changeLineEnd;
+                Gizmo_LineTarget(from1, out changeLineStart, out changeLineEnd);
+                Gizmos.DrawLine(changeLineStart, changeLineEnd);
+            }
+            if (from2 != null)
+            {
+                Vector3 changeLineStart;
+                Vector3 changeLineEnd;
+                Gizmo_LineTarget(from2, out changeLineStart, out changeLineEnd);
+                Gizmos.DrawLine(changeLineStart, changeLineEnd);
+            }
+        }
+        public override void DrawGizmo_To(Rail_Script targetRail)
+        {
+            if (targetRail == null) return;
+            Vector3 offset = new Vector3(0, 1, 0);
+            if (to1 == targetRail || to2 == targetRail)
+            {
+
+                Vector3 lineStart;
+                Vector3 lineEnd;
+                Gizmo_LineTarget(targetRail, out lineStart, out lineEnd);
+                Gizmos.DrawLine(lineStart, lineEnd + offset);
+            }
         }
 
-        public void DrawGizmo(float alpha,bool drawTo1,bool drawTo2)
+        public Vector3 getFromPoint()
+        {
+            Vector3 fromPoint = Vector3.zero;
+            float cnt = 0;
+            if (from1)
+            {
+                fromPoint += changeType1 ? from1.GetEndPoint() : from1.GetStartPoint();
+                cnt++;
+            }
+            if (from2)
+            {
+                fromPoint += changeType2 ? from2.GetEndPoint() : from2.GetStartPoint();
+                cnt++;
+            }
+            return fromPoint / cnt;
+        }
+
+        [Obsolete]
+        public void DrawGizmo(float alpha, bool drawTo1, bool drawTo2)
         {
             Vector3 offset = new Vector3(0, 1, 0);
             if (from1 != null)
@@ -205,6 +317,35 @@ namespace frou01.RigidBodyTrain
                     Gizmos.DrawLine(changeLinePoint, toClosestPoint + offset);
                 }
             }
+        }
+
+        public override void Gizmo_LineTarget(Rail_Script targetRail, out Vector3 lineStart, out Vector3 lineEnd)
+        {
+            if (targetRail == null)
+            {
+                lineEnd = lineStart = transform.position;
+                return;
+            }
+            Vector3 offset = new Vector3(0, 1, 0);
+            if (to1 == targetRail || to2 == targetRail || from1 == targetRail || from2 == targetRail)
+            {
+                lineStart = getFromPoint();
+
+                CinemachinePathBase toPath;
+                Vector3 toClosestPoint;
+                float nextClosestUnit;
+                toPath = targetRail.cinemachinePath;
+                nextClosestUnit = toPath.FindClosestPoint(lineStart, 0, -1, 10);
+                nextClosestUnit = toPath.FromPathNativeUnits(nextClosestUnit, PositionUnits.Distance);
+                if (nextClosestUnit > toPath.PathLength / 2) nextClosestUnit -= 10;
+                else nextClosestUnit += 10;
+                nextClosestUnit = toPath.ToNativePathUnits(nextClosestUnit, PositionUnits.Distance);
+                toClosestPoint = toPath.EvaluatePosition(nextClosestUnit);
+                lineEnd = toClosestPoint + offset;
+                return;
+            }
+            lineEnd = lineStart = transform.position;
+            return;
         }
 #endif
     }

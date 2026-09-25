@@ -26,11 +26,21 @@ RigidBodyUdonRailwayはUdonとRigidBodyを用いてVRCワールドに操作可�
     - Rail_Scriptに対してレールリスト上のIndexを渡します。
 - 全Rail_Scriptの子として、RailsManagerのパラメーターに基づきメッシュコライダーを生成します。（WheelCollider用）
 ## TrainManager_onEditor
-- シーンルート上にあるtrainManager,RailsManagerを探索します
-- 全Trainを収集し、レールリストにします。
-    - Trainにレールリストを登録します。
-    - Trainに対してレールリスト上のIndexを渡します。
-    - Trainに対してtrainManager,RailsManagerを渡します。
+- シーンルート上にあるtrainManager,RailsManagerを探索
+- 全AbstractBrake継承分に、Brakeタグを実装
+- 全TrainをTrains_Listに登録
+- 全Trainについて
+    - レールリストを登録
+    - 全Trainに対してTrains_List上のIndexを渡す
+    - 全Trainに対してtrainManager,RailsManagerを渡す。
+    - 子に含まれるTrainConnectionRecieverを検索し、train.connectionRecieversに未登録の物を登録
+    - nullになっているtrain.connectionRecieversの要素を削除
+    - brakeModuleを取得し、ビルドプロセス実行。
+    - brakeModuleがtrain.subObjectsに無ければ追加
+    - BrakeConnectorValveを検索し、全てのビルドプロセスを実行
+    - BrakeConnectorValveがtrain.subObjectsに無ければ追加
+- train.connectedTrain_F/Bを元に連結設定を実行。
+- brakeModule、BrakeConnectorValveについてポストプロセスを実行
 
 # コンポーネント
 # レール関係
@@ -206,7 +216,7 @@ Animatorの"mortorTorque"[float]パラメーターを参照し、mortorTorqueの
 
 同じオブジェクトにVRCStationをアタッチする必要があります。
 
-Interactで動作開始します。
+このObjectへのInteractにより起動し、Interactしたプレイヤーを操作者としてStationに載せます。
 
 <details>
 <summary>設定値/仕様</summary>
@@ -214,8 +224,8 @@ Interactで動作開始します。
 |設定値|概要|
 |---:|:---|
 targetTable|旋回するオブジェクト
-mine|旋回するレールのスクリプト
-targets|転車台周囲にあるレール<br>mineにむけ参照を持っている想定で組まれています。
+mine|旋回するレールのスクリプト(targetTableの子である必要があります)
+targets|転車台周囲にあるレール
 animator|"mortorTorque"[float]パラメーターの参照先になるAnimator
 syncedTableRotation|初期回転位置からの差分。同期に使用
 Active|動作状態。同期に使用

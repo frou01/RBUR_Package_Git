@@ -47,7 +47,7 @@ namespace frou01.RigidBodyTrain
         [Tooltip("disconnection threshold force")][SerializeField] private float disconnectForce = 1000;
 
 
-        [SerializeField][HideInInspector] CouplerObj connectedCoupler;
+        [SerializeField][HideInInspector] public CouplerObj connectedCoupler;
 
         bool started = false;
 

@@ -18,6 +18,11 @@ public class railModelTiler_Editor : Editor
             Debug.Log("TilingStart");
             tiler.startTiling();
         }
+        if (GUILayout.Button("SetEndFromPath"))
+        {
+            Debug.Log("SetEndFromPath");
+            tiler.setEndFromPath();
+        }
         if (GUILayout.Button("TilingRailAll"))
         {
             Debug.Log("TilingStartAll");
@@ -33,10 +38,13 @@ public class railModelTiler_Editor : Editor
         {
             tiler.selectFolder();
         }
-        if (GUILayout.Button("Offset"))
+        if (GUILayout.Button("Offset CinemachinePath"))
         {
             tiler.moveCinemachine();
         }
+        EditorGUI.BeginDisabledGroup(true);
+        EditorGUILayout.ObjectField("Exported FBX",tiler.exportedModel, typeof(GameObject), false);
+        EditorGUI.EndDisabledGroup();
     }
 }
 #endif

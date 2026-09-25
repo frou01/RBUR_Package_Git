@@ -36,9 +36,13 @@ namespace frou01.RBUR.editor
             if (trainManager == null) return;
 
             List<Train> Trains_List = new List<Train>();
+            TestControlUdon testControlUdon = null;
             foreach (GameObject obj in scene.GetRootGameObjects())
             {
                 Trains_List.AddRange(obj.GetComponentsInChildren<Train>(true));
+
+                TestControlUdon foundTester = obj.GetComponentInChildren<TestControlUdon>(true);
+                if (foundTester) testControlUdon = foundTester;
             }
 
             foreach (GameObject obj in scene.GetRootGameObjects())
@@ -93,8 +97,11 @@ namespace frou01.RBUR.editor
 
                 {
                     AbstractBrake brakeModule = (AbstractBrake)train.GetConnectionRecieverByTag("Brake");
-                    brakeModule.SetUpOnBuildProcess(train);
-                    if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
+                    if (brakeModule)
+                    {
+                        brakeModule.SetUpOnBuildProcess(train);
+                        if (!trainSubObjects.Contains(brakeModule.gameObject)) trainSubObjects.Add(brakeModule.gameObject);
+                    }
                 }
 
                 foreach (BrakeConnectorValve brakeConnectorValve in train.GetComponentsInChildren<BrakeConnectorValve>(true))
@@ -119,7 +126,7 @@ namespace frou01.RBUR.editor
                 }catch(NullReferenceException e)
                 {
                     Debug.LogError("Train Connection Setup Failed", train);
-                    throw;
+                    throw e;
                 }
             }
 
@@ -136,8 +143,11 @@ namespace frou01.RBUR.editor
                 {
                     brakeConnectorValve.PostProcessOnBuildProcess();
                 }
+                if (testControlUdon && !train.gameObject.GetComponent<ConstantForce>()) train.gameObject.AddComponent<ConstantForce>();
             }
             trainManager.Trains = Trains_List.ToArray();
+
+            if(testControlUdon) testControlUdon.TrainManager = trainManager;
             //foreach (Train train in trainManager.Trains)
             //{
             //    Debug.Log(train.transform.parent.name);

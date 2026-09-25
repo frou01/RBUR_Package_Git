@@ -1,11 +1,13 @@
 ﻿
 using UdonSharp;
 using UnityEngine;
+using VRC.SDK3.Components;
 using VRC.SDKBase;
 
 namespace frou01.RigidBodyTrain
 {
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
+    [RequireComponent(typeof(VRC.SDK3.Components.VRCStation))]
     public class TurnTable_Controller : UdonSharpBehaviour
     {
         Vector3 rollingInput;
@@ -40,8 +42,6 @@ namespace frou01.RigidBodyTrain
             //if (mine.next != null) Debug.Log("mine.next " + mine.next);
             //if (mine.prev != null) Debug.Log("mine.prev " + mine.prev);
             if (Networking.LocalPlayer != null) Networking.LocalPlayer.UseAttachedStation();
-            Networking.SetOwner(Networking.LocalPlayer, this.gameObject);
-            Active = true;
         }
 
         Quaternion prevTableTransformRotation;
@@ -98,7 +98,7 @@ namespace frou01.RigidBodyTrain
             localTableRotation = prevSyncedTableRotation = syncedTableRotation;
         }
 
-                private float wrapAngleTo180(float controllerAngle)
+        private float wrapAngleTo180(float controllerAngle)
         {
             controllerAngle %= 360;
             controllerAngle = controllerAngle > 180 ? controllerAngle - 360 : controllerAngle;
@@ -122,21 +122,25 @@ namespace frou01.RigidBodyTrain
                 {
                     Sdistance = (target.GetStartPoint() - currentStart).sqrMagnitude;
                     mine.prev = target;
+                    target.prev = mine;
                 }
                 else if (Sdistance > (target.GetEndPoint() - currentStart).sqrMagnitude)
                 {
                     Sdistance = (target.GetEndPoint() - currentStart).sqrMagnitude;
                     mine.prev = target;
+                    target.next = mine;
                 }
                 if (Edistance > (target.GetStartPoint() - currentEnd).sqrMagnitude)
                 {
                     Edistance = (target.GetStartPoint() - currentEnd).sqrMagnitude;
                     mine.next = target;
+                    target.prev = mine;
                 }
                 else if (Edistance > (target.GetEndPoint() - currentEnd).sqrMagnitude)
                 {
                     Edistance = (target.GetEndPoint() - currentEnd).sqrMagnitude;
                     mine.next = target;
+                    target.next = mine;
                 }
             }
             prevTableRotation = localTableRotation;
@@ -145,6 +149,7 @@ namespace frou01.RigidBodyTrain
 
         public override void OnStationEntered(VRC.SDKBase.VRCPlayerApi player)
         {
+            Networking.SetOwner(Networking.LocalPlayer, this.gameObject);
             Active = true;
             this.enabled = true;
         }
@@ -177,5 +182,27 @@ namespace frou01.RigidBodyTrain
             if (Active) this.enabled = true;
             timeFromSync = 0;
         }
+
+
+#if !COMPILER_UDONSHARP && UNITY_EDITOR
+        private void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(targetTable.transform.position, 2);
+            Vector3 RailCenter = mine.GetStartPoint() / 2 + mine.GetEndPoint() / 2;
+            Gizmos.DrawWireSphere(RailCenter, Vector3.Distance(RailCenter, mine.GetEndPoint()));
+            foreach (Rail_Script target in targets)
+            {
+                Vector3 nearPoint;
+
+                Vector3 toEnd = target.GetEndPoint() - RailCenter;
+                Vector3 toStart = target.GetStartPoint() - RailCenter;
+
+                if (toEnd.sqrMagnitude < toStart.sqrMagnitude) nearPoint = target.GetEndPoint();
+                else nearPoint = target.GetStartPoint();
+                Gizmos.DrawRay(nearPoint, (RailCenter - nearPoint).normalized);
+            }
+        }
+#endif
     }
 }

@@ -1,4 +1,5 @@
 ﻿
+using System;
 using TMPro;
 using UdonSharp;
 using UnityEngine;
@@ -8,6 +9,7 @@ using VRC.Udon;
 namespace frou01.RigidBodyTrain
 {
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]
+    [Obsolete]
     public class Point_Script : UdonSharpBehaviour
     {
         public string sinroName1 = "本線";
