@@ -216,7 +216,7 @@ Animatorの"mortorTorque"[float]パラメーターを参照し、mortorTorqueの
 
 同じオブジェクトにVRCStationをアタッチする必要があります。
 
-Interactで動作開始します。
+このObjectへのInteractにより起動し、Interactしたプレイヤーを操作者としてStationに載せます。
 
 <details>
 <summary>設定値/仕様</summary>
@@ -224,8 +224,8 @@ Interactで動作開始します。
 |設定値|概要|
 |---:|:---|
 targetTable|旋回するオブジェクト
-mine|旋回するレールのスクリプト
-targets|転車台周囲にあるレール<br>mineにむけ参照を持っている想定で組まれています。
+mine|旋回するレールのスクリプト(targetTableの子である必要があります)
+targets|転車台周囲にあるレール
 animator|"mortorTorque"[float]パラメーターの参照先になるAnimator
 syncedTableRotation|初期回転位置からの差分。同期に使用
 Active|動作状態。同期に使用
