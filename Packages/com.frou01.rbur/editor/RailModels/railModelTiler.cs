@@ -29,6 +29,7 @@ public class railModelTiler : MonoBehaviour
     [SerializeField] bool ignoreRoll;
     [SerializeField] bool ignorePitch;
     [SerializeField] bool UseColliderBaseCuller;
+    [SerializeField] float CullingDistance = 1500;
     [SerializeField] float disbaleInstancedThreshold = 0.001f;
     [SerializeField] float cutterOffset = -0.001f;
 
@@ -359,7 +360,7 @@ public class railModelTiler : MonoBehaviour
                 Vector3[] cullerCenters;
                 List<GameObject[]> ClusteredGoList = new List<GameObject[]>();
                 pathModelCullerSetup.ObjectClustering(cinemachinePath, 500, gened, out cullerCenters, ref ClusteredGoList);
-                pathModelCullerSetup.SetUpColliderBaseCuller(ClusteredGoList, cullerCenters, this.root != null ? this.root : cinemachinePath.transform,true,true);
+                pathModelCullerSetup.SetUpColliderBaseCuller(ClusteredGoList, cullerCenters, this.root != null ? this.root : cinemachinePath.transform,true,true, CullingDistance);
             }
 
             if (copies.Count > 0)

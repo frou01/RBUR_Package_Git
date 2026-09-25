@@ -12,6 +12,7 @@ public class pathModelCullerSetup : MonoBehaviour
     [SerializeField] GameObject[] objects;
     public float oneCullerLength;
     public Transform rootTransform;
+    public float CullingDistance = 1500;
 
     public void perform()
     {
@@ -21,7 +22,7 @@ public class pathModelCullerSetup : MonoBehaviour
         List<GameObject[]> ClusteredGoList = new List<GameObject[]>();
 
         ObjectClustering(cinemachinePath, oneCullerLength, objectsList,out cullerCenters,ref ClusteredGoList);
-        SetUpColliderBaseCuller(ClusteredGoList, cullerCenters, rootTransform ? rootTransform : this.transform, true, false);
+        SetUpColliderBaseCuller(ClusteredGoList, cullerCenters, rootTransform ? rootTransform : this.transform, true, false, CullingDistance);
     }
 
     public static void ObjectClustering(Cinemachine.CinemachinePathBase cinemachinePath, float CullerLength, List<GameObject> objectsList,out Vector3[] cullerCenters, ref List<GameObject[]> ClusteredGoList)
@@ -47,7 +48,7 @@ public class pathModelCullerSetup : MonoBehaviour
             currentSegment += 1;
         }
     }
-    public static void SetUpColliderBaseCuller(List<GameObject[]> ClusteredGoList,Vector3[] cullerCenters, Transform root, bool changeRoot, bool isStatic)
+    public static void SetUpColliderBaseCuller(List<GameObject[]> ClusteredGoList,Vector3[] cullerCenters, Transform root, bool changeRoot, bool isStatic , float CullingDistance)
     {
         GameObject[][] ClusteredGo = ClusteredGoList.ToArray();
         int clusterNum = ClusteredGo.Length;
@@ -60,7 +61,7 @@ public class pathModelCullerSetup : MonoBehaviour
             go.transform.position = cullerCenters[i];
             go.transform.parent = root;
             SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
-            sphereCollider.radius = 1500;
+            sphereCollider.radius = CullingDistance;
             sphereCollider.isTrigger = true;
             ColliderGameObjectCuller ClRC = go.AddComponent<ColliderGameObjectCuller>();
             ClRC.objects = ClusteredGo[i];
