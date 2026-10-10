@@ -35,8 +35,10 @@ namespace frou01.RigidBodyTrain
         {
             wheel.maxAngularVelocity = 1000;
             wheel.isKinematic = false;
-            wheelRadius = wheel.GetComponent<SphereCollider>().radius;
-            wheelMaterial = wheel.GetComponent<SphereCollider>().material;
+            // cache SphereCollider to avoid multiple GetComponent calls
+            SphereCollider wheelCollider = wheel.GetComponent<SphereCollider>();
+            wheelRadius = wheelCollider.radius;
+            wheelMaterial = wheelCollider.material;
             trainTransform = rb.transform;
             brakeFriction = brake.GetComponent<CapsuleCollider>().material.dynamicFriction;
             brake.isKinematic = false;
@@ -71,7 +73,7 @@ namespace frou01.RigidBodyTrain
 
                     brake.AddForce(-tempForceVector * ShoeBrakeTorque / brakeFriction * wheelRadius, ForceMode.Force);
                     wheel.AddRelativeTorque(-MortorBrakeTorque * wheelRadius, 0, 0, ForceMode.Force);
-                    wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
+                    wheel.AddForce(-tempForceVector * Vector3.Dot(tempForceVector, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
 
                 }
                 else if (treadSpeed < -RBTorqueBrakeStartSpeed)
@@ -83,25 +85,27 @@ namespace frou01.RigidBodyTrain
 
                     brake.AddForce(-tempForceVector * ShoeBrakeTorque , ForceMode.Force);
                     wheel.AddRelativeTorque(MortorBrakeTorque * wheelRadius, 0, 0, ForceMode.Force);
-                    wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
+                    wheel.AddForce(-tempForceVector * Vector3.Dot(tempForceVector, Vector3.up) * (WheelPressure[0] - ShoeBrakeTorque));
                 }
                 else
                 {
                     brake.AddForce(-tempForceVector * BrakeForce[0] / brakeFriction * wheelRadius, ForceMode.Force);
-                    wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
+                    wheel.AddForce(-tempForceVector * Vector3.Dot(tempForceVector, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
                 }
             }
             else
             {
                 brake.AddForce(-tempForceVector * BrakeForce[0] / brakeFriction * wheelRadius, ForceMode.Force);
-                wheel.AddForce(-tempForceVector * Vector3.Dot(trainTransform.up, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
+                wheel.AddForce(-tempForceVector * Vector3.Dot(tempForceVector, Vector3.up) * (WheelPressure[0] - BrakeForce[0] / brakeFriction * wheelRadius));
             }
             if (MortorForce[0] != 0) wheel.AddRelativeTorque(MortorForce[0] * wheelRadius, 0, 0, ForceMode.Force);
 
             if (overrideFriction)
             {
-                wheelMaterial.staticFriction = Friction[0];
-                wheelMaterial.dynamicFriction = Friction[1];
+                if (wheelMaterial.staticFriction != Friction[0])
+                    wheelMaterial.staticFriction = Friction[0];
+                if (wheelMaterial.dynamicFriction != Friction[1])
+                    wheelMaterial.dynamicFriction = Friction[1];
             }
         }
 

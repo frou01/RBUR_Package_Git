@@ -85,7 +85,6 @@ namespace frou01.RBUR.editor
                 Mesh mesh = new Mesh();
                 mesh.vertices = ColliderElements.generatedVertices;
                 mesh.triangles = ColliderElements.generatedPolygon;
-                mesh.RecalculateNormals();
 
                 GameObject colliderObject = new GameObject(ColliderElements.parentObject.name + " collider " + ColliderElements.DivisionID);
                 colliderObject.transform.SetParent(ColliderElements.parentObject.transform, false);
